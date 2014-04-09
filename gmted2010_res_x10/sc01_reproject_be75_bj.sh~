@@ -1,0 +1,11 @@
+# for dir in `seq -500 100 8600` ; do  qsub -v dir=$dir,mm=mi   /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/gmted2010_res_x10/sc01_reproject_be75_bj.sh  ; done # 400 8600 range confirrmed  (-500 tutti i valore == 100)
+
+#PBS -S /bin/bash 
+#PBS -q fas_normal
+#PBS -l mem=4gb
+#PBS -l walltime=2:00:00
+#PBS -l nodes=1:ppn=4
+#PBS -V
+#PBS -o /lustre0/scratch/ga254/stdout 
+#PBS -e /lustre0/scratch/ga254/stderr
+
