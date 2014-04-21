@@ -33,7 +33,7 @@ module load Libraries/GSL
 module load Libraries/ARMADILLO
 module load Applications/GRASS/6.4.2
 
-# tile=$1
+tile=$1
 
 file=`basename $tile`
 
@@ -90,7 +90,7 @@ r.mask input=mask
 
 # r.horizon  elevin=$file  horizonstep=15  horizon=horiz   maxdistance=200000
 
-seq 1 365  | xargs -n 1  -P 12  bash  -c $'
+seq 180 181  | xargs -n 1  -P 12  bash  -c $'
 day=$1
 
 
@@ -139,6 +139,15 @@ glob_rad=glob_HradCA2_day$day \
 diff_rad=diff_HradCA2_day$day \
 beam_rad=beam_HradCA2_day$day \
 refl_rad=refl_HradCA2_day$day # orizontal 0 reflectance 
+
+r.sun -s  elevin=$file slope=0.01 \
+lin=1   albedo=albedo${day}_${filename}_coef    \
+day=$day step=1 horizon=horiz  horizonstep=15   --overwrite  \
+glob_rad=glob_Hrad_day$day \
+diff_rad=diff_Hrad_day$day \
+beam_rad=beam_Hrad_day$day \
+refl_rad=refl_Hrad_day$day # orizontal 0 reflectance 
+
 
 
 g.remove rast=linke${day}_${filename}_coef,albedo${day}_${filename}_coef,cloud${day}_${filename}_coef,aeros${day}_${filename}_coef
