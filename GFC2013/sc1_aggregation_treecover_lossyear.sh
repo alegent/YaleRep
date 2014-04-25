@@ -10,9 +10,9 @@
 
 #PBS -S /bin/bash 
 #PBS -q fas_normal
-#PBS -l mem=2gb
+#PBS -l mem=1gb
 #PBS -l walltime=2:00:00 
-#PBS -l nodes=2:ppn=2
+#PBS -l nodes=1:ppn=1
 #PBS -V
 #PBS -o /lustre0/scratch/ga254/stdout 
 #PBS -e /lustre0/scratch/ga254/stderr
