@@ -16,7 +16,7 @@ mv altitude/stdev_of_mn/altitude_stdev_of_mn_md.tif    altitude/stdev_of_mn/elev
 # aspect cos 
 
 
-Offset: 0,   Scale:0.0001
+# Offset: 0,   Scale:0.0001
 
 mv  aspect/max/aspect_max_md__cos_t10k.tif             aspect/max/aspect-cosine_mx_GMTED2010_md.tif
 gdal_edit.py -mo "Offset: 0,   Scale:0.0001"   aspect/max/aspect-cosine_mx_GMTED2010_md.tif

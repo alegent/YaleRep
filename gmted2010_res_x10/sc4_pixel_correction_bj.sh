@@ -43,19 +43,21 @@ done
 #  -80 19449
 #  -80 19450
 
-## correction of a square box of 500 500 pixel. Set the value = to 179 as the near by pixel.
+## correction of a square box of 500 500 pixel. Set the value = to 179 as the near by pixel......funziona anche con il be75_grd_tif piu grande . 
 cd /lustre0/scratch/ga254/dem_bj/GMTED2010/tiles/
 
-for dir in mi75_grd_tif mn75_grd_tif md75_grd_tif ds75_grd_tif be75_grd_tif mx75_grd_tif ; do
+for dir in  be75_grd_tif  mi75_grd_tif mn75_grd_tif md75_grd_tif ds75_grd_tif mx75_grd_tif be75_grd_tif  ; do
 
 cd /lustre0/scratch/ga254/dem_bj/GMTED2010/tiles/$dir 
 gdal_translate  -srcwin  10070 3830 500 500   2_1.tif  2_1_clip.tif
 
-pksetmask -co COMPRESS=LZW -t 0  -f 179   -i 2_1.tif   -m 2_1_clip.tif   -o 2_1_correct.tif 
+pksetmask -co COMPRESS=LZW -m 2_1_clip.tif -msknodata  0 -p '='  -nodata 179   -i 2_1.tif      -o 2_1_correct.tif 
+gdal_edit.py -a_nodata -32768 2_1_correct.tif 
 mv 2_1.tif 2_1_orig.tiff
 mv 2_1_correct.tif 2_1.tif 
 rm 2_1_clip.tif
 done
+
 
 
 # correction of a square in the caspian sea set value to -27 
@@ -70,13 +72,20 @@ gdal_translate  -srcwin  7150 7000 550  700    6_1.tif  6_1_clip4.tif
 gdal_translate  -srcwin  6700 7550 1050 1100   6_1.tif  6_1_clip5.tif
 gdal_translate  -srcwin  7150 8000 1050 1150   6_1.tif  6_1_clip6.tif
 
-pksetmask -co COMPRESS=LZW -t 0 -f -27 -t 0 -f -27 -t 0 -f -27 -t 0 -f -27 -t 0 -f -27 -t 0 -f -27  -m 6_1_clip1.tif  -m 6_1_clip2.tif  -m 6_1_clip3.tif  -m 6_1_clip4.tif  -m 6_1_clip5.tif  -m 6_1_clip6.tif   -i 6_1.tif -o 6_1_correct.tif
+pksetmask -co COMPRESS=LZW -msknodata  0 -p '='  -nodata -27  -m 6_1_clip1.tif  -m 6_1_clip2.tif  -m 6_1_clip3.tif  -m 6_1_clip4.tif  -m 6_1_clip5.tif  -m 6_1_clip6.tif   -i 6_1.tif -o 6_1_correct.tif
 mv  6_1.tif  6_1_orig.tiff
 mv 6_1_correct.tif 6_1.tif
 rm 6_1_clip*.tif
 
 done 
 
-
-
 # il 4_0.tif presenta pixel < 500 ma c'e' consistenci in the mn mi mx md quindi non vengon corretti 
+
+# set all fhe file with -32768 no data value 
+
+for dir in mx75_grd_tif  md75_grd_tif be75_grd_tif ds75_grd_tif mn75_grd_tif mi75_grd_tif  ;do 
+    cd /lustre0/scratch/ga254/dem_bj/GMTED2010/tiles/$dir
+    for file in *.tif ; do 
+	gdal_edit.py -a_nodata -32768 $file 
+    done 
+done 

@@ -1,3 +1,6 @@
+# cd  /lustre0/scratch/ga254/dem_bj/WWF_ECO/shp_input/ 
+# wget http://assets.worldwildlife.org/publications/15/files/original/official_teow.zip?1349272619 
+# unzip and this is  the input 
 
 # for file in    /lustre0/scratch/ga254/dem_bj/GFC2013/treecover2000/tif/*.tif     ; do qsub -v file=$file  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/WWF_ECO/sc1_rasterize_tile_ID.sh  ; sleep 60  ; done 
 

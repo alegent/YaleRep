@@ -9,5 +9,7 @@ ls *.gz | xargs -n 1 -P 40 bash -c $'
 gunzip $1  
 filename=`basename $1 .gz`
 mv /lustre0/scratch/ga254/dem_bj/MOD44W/gz/$filename /lustre0/scratch/ga254/dem_bj/MOD44W/tiles 
+
 ' _
 
+# effetture il a mano wget ftp://ftp.glcf.umd.edu/modis/WaterMask/Collection_5/2000/MOD44W_Water_2000_VU2728/MOD44W_Water_2000_VU2728.tif.gz

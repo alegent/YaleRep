@@ -1,4 +1,4 @@
-
+# rieffettuare il download cancellato tutto
 # echo af as au eu na sa
 # echo eu  | xargs -n 1 -P 6 bash /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/HYDRO1k/sc1_reproj1km_bj.sh 
 

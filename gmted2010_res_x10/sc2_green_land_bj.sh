@@ -37,7 +37,6 @@ gdalwarp  -srcnodata -1    -dstnodata -1  -r cubicspline  -co COMPRESS=LZW     -
 
 pksetmask -i $TILES/mn75_grd_tif/green_land.tif -m $SHP/green_land7.5arc-sec_msk.tif  -t 0 -f 0 -o $TILES/mn75_grd_tif/green_land_msk.tif
 
-
 gdal_translate -a_nodata -1   -co COMPRESS=LZW -projwin $(~/bin/getCorners4Gtranslate $SHP/green_land7.5arc-sec_msk.tif) $TILES/ds30_grd_tif/mn30_grd.tif $TILES/ds30_grd_tif/mn30_grd_greenland.tif
 
 rm -f $TILES/ds75_grd_tif/green_land.tif
