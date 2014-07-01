@@ -1,3 +1,4 @@
+
 # works perfect for different layers 
 
 # cd /home2/ga254/src/heg 
@@ -18,19 +19,21 @@
 # tail -182 for the 2002 
 # cd /tmp ;  for DAY in $( cat  /lustre0/scratch/ga254/dem_bj/AE_C51_MOD04_L2_MYD04_L2/day_list.txt   )  ; do for YEAR in `seq 2004 2006` ; do qsub -v YEAR=$YEAR,DAY=$DAY  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/AE_C6_MYD04_L2/sc1_heg_tif.sh ; sleep 100 ; done ; done  & 
 
-# qsub -S /bin/bash -v YEAR=2005  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/AE_C6_MYD04_L2/sc1_heg_tif_1year.sh   
+
+# qsub -S /bin/bash -v YEAR=2002  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/AE_C51_MOD04_L2_MYD04_L2/sc1_heg_tif_1year.sh  
 
 # controll the status 
 # cd /lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2 ; for year in `seq 2002 2014` ; do  ll   $year/tif/AOD_550_Dark_Target_Deep_Blue_Combined_year${year}_day*.tif | tail -1   ; done  
 
-# bash  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/AE_C6_MYD04_L2/sc1_heg_tif_1year.sh  2004   
+# bash  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/AE_C6_MYD04_L2/sc1_heg_tif.sh  2004         337866.master.bulldogj
 
 # 80 ore per un anno .. mi sembra che si blocca con 80 
 # 8 for each node 
 
 #PBS -S /bin/bash
 #PBS -q fas_long
-#PBS -l walltime=3:00:00:00
+#PBS -l mem=2gb          
+#PBS -l walltime=50:00:00
 #PBS -l nodes=2:ppn=8
 #PBS -V
 #PBS -o /lustre0/scratch/ga254/stdout
@@ -41,26 +44,25 @@
 
 export YEAR=$YEAR
 
-for DAY in $( cat  /lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/day_list.txt   )  ; do 
+for DAY in $( cat  /lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/day_list.txt    )  ; do 
 export DAY=$DAY
 
-export HDFDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/hdf
-export TIFDIR_TMP=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/tif_tmp
-export TIFDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/tif
-export PRMDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/prm
-export HDRDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/hdr
+export HDFDIR=/lustre0/scratch/ga254/dem_bj/AE_C51_MOD04_L2_MYD04_L2/$YEAR/hdf
+export TIFDIR_TMP=/lustre0/scratch/ga254/dem_bj/AE_C51_MOD04_L2_MYD04_L2/$YEAR/tif_tmp
+export TIFDIR=/lustre0/scratch/ga254/dem_bj/AE_C51_MOD04_L2_MYD04_L2/$YEAR/tif
+export PRMDIR=/lustre0/scratch/ga254/dem_bj/AE_C51_MOD04_L2_MYD04_L2/$YEAR/prm
+export HDRDIR=/lustre0/scratch/ga254/dem_bj/AE_C51_MOD04_L2_MYD04_L2/$YEAR/hdr
 
-#    if [ -f $TIFDIR/AOD_550_Dark_Target_Deep_Blue_Combined_year${YEAR}_day$DAY.tif ] ; then 
-#    echo the file  $TIFDIR/AOD_550_Dark_Target_Deep_Blue_Combined_year${YEAR}_day$DAY.tif  exist 
-
-if [ -f $TIFDIR/Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate_year${YEAR}_day$DAY.tif ] ; then 
-    echo the file  Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate_year${YEAR}_day$DAY.tif  exist
+if [ -f $TIFDIR/AOD_550_Dark_Target_Deep_Blue_Combined_year${YEAR}_day$DAY.tif ] ; then 
+    echo the file  $TIFDIR/AOD_550_Dark_Target_Deep_Blue_Combined_year${YEAR}_day$DAY.tif  exist 
 else
     echo processing $YEAR day $DAY
 
-wget -P  $HDFDIR   ftp://ladsweb.nascom.nasa.gov/allData/6/MYD04_L2/$YEAR/$DAY/*.hdf
+wget -P  $HDFDIR   ftp://ladsweb.nascom.nasa.gov/allData/51/MOD04_L2/$YEAR/$DAY/*.hdf
+wget -P  $HDFDIR   ftp://ladsweb.nascom.nasa.gov/allData/51/MYD04_L2/$YEAR/$DAY/*.hdf
 
-ls $HDFDIR/MYD04_L2.A${YEAR}${DAY}*.hdf | xargs -n 1 -P  16   bash  -c  $'
+
+ls $HDFDIR/M?D04_L2.A${YEAR}${DAY}*.hdf | xargs -n 1 -P  16   bash  -c  $'
 
 file=$1
 filename=$(basename $file .hdf)
@@ -76,27 +78,9 @@ SWATH_LAT_MIN=$( grep SWATH_LAT_MIN  $HDRDIR/$filename.hdr | awk \'{ gsub ("=","
 SWATH_LON_MAX=$( grep SWATH_LON_MAX  $HDRDIR/$filename.hdr | awk \'{ gsub ("="," ") ; print $2 }\' )
 SWATH_LON_MIN=$( grep SWATH_LON_MIN  $HDRDIR/$filename.hdr | awk \'{ gsub ("="," ") ; print $2 }\' )
 
-# 
-# ---------- Forwarded message ----------
-# From: Sayer, Andrew (GSFC-613.0)[UNIVERSITIES SPACE RESEARCH ASSOCIATION] <andrew.sayer@nasa.gov>
-# Date: 2 June 2014 12:52
-# Subject: RE: convert MYD04_3K hdf to tif
-# To: "giuseppe.amatulli@yale.edu" <giuseppe.amatulli@yale.edu>
-# 
-# If you want the global picture, it would be probably best to use AOD_550_Dark_Target_Deep_Blue_Combined, as you already are. 
-# This is already filtered to include only pixels passing QA checks. 
-# If you want to fill gaps, you can use Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate , which is also already filtered to include only pixels passing QA checks. 
-# You can then also use Corrected_Optical_Depth_Land, but you need to filter this yourself to include only data with QA=3 from it.
-# 
+# for band in Corrected_Optical_Depth_Land  Deep_Blue_Aerosol_Optical_Depth_550_Land Corrected_Optical_Depth_Land_wav2p1  Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate  AOD_550_Dark_Target_Deep_Blue_Combined ; do 
 
-#  AOD_550_Dark_Target_Deep_Blue_Combined add this in case of re run
-
-for band in Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate   Corrected_Optical_Depth_Land  Quality_Assurance_Land   ; do 
-
-# insert the qa of  Corrected_Optical_Depth_Land 
-# should be one of this 
-# SUBDATASET_25_NAME=HDF4_EOS:EOS_SWATH:"MYD04_L2.A2004150.2110.006.2014017112811.hdf":mod04:Quality_Assurance_Land
-
+for band in  Deep_Blue_Aerosol_Optical_Depth_550_Land Corrected_Optical_Depth_Land ; do 
 
 
 if [ band = "Corrected_Optical_Depth_Land" ] ; then  BAND_NUMBER=2 ; else BAND_NUMBER=1 ; fi 
@@ -146,50 +130,28 @@ rm -f /lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/*.log
 
 echo starting the tiling merge action $TIFDIR/Deep_Blue_Aerosol_Optical_year${YEAR}_day$DAY.tif  $TIFDIR/Corrected_Optical_Depth_Land_year${YEAR}_day$DAY.tif
 
+
 # merging 
 
-
-#  AOD_550_Dark_Target_Deep_Blue_Combined add this in case of re run
-
-for band in  Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate   Corrected_Optical_Depth_Land   ; do 
+for band in  Deep_Blue_Aerosol_Optical_Depth_550_Land Corrected_Optical_Depth_Land ; do 
     gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -overwrite  -hidenodata    -resolution user  -tr 0.08333333333333  0.08333333333333 -te -180 -90 +180 +90   $TIFDIR/year${YEAR}_day$DAY.vrt   $TIFDIR_TMP/MYD04_L2.A${YEAR}${DAY}*$band.tif
-    gdal_translate  -a_nodata -9999   -co  COMPRESS=LZW -co ZLEVEL=9    -a_srs "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"    $TIFDIR/year${YEAR}_day$DAY.vrt   $TIFDIR/${band}_year${YEAR}_day$DAY.tif
+    gdal_translate  -a_nodata -9999   -co  COMPRESS=LZW -co ZLEVEL=9    -a_srs "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"    $TIFDIR/year${YEAR}_day$DAY.vrt   $TIFDIR/MYD04_${band}_year${YEAR}_day$DAY.tif
     rm  $TIFDIR/year${YEAR}_day$DAY.vrt 
-    rm -r $TIFDIR_TMP/MYD04_L2.A${YEAR}${DAY}*${band}.tif
-done 
+    rm -f $TIFDIR_TMP/MYD04_L2.A${YEAR}${DAY}*${band}.tif
 
-# this a nodata = 0
-
-for band in  Quality_Assurance_Land  ; do 
-    gdalbuildvrt -srcnodata 0  -vrtnodata 0  -overwrite  -hidenodata    -resolution user  -tr 0.08333333333333  0.08333333333333 -te -180 -90 +180 +90   $TIFDIR/year${YEAR}_day$DAY.vrt   $TIFDIR_TMP/MYD04_L2.A${YEAR}${DAY}*$band.tif
-    gdal_translate  -a_nodata 0  -co  COMPRESS=LZW -co ZLEVEL=9    -a_srs "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"    $TIFDIR/year${YEAR}_day$DAY.vrt   $TIFDIR/${band}_year${YEAR}_day$DAY.tif
+    gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -overwrite  -hidenodata    -resolution user  -tr 0.08333333333333  0.08333333333333 -te -180 -90 +180 +90   $TIFDIR/year${YEAR}_day$DAY.vrt   $TIFDIR_TMP/MOD04_L2.A${YEAR}${DAY}*$band.tif
+    gdal_translate  -a_nodata -9999   -co  COMPRESS=LZW -co ZLEVEL=9    -a_srs "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"    $TIFDIR/year${YEAR}_day$DAY.vrt   $TIFDIR/MOD04_${band}_year${YEAR}_day$DAY.tif
     rm  $TIFDIR/year${YEAR}_day$DAY.vrt 
-    rm -r $TIFDIR_TMP/MYD04_L2.A${YEAR}${DAY}*${band}.tif
-done 
+    rm -f $TIFDIR_TMP/MOD04_L2.A${YEAR}${DAY}*${band}.tif
 
+done 
 
 rm -f  $HDFDIR/MYD04_L2.A${YEAR}${DAY}*.hdf  $TIFDIR_TMP/MYD04_L2.A${YEAR}${DAY}*.tif $TIFDIR/year${YEAR}_day$DAY.vrt 
-
+rm -f  $HDFDIR/MOD04_L2.A${YEAR}${DAY}*.hdf  $TIFDIR_TMP/MOD04_L2.A${YEAR}${DAY}*.tif $TIFDIR/year${YEAR}_day$DAY.vrt 
 
 fi
 done 
 
 checkjob -v $PBS_JOBID
-
-# pixel value in the Quality_Assurance_Land 17 = 0 ;  51 = 1 ;  85 = 2 ; 119 = 3 
-
-# merge the following layer in order 
-#  AOD_550_Dark_Target_Deep_Blue_Combined   Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate   Corrected_Optical_Depth_Land_QA
-
-
-pksetmask -m $TIFDIR/Quality_Assurance_Land_year${YEAR}_day$DAY.tif -msknodata 17 -nodata -9999 -i $TIFDIR/Corrected_Optical_Depth_Land_year${YEAR}_day$DAY.tif -o $TIFDIR/Corrected_Optical_Depth_Land_QA_year${YEAR}_day$DAY.tif 
-
-
- 
-
-
-
-
-
 
 

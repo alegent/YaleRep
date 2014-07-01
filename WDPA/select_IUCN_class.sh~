@@ -1,0 +1,18 @@
+
+# attribute of the shapefile land NO-MARINE
+
+#   IUCN_CAT (String) = Ia               11
+#   IUCN_CAT (String) = Ib               12
+#   IUCN_CAT (String) = II               2
+#   IUCN_CAT (String) = III              3
+#   IUCN_CAT (String) = IV               4
+#   IUCN_CAT (String) = Not Applicable   20
+#   IUCN_CAT (String) = Not Reported     21
+#   IUCN_CAT (String) = V                5
+#   IUCN_CAT (String) = VI               6
+
+
+
+/lustre0/scratch/ga254/dem_bj/WDPA/shp_input/WDPA_protect_april2014 
+ogr2ogr     -sql   "SELECT * FROM  selvaje-search-1396640206107  WHERE  (  iucn_cat = Ia  )  AND (  marine  = '0') "   
+

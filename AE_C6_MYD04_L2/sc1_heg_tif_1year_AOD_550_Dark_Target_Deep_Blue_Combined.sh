@@ -23,32 +23,33 @@
 # controll the status 
 # cd /lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2 ; for year in `seq 2002 2014` ; do  ll   $year/tif/AOD_550_Dark_Target_Deep_Blue_Combined_year${year}_day*.tif | tail -1   ; done  
 
-# bash  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/AE_C6_MYD04_L2/sc1_heg_tif_1year.sh  2004   
+# bash  /lustre/home/client/fas/sbsc/ga254/scripts/AE_C6_MYD04_L2/sc1_heg_tif_1year_AOD_550_Dark_Target_Deep_Blue_Combined.sh  2014  
+# qsub   -v YEAR=2014 /lustre/home/client/fas/sbsc/ga254/scripts/AE_C6_MYD04_L2/sc1_heg_tif_1year_AOD_550_Dark_Target_Deep_Blue_Combined.sh 
 
 # 80 ore per un anno .. mi sembra che si blocca con 80 
 # 8 for each node 
 
 #PBS -S /bin/bash
 #PBS -q fas_normal
-#PBS -l walltime=0:02:00:00
+#PBS -l walltime=1:00:00:00
 #PBS -l nodes=2:ppn=8
 #PBS -V
-#PBS -o /lustre0/scratch/ga254/stdout
-#PBS -e /lustre0/scratch/ga254/stderr
+#PBS -o /scratch/fas/sbsc/ga254/stdout
+#PBS -e /scratch/fas/sbsc/ga254/stderr
 
 # export YEAR=$1
 # export DAY=$2
 
 export YEAR=$YEAR
 
-for DAY in $( cat  /lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/day_list.txt   )  ; do 
+for DAY in $( cat  /scratch/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/day_list.txt   )  ; do 
 export DAY=$DAY
 
-export HDFDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/hdf
-export TIFDIR_TMP=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/tif_tmp
-export TIFDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/tif
-export PRMDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/prm
-export HDRDIR=/lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/hdr
+export HDFDIR=/scratch/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/$YEAR/hdf
+export TIFDIR_TMP=/scratch/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/$YEAR/tif_tmp
+export TIFDIR=/scratch/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/$YEAR/tif
+export PRMDIR=/scratch/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/$YEAR/prm
+export HDRDIR=/scratch/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/$YEAR/hdr
 
 if [ -f $TIFDIR/AOD_550_Dark_Target_Deep_Blue_Combined_year${YEAR}_day$DAY.tif ] ; then 
    echo the file  $TIFDIR/AOD_550_Dark_Target_Deep_Blue_Combined_year${YEAR}_day$DAY.tif  exist 
@@ -66,7 +67,7 @@ echo filename  $filename
 cd /tmp 
 # create the hdr 
 rm -f $HDRDIR/$filename.hdr 
-PGSHOME=/home2/ga254/bin/heg/TOOLKIT_MTD   MRTDATADIR=/home2/ga254/bin/heg/data  PWD=/tmp  /home2/ga254/bin/heg/bin/hegtool -n $HDFDIR/$filename.hdf $HDRDIR/$filename.hdr   &>/dev/null
+PGSHOME=/home/fas/sbsc/ga254/bin/heg/TOOLKIT_MTD   MRTDATADIR=/home/fas/sbsc/ga254/bin/heg/data  PWD=/tmp /home/fas/sbsc/ga254/bin/heg/bin/hegtool -n $HDFDIR/$filename.hdf $HDRDIR/$filename.hdr   &>/dev/null
 
 SWATH_LAT_MAX=$( grep SWATH_LAT_MAX  $HDRDIR/$filename.hdr | awk \'{ gsub ("="," ") ; print $2 }\' )  
 SWATH_LAT_MIN=$( grep SWATH_LAT_MIN  $HDRDIR/$filename.hdr | awk \'{ gsub ("="," ") ; print $2 }\' )
@@ -123,7 +124,7 @@ rm -f  $TIFDIR_TMP/$filename$band.tif
 
 echo export   $TIFDIR_TMP/$filename$band.tif
 
-PGSHOME=/home2/ga254/bin/heg/TOOLKIT_MTD   MRTDATADIR=/home2/ga254/bin/heg/data  PWD=/tmp  /home2/ga254/bin/heg/bin/swtif -P $PRMDIR/$filename.prm   &>/dev/null
+PGSHOME=/home/fas/sbsc/ga254/bin/heg/TOOLKIT_MTD   MRTDATADIR=/home/fas/sbsc/ga254/bin/heg/data  PWD=/tmp   /home/fas/sbsc/ga254/bin/heg/bin/swtif -P $PRMDIR/$filename.prm   &>/dev/null
 rm -f  $TIFDIR_TMP/$filename$band.tif.met
 
 # remove empty file 
@@ -138,7 +139,7 @@ rm -f $HDRDIR/$filename.hdr  $HDFDIR/$filename.hdf $HDRDIR/$filename.hdr
 ' _     &>/dev/null 
 
 
-rm -f /lustre0/scratch/ga254/dem_bj/AE_C6_MYD04_L2/$YEAR/*.log 
+rm -f   /scratch/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/$YEAR/*.log 
 
 echo starting the tiling merge action $TIFDIR/Deep_Blue_Aerosol_Optical_year${YEAR}_day$DAY.tif  $TIFDIR/Corrected_Optical_Depth_Land_year${YEAR}_day$DAY.tif
 

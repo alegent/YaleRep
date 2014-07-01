@@ -1,3 +1,4 @@
+# to modify for the omega cluster. 
 # works perfect for different layers 
 
 # cd /home2/ga254/src/heg 
@@ -25,7 +26,7 @@
 
 # bash  /lustre0/scratch/ga254/scripts_bj/environmental-layers/terrain/procedures/dem_variables/AE_C6_MYD04_L2/sc1_heg_tif_1year.sh  2004   
 
-# 80 ore per un anno .. mi sembra che si blocca con 80 
+# 80 ore per un anno .. mi sembra che si blocca con 80 ...per tutto un anno 5 o 6 giorni.
 # 8 for each node 
 
 #PBS -S /bin/bash
@@ -177,3 +178,9 @@ done
 checkjob -v $PBS_JOBID
 
 
+exit 
+# check the number of tif for each year and for each AOD type
+
+cd ..../AE_C6_MYD04_L2
+
+for year in `seq 2002 2014` ; do  echo $year AOD_550_Dark_Target_Deep_Blue_Combined   $(ls  $year/tif/AOD_550*.tif | wc -l)   Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate    $(ls  $year/tif/Deep*.tif | wc -l)   "        "   Corrected_Optical_Depth_Land  $(ls  $year/tif/Corrected_Optical_Depth_Land_year*.tif | wc -l)     Quality_Assurance_Land    $(ls  $year/tif/Q*.tif | wc -l)               ; done

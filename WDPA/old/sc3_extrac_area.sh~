@@ -1,0 +1,34 @@
+
+# extract the area for each cell 
+
+rm -f /lustre0/scratch/ga254/dem_bj/WDPA/shp_out/360x114global_areaPrj6974.*
+pkextract  -i  /lustre0/scratch/ga254/dem_bj/GEO_AREA/area_tif/30arc-sec-Area_prj6974.tif \
+-l  -r sum  -bn AREAp6974  -lt String  -s /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114global/360x114global.shp \
+-o /lustre0/scratch/ga254/dem_bj/WDPA/shp_out/360x114global_areaPrj6974.shp
+
+
+rm -f /lustre0/scratch/ga254/dem_bj/WDPA/shp_out/360x114globalIUCN*.*
+
+
+# extract the area for each cell  useing as a mask the different IUCN classes 
+
+echo   103  104  105  106  11  111  112  12  120  121  2  20  21  3  4  5  6 | xargs -n 1 -P 8 bash -c $' 
+
+dir=$1
+rm -f /lustre0/scratch/ga254/dem_bj/WDPA/shp_out/360x114globalIUCN$dir.*
+
+pkextract  -m  /lustre0/scratch/ga254/dem_bj/WDPA/rasterize/$dir/IUCN*.tif -msknodata  0 -i  /lustre0/scratch/ga254/dem_bj/GEO_AREA/area_tif/30arc-sec-Area_prj6974.tif  -l  -r sum  -bn IUCN$dir  -lt String  -s /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114global/360x114global.shp -o /lustre0/scratch/ga254/dem_bj/WDPA/shp_out/360x114globalIUCN$dir.shp
+
+' _ 
+
+
+
+gdal_rasterize -ot Byte -a_srs EPSG:4326 -l 360x114global -a ID -a_nodata 0  -tr   0.008333333333333 0.008333333333333  -te -180 -90 +180 +90  -co COMPRESS=LZW \
+-co ZLEVEL=9 /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114global/360x114global.shp /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114globalID.tif 
+
+gdal_rasterize -ot Byte -a_srs EPSG:4326 -l 360x114global -a ID_1 -a_nodata 0  -tr   0.008333333333333 0.008333333333333  -te -180 -90 +180 +90  -co COMPRESS=LZW \
+-co ZLEVEL=9 /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114global/360x114global.shp /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114globalID_1.tif 
+
+gdal_rasterize -ot Byte -a_srs EPSG:4326 -l 360x114global -a HBWID  -a_nodata 0  -tr   0.008333333333333 0.008333333333333  -te -180 -90 +180 +90  -co COMPRESS=LZW \
+-co ZLEVEL=9 /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114global/360x114global.shp /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114globalHBWID.tif 
+

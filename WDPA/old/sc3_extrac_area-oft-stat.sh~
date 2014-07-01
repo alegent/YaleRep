@@ -1,0 +1,31 @@
+
+
+
+TIF_GRID=/lustre0/scratch/ga254/dem_bj/WDPA/tif_grid/
+OUTDIR=/lustre0/scratch/ga254/dem_bj/WDPA/txt_oft-stat
+
+IUCN=102
+pksetmask  -i $TIF_GRID/360x114globalID.tif -m /lustre0/scratch/ga254/dem_bj/WDPA/rasterize/102/IUCN$IUCN.tif -msknodata 0 -nodata 0 -o $TIF_GRID/360x114globalID$IUCN.tif
+oft-stat   -i /lustre0/scratch/ga254/dem_bj/GEO_AREA/area_tif/30arc-sec-Area_prj6974.tif -o  $OUTDIR/${IUCN}_stat.txt   -um $TIF_GRID/360x114globalID$IUCN.tif 
+
+
+
+
+
+
+
+   /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114globalID.tif 
+
+
+echo   103  104  105  106  11  111  112  12  120  121  2  20  21  3  4  5  6 | xargs -n 1 -P 8 bash -c $' 
+
+dir=$1
+rm -f /lustre0/scratch/ga254/dem_bj/WDPA/shp_out/360x114globalIUCN$dir.*
+
+pkextract  -m  /lustre0/scratch/ga254/dem_bj/WDPA/rasterize/$dir/IUCN*.tif -msknodata  0 -i  /lustre0/scratch/ga254/dem_bj/GEO_AREA/area_tif/30arc-sec-Area_prj6974.tif  -l  -r sum  -bn IUCN$di
+r  -lt String  -s /lustre0/scratch/ga254/dem_bj/WDPA/shp_grid/360x114global/360x114global.shp -o /lustre0/scratch/ga254/dem_bj/WDPA/shp_out/360x114globalIUCN$dir.shp
+
+' _ 
+
+
+
