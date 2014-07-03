@@ -1,7 +1,21 @@
 # cut the tif in northen par
 
-INDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD/month
-OUTDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD
+export INDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD/month
+export OUTDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD
+
+# this is usefull to take out the colored table in the image....the color table produce an error in buldvrt 
+
+echo  01  02 03 04 05 06 07 08 09 10 11 12 | xargs -n 1 -P 12 bash -c $' 
+month=$1
+gdalbuildvrt -overwrite   $INDIR/MCD09_mean_${month}.vrt    $INDIR/MCD09_mean_${month}.tif  
+head  -6  $INDIR/MCD09_mean_${month}.vrt     >  $INDIR/MCD09_mean_${month}a.vrt 
+echo  "<ColorInterp>Grey</ColorInterp>"     >>  $INDIR/MCD09_mean_${month}a.vrt
+tail -10  $INDIR/MCD09_mean_${month}.vrt    >>  $INDIR/MCD09_mean_${month}a.vrt 
+gdal_translate -co COMPRESS=LZW -co ZLEVEL=9    $INDIR/MCD09_mean_${month}a.vrt $INDIR/MCD09_mean_${month}_noct.tif 
+
+rm -f  $INDIR/MCD09_mean_${month}a.vrt  $INDIR/MCD09_mean_${month}.vrt   $INDIR/MCD09_mean_${month}_noct.tif.aux.xml 
+
+' _ 
 
 
 # area with no data y dimension 
@@ -81,8 +95,6 @@ gdal_translate  -b 1  -co  COMPRESS=LZW -co ZLEVEL=9     $OUTDIR/month12_cut/MCD
 gdal_translate  -b 2  -co  COMPRESS=LZW -co ZLEVEL=9     $OUTDIR/month12_cut/MCD09_mean_stak.tif  $OUTDIR/month12_cut/MCD09_mean_12c.tif
 gdal_translate  -b 3  -co  COMPRESS=LZW -co ZLEVEL=9     $OUTDIR/month12_cut/MCD09_mean_stak.tif  $OUTDIR/month12_cut/MCD09_mean_01c.tif
 
-
-
 # for dicember and january november and february  cut all the months            4 month prediction 
 
 yoff=0
@@ -101,41 +113,19 @@ rm  $OUTDIR/month12_cut/MCD09_mean.vrt
 
 pkfilter  $(seq 3 10 | xargs -n 1 echo -win)  $(seq 15 22 | xargs -n 1 echo -win)  $(seq 27 34 | xargs -n 1 echo -win) -wout 23 -fwhm 3 -wout 24 -fwhm 3  -wout 25  -fwhm 3 -wout 26  -fwhm 3  -i  $OUTDIR/month12_cut/MCD09_mean.tif -o  $OUTDIR/month12_cut/MCD09_mean_stak.tif
 
-
 gdal_translate   -b 1  -co  COMPRESS=LZW -co ZLEVEL=9     $OUTDIR/month12_cut/MCD09_mean_stak.tif  $OUTDIR/month12_cut/MCD09_mean_11d.tif
 gdal_translate   -b 2  -co  COMPRESS=LZW -co ZLEVEL=9     $OUTDIR/month12_cut/MCD09_mean_stak.tif  $OUTDIR/month12_cut/MCD09_mean_12d.tif
 gdal_translate   -b 3  -co  COMPRESS=LZW -co ZLEVEL=9     $OUTDIR/month12_cut/MCD09_mean_stak.tif  $OUTDIR/month12_cut/MCD09_mean_01d.tif
 gdal_translate   -b 4  -co  COMPRESS=LZW -co ZLEVEL=9     $OUTDIR/month12_cut/MCD09_mean_stak.tif  $OUTDIR/month12_cut/MCD09_mean_02d.tif
 
-exit 
-
 # merge the results 
 
-for month in 11 ; do # 11 12 01 02 ; do  
-    TIF=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD/month_inter
-    gdalbuildvrt -srcnodata 65535  65535 -hidenodata -overwrite $TIF/MCD09_mean_${month}_interp.vrt  $INDIR/MCD09_mean_${month}.tif $OUTDIR/month12_cut/MCD09_mean_${month}?.tif  
-    # to remove the color table 
-    head  -6  $TIF/MCD09_mean_${month}_interp.vrt   > $TIF/MCD09_mean_${month}_interp_a.vrt
-    echo  "<ColorInterp>Grey</ColorInterp>"   >> $TIF/MCD09_mean_${month}_interp_a.vrt
-    tail -10 $TIF/MCD09_mean_${month}_interp.vrt   >> $TIF/MCD09_mean_${month}_interp_a.vrt
-    gdal_translate -co COMPRESS=LZW -co ZLEVEL=9 $TIF/MCD09_mean_${month}_interp_a.vrt $TIF/MCD09_mean_${month}_interp.tif 
-done 
+echo  11 12 01 02    | xargs -n 1 -P 4  bash -c $' 
+month=$1
+TIF=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD/month_inter
+gdalbuildvrt -srcnodata  65535  -vrtnodata 65535   -hidenodata -overwrite    $TIF/MCD09_mean_${month}_interp.vrt  $INDIR/MCD09_mean_${month}_noct.tif $OUTDIR/month12_cut/MCD09_mean_${month}?.tif
+gdal_translate  -co PREDICTOR=2  -co  COMPRESS=LZW -co ZLEVEL=9   $TIF/MCD09_mean_${month}_interp.vrt  $TIF/MCD09_mean_${month}_interp.tif
+rm -f   $TIF/MCD09_mean_${month}_interp.vrt
+' _ 
 
 
-
-
-for month in 11 ; do # 11 12 01 02 ; do  
-    TIF=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD/month_inter
-    gdal_merge.py        $INDIR/MCD09_mean_${month}.tif $OUTDIR/month12_cut/MCD09_mean_${month}?.tif  
-    # to remove the color table 
-    head  -6  $TIF/MCD09_mean_${month}_interp.vrt   > $TIF/MCD09_mean_${month}_interp_a.vrt
-    echo  "<ColorInterp>Grey</ColorInterp>"   >> $TIF/MCD09_mean_${month}_interp_a.vrt
-    tail -10 $TIF/MCD09_mean_${month}_interp.vrt   >> $TIF/MCD09_mean_${month}_interp_a.vrt
-    gdal_translate -co COMPRESS=LZW -co ZLEVEL=9 $TIF/MCD09_mean_${month}_interp_a.vrt $TIF/MCD09_mean_${month}_interp.tif 
-done 
-
-
-gdalbuildvrt  -srcnodata 65535  -vrtnodata 65535   -hidenodata    -overwrite    $TIF/MCD09_mean_${month}_interp.vrt        $OUTDIR/month12_cut/MCD09_mean_${month}?.tif
-gdal_translate -co  COMPRESS=LZW -co ZLEVEL=9   $TIF/MCD09_mean_${month}_interp.vrt   $TIF/MCD09_mean_${month}_interp.tif 
-
- 
