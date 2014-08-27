@@ -3,7 +3,7 @@
 # reflect in caso di slope=0 reflectance 0 quindi non calcolata 
 # for DIR in  beam   ; do bash  /home/fas/sbsc/ga254/scripts/gmted2010_rad/scripts_r_sun_om/sc2_merge_Monthradiation_bj.sh   $DIR ; done 
 
-# for DIR in  beam  diff  glob refl   ; do  qsub -v DIR=$DIR /home/fas/sbsc/ga254/scripts/gmted2010_rad/scripts_r_sun_om/sc2_merge_Monthradiation_bj.sh  ; done
+# for DIR in  beam  diff     ; do  qsub -v DIR=$DIR /home/fas/sbsc/ga254/scripts/gmted2010_rad/scripts_r_sun_om/sc2_merge_Monthradiation_bj.sh  ; done
 
 
 #PBS -S /bin/bash 
@@ -16,12 +16,12 @@
 
 
 
-export DIR=${DIR}
+export DIR=$1 
 export INDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/${DIR}_Hrad
-export OUTDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/${DIR}_Hrad_usa
+export OUTDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/${DIR}_Hrad_month
 
 
-for INPUT in T Al ACA CA C A ; do  
+for INPUT in T CA  ; do  
 
 export INPUT=$INPUT
 
@@ -31,17 +31,19 @@ month=$1
 rm -f $OUTDIR/${DIR}_Hrad${INPUT}_month${month}.vrt 
 
 gdalbuildvrt    $OUTDIR/${DIR}_Hrad${INPUT}_month${month}.vrt  $INDIR/${DIR}_Hrad${INPUT}_month${month}_?_?.tif   -overwrite 
-gdal_translate -projwin   -172 75  -66  23.5    -ot  Int16  -co  COMPRESS=LZW -co ZLEVEL=9  $OUTDIR/${DIR}_Hrad${INPUT}_month${month}.vrt  $OUTDIR/${DIR}_Hrad${INPUT}_month${month}.tif
+gdal_translate    -ot  Int16  -co  COMPRESS=LZW -co ZLEVEL=9  $OUTDIR/${DIR}_Hrad${INPUT}_month${month}.vrt  $OUTDIR/${DIR}_Hrad${INPUT}_month${month}.tif
 
 
 ' _ 
 
-
-rm -f $OUTDIR/${DIR}_Hrad${INPUT}_months.tif 
-gdalbuildvrt   -separate  $OUTDIR/${DIR}_Hrad${INPUT}_months.vrt   $OUTDIR/${DIR}_Hrad${INPUT}_month0[1-9].tif  $OUTDIR/${DIR}_Hrad${INPUT}_month1[0-2].tif   -overwrite  
-gdal_translate -projwin   -172 75  -66  23.5   -ot  Int16  -co  COMPRESS=LZW -co ZLEVEL=9  $OUTDIR/${DIR}_Hrad${INPUT}_months.vrt  $OUTDIR/${DIR}_Hrad${INPUT}_months.tif 
+# done only for usa ..multistak not possible at global level
+# rm -f $OUTDIR/${DIR}_Hrad${INPUT}_months.tif 
+# gdalbuildvrt   -separate  $OUTDIR/${DIR}_Hrad${INPUT}_months.vrt   $OUTDIR/${DIR}_Hrad${INPUT}_month0[1-9].tif  $OUTDIR/${DIR}_Hrad${INPUT}_month1[0-2].tif   -overwrite  
+# gdal_translate -projwin   -172 75  -66  23.5   -ot  Int16  -co  COMPRESS=LZW -co ZLEVEL=9  $OUTDIR/${DIR}_Hrad${INPUT}_months.vrt  $OUTDIR/${DIR}_Hrad${INPUT}_months.tif 
 
 done 
+
+exit 
 
 
 export INDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/${DIR}_rad
