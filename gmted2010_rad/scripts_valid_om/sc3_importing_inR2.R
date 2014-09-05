@@ -62,7 +62,12 @@ dev.off()
 png('beamHC.png')
 xyplot ( beamHC~beamRobs |as.factor(month) , data=radiation , xlab="Observations", ylab="Model Prediction - Linke + Albedo + Cloud" , xlab.top="Beam Solar Radiation"   )+layer(panel.abline(0,1))+layer(panel.abline(lm(y~x),col="red"))
 dev.off()
-	
+
+
+
+
+
+
 
 
 png('globH.png')

@@ -7,7 +7,7 @@
 
 #PBS -S /bin/bash 
 #PBS -q fas_normal
-#PBS -l mem=10gb
+
 #PBS -l walltime=4:00:00 
 #PBS -l nodes=1:ppn=4
 #PBS -V

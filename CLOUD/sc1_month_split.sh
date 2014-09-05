@@ -107,6 +107,8 @@ rm  $OUTDIR/month12_cut/MCD09_mean_12.tif  $OUTDIR/month12_cut/MCD09_mean_01.tif
 
 gdalbuildvrt   -separate   -overwrite   $OUTDIR/month12_cut/MCD09_mean.vrt   $OUTDIR/month12_cut/MCD09_mean_??.tif  $OUTDIR/month12_cut/MCD09_mean_??.tif   $OUTDIR/month12_cut/MCD09_mean_??.tif 
 gdal_translate -co  COMPRESS=LZW -co ZLEVEL=9   $OUTDIR/month12_cut/MCD09_mean.vrt   $OUTDIR/month12_cut/MCD09_mean.tif
+
+
 rm  $OUTDIR/month12_cut/MCD09_mean.vrt
 
 # predict the november dicember jenuary and february stripe with the other months

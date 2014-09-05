@@ -1,22 +1,20 @@
 
-# awk '{ if ( NR > 1 ) print $1 }'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tiles-te_noOverlap.txt | xargs -n 1  -P 10  bash /home/fas/sbsc/ga254/scripts/WDPA/sc1_rasterize_tile1km_single_class.sh 
-
-# for tile in  $(awk '{ if ( NR > 1 ) print $1 }'   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tiles-te_noOverlap.txt )  ; do qsub -v tile=$tile /home/fas/sbsc/ga254/scripts/WDPA/sc1_rasterize_tile1km_all.sh   ; done 
+# awk '{ if ( NR > 1 ) print $1 }'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_60d.txt  | xargs -n 1  -P 10  bash /home/fas/sbsc/ga254/scripts/WDPA/sc1_rasterize_tile1km_single_class.sh 
+# for tile in  $(awk '{ if ( NR > 1 ) print $1 }'   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_60d.txt    )  ; do qsub -v tile=$tile /home/fas/sbsc/ga254/scripts/WDPA/sc1_rasterize_tile1km_single_class.sh   ; done 
 
 #PBS -S /bin/bash 
 #PBS -q fas_normal
-#PBS -l mem=10gb
-#PBS -l walltime=4:00:00 
-#PBS -l nodes=1:ppn=4
+#PBS -l walltime=00:30:00 
+#PBS -l nodes=1:ppn=1
 #PBS -V
 #PBS -o /lustre/scratch/client/fas/sbsc/ga254/stdout 
-#PBS -e /lustre/scratch/client/fas/sbsc//ga254/stderr
+#PBS -e /lustre/scratch/client/fas/sbsc/ga254/stderr
 
-export tile=$1
-# export tile=$tile
+# export tile=$1
+export tile=$tile
 
 
-export RASTERIZE=/lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/rasterize/
+export RASTERIZE=/lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/rasterize
 export SHPIN=/lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/shp_input/WDPA_protect_april2014_clean
 export SHPCLIP=/lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/shp_clip
 
@@ -46,13 +44,34 @@ export SHPCLIP=/lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/shp_clip
 #   IUCN_CAT (String) = VI               106
 
 
-export geo_string=$( grep $tile /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tiles-te_noOverlap.txt  | awk '{ print $2,$3,$4,$5 }'  ) 
+export geo_string=$( grep $tile /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_60d.txt   | awk '{  print $4 , $7 , $6 ,$5 }'   ) 
 
 echo  clip the large shp
 
-rm -f   $SHPCLIP/WDPA_protect_april2014_$tile.*
+# rm -f   $SHPCLIP/WDPA_protect_april2014_$tile.*
 
-ogr2ogr -skipfailures   -spat   $geo_string  $SHPCLIP/WDPA_protect_april2014_$tile.shp   $SHPIN/WDPA_protect_april2014.shp 
+# ogr2ogr -skipfailures   -spat   $geo_string  $SHPCLIP/WDPA_protect_april2014_$tile.shp   $SHPIN/WDPA_protect_april2014.shp 
+
+echo rasterize marine and land 
+
+# gdal_rasterize -ot  UInt32 -a_srs EPSG:4326 -l  WDPA_protect_april2014_${tile}  -a wdpaid   	-a_nodata 0  -tap  -tr   0.008333333333333 0.008333333333333  -te  $geo_string  -co COMPRESS=LZW  \
+# -co ZLEVEL=9 $SHPCLIP/WDPA_protect_april2014_${tile}.shp  $RASTERIZE/all/wdpaid_tile${tile}.tif 
+
+# echo rasterize marine  controllare la sql 
+
+# gdal_rasterize -ot  UInt32 -a_srs EPSG:4326 -l  WDPA_protect_april2014_${tile}  -a wdpaid \
+#  	-a_nodata 0  -tap  -tr   0.008333333333333 0.008333333333333  -te  $geo_string  -co COMPRESS=LZW \
+#         -sql   "SELECT * FROM WDPA_protect_april2014_${tile}   WHERE   MARINE = '1'" \
+#  	-co ZLEVEL=9 $SHPCLIP/WDPA_protect_april2014_${tile}.shp  $RASTERIZE/all/wdpaid_marine_tile${tile}.tif 
+
+# echo rasterize land controllare la sql 
+
+# gdal_rasterize -ot  UInt32 -a_srs EPSG:4326 -l  WDPA_protect_april2014_${tile}  -a wdpaid \
+#  	-a_nodata 0  -tap  -tr   0.008333333333333 0.008333333333333  -te  $geo_string  -co COMPRESS=LZW \
+#       -sql   "SELECT * FROM WDPA_protect_april2014_${tile}   WHERE   MARINE = '0'" \
+#   	-co ZLEVEL=9 $SHPCLIP/WDPA_protect_april2014_${tile}.shp  $RASTERIZE/all/wdpaid_land_tile${tile}.tif 
+
+
 
 echo  start the resterize 
 
@@ -80,7 +99,7 @@ for n in 1 2 3 4 5 6 7 8 9 ; do
 	-a_nodata 0  -tap  -tr   0.008333333333333 0.008333333333333  -te  $geo_string  -co COMPRESS=LZW \
 	-co ZLEVEL=9 $SHPCLIP/WDPA_protect_april2014_${tile}L${BURN}.shp $RASTERIZE/${BURN}/${tile}_IUCN${BURN}_L.tif 
 
-# 
+
     rm -f  $SHPCLIP/WDPA_protect_april2014_${tile}L${BURN}.*
 
 
@@ -117,5 +136,3 @@ exit
 
 
 
-gdalbuildvrt  -overwrite -tr 0.0083333333333 0.0083333333333  IUCN11_L.vrt    ?_?_IUCN11_L.tif 
-gdal_translate -co COMPRESS=LZW -co ZLEVEL=9  ot  UInt32 -tr   0.008333333333333 0.008333333333333  IUCN11_L.vrt   IUCN11_L.tif 
