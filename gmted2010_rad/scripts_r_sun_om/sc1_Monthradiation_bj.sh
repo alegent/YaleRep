@@ -114,8 +114,8 @@ r.horizon  elevin=$tile     horizonstep=$hstep  horizon=horiz   maxdistance=2000
 # r.external  -o input=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/shp_in/point_nsrdb.tif   output=mask_point   --overwrite  --quiet
 # r.mask raster=mask_point  --o 
 
-for monthc in   08 09 10 11 12 ; do 
-# for monthc in  01 02 03 04 05 06 07 08 09 10 11 12 ; do 
+
+for monthc in  01 02 03 04 05 06 07 08 09 10 11 12 ; do 
 
 # for monthc in  01   ; do 
 
@@ -152,7 +152,7 @@ r.external -o input=/lustre/scratch/client/fas/sbsc/ga254/dataproces/AE_C6_MYD04
 # the animation formula is the following 1 - (  2.718281828^(- (aeros${day}_${tile} * 0.001))) "
 # for the coef_df take out -1 
 
-r.mapcalc " aeros${day}_${tile}_coef =   (  2.718281828^(- (aeros${day}_${tile} * 0.001))) "
+r.mapcalc " aeros${day}_${tile}_coef =  1 -  (  2.718281828^(- (aeros${day}_${tile} * 0.001))) "
 
 # horizontal clear sky 
 # take out aspin=aspect_$tile  slopein=slope_$tile to simulate horizontal behaviur    better specify the slope=0 
@@ -169,16 +169,16 @@ r.mapcalc " aeros${day}_${tile}_coef =   (  2.718281828^(- (aeros${day}_${tile} 
 # horizontal aerosol and cloud
 # transparent = T
 
-r.sun  --o   elev_in=$tile   \
-lin=1   \
-day=$day step=1 horizon=horiz  horizonstep=$hstep   --overwrite  \
-diff_rad=diff_HradT_day${day}_month${monthc} \
-beam_rad=beam_HradT_day${day}_month${monthc} --q
-# glob_rad=glob_HradT_day${day}_month${monthc} \   # is real the sum of diff beam and rad so no calculation 
-# refl_rad=refl_HradT_day${day}_month${monthc}     # orizontal 0 reflectance 
+## r.sun  --o   elev_in=$tile   \
+## lin=1   \
+## day=$day step=1 horizon=horiz  horizonstep=$hstep   --overwrite  \
+## diff_rad=diff_HradT_day${day}_month${monthc} \
+## beam_rad=beam_HradT_day${day}_month${monthc} --q
+## glob_rad=glob_HradT_day${day}_month${monthc} \   # is real the sum of diff beam and rad so no calculation 
+## refl_rad=refl_HradT_day${day}_month${monthc}     # orizontal 0 reflectance 
 
-r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=diff_HradT_day${day}_month${monthc}   output=$OUTDIR/diff_Hrad_day_tiles/$day/diff_HradT_day$day"_"month$monthc"_"$tile.tif --q --o
-r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=beam_HradT_day${day}_month${monthc}   output=$OUTDIR/beam_Hrad_day_tiles/$day/beam_HradT_day$day"_"month$monthc"_"$tile.tif --q --o
+## r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=diff_HradT_day${day}_month${monthc}   output=$OUTDIR/diff_Hrad_day_tiles/$day/diff_HradT_day$day"_"month$monthc"_"$tile.tif --q --o
+## r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=beam_HradT_day${day}_month${monthc}   output=$OUTDIR/beam_Hrad_day_tiles/$day/beam_HradT_day$day"_"month$monthc"_"$tile.tif --q --o
 # r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=refl_HradT_day${day}_month${monthc}   output=$OUTDIR/refl_Hrad_day_tiles/$day/refl_HradT_day$day"_"month$monthc"_"$tile.tif --q --o 
 
 # if [ ${tile:1:2} = "00" ] ; then
@@ -225,7 +225,9 @@ r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=
 
 echo start  month $monthc average 
 
-for INPUT in T CA; do 
+# T 
+
+for INPUT in CA; do 
 
 r.series input=$(g.mlist rast pattern="diff_Hrad${INPUT}_day*_month${monthc}" sep=,)   output=tdiff_Hrad${INPUT}_m$monthc   method=average  --overwrite 
 r.series input=$(g.mlist rast pattern="beam_Hrad${INPUT}_day*_month${monthc}" sep=,)   output=tbeam_Hrad${INPUT}_m$monthc   method=average  --overwrite 

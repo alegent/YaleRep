@@ -3,7 +3,7 @@
 
 #PBS -S /bin/bash 
 #PBS -q fas_normal
-#PBS -l walltime=0:00:30:00  
+#PBS -l walltime=0:04:00:00  
 #PBS -l nodes=1:ppn=1
 #PBS -V
 #PBS -o  /scratch/fas/sbsc/ga254/stdout 
@@ -61,24 +61,30 @@ echo 01 02 03 04 05 06 07 08 09 10 11 12 | xargs -n 1 -P 8 bash -c $'
 
 month=$1
 
-echo importing $month 
+# echo importing $month 
 
-r.external  -o input=$INDIR/beam_Hrad_month_merge/beam_HradCA_month${month}.tif     output=beam_HradCA_month${month}  --overwrite  --quiet 
-r.external  -o input=$INDIR/diff_Hrad_month_merge/diff_HradCA_month${month}.tif     output=diff_HradCA_month${month}  --overwrite  --quiet 
+# r.external  -o input=$INDIR/beam_Hrad_month_merge/beam_HradCA_month${month}.tif     output=beam_HradCA_month${month}  --overwrite  --quiet 
+# r.external  -o input=$INDIR/diff_Hrad_month_merge/diff_HradCA_month${month}.tif     output=diff_HradCA_month${month}  --overwrite  --quiet 
 
-r.mapcalc " glob_HradCA_month${month} =  beam_HradCA_month${month} + diff_HradCA_month${month} "
+# r.mapcalc " glob_HradCA_month${month} =  beam_HradCA_month${month} + diff_HradCA_month${month} "
 
-r.out.gdal -c type=Int16  nodata=-1 createopt="COMPRESS=LZW,ZLEVEL=9" input=glob_HradCA_month${month}  output=$OUTDIR/glob_HradCA_month${month}.tif 
+# r.out.gdal -c type=Int16  nodata=-1 createopt="COMPRESS=LZW,ZLEVEL=9" input=glob_HradCA_month${month}  output=$OUTDIR/glob_HradCA_month${month}.tif 
+
+r.external  -o input=$OUTDIR/glob_HradCA_month${month}.tif      output=glob_HradCA_month${month}     --overwrite  --quiet 
 
 ' _ 
 
-exit 
+echo start the computation of statistic
 
 r.series  range=0,20000  input=$(g.mlist rast pattern="glob_HradCA_month*" sep=,)   output=glob_HradCA_mean   method=average  --overwrite
 r.series  range=0,20000  input=$(g.mlist rast pattern="glob_HradCA_month*" sep=,)   output=glob_HradCA_sd     method=stddev   --overwrite
 
-r.out.gdal -c type=Int16  nodata=-1 createopt="COMPRESS=LZW,ZLEVEL=9" input=glob_HradCA_mean    output=$OUTDIR/glob_HradCA_mean.tif 
-r.out.gdal -c type=Int16  nodata=-1 createopt="COMPRESS=LZW,ZLEVEL=9" input=glob_HradCA_sd      output=$OUTDIR/glob_HradCA_sd.tif 
+# take the floting point number 
 
+r.mapcalc "glob_HradCA_mean_int =  int(   glob_HradCA_mean ) "
+r.mapcalc "glob_HradCA_sd_int =  int(   glob_HradCA_sd ) "
 
+r.out.gdal -c type=Int16  nodata=-1 createopt="COMPRESS=LZW,ZLEVEL=9" input=glob_HradCA_mean_int    output=$OUTDIR/glob_HradCA_mean.tif 
+r.out.gdal -c type=Int16  nodata=-1 createopt="COMPRESS=LZW,ZLEVEL=9" input=glob_HradCA_sd_int      output=$OUTDIR/glob_HradCA_sd.tif 
 
+rm -rf  /dev/shm/*

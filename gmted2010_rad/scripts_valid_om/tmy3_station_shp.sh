@@ -14,8 +14,6 @@ export OUTDIR=/lustre0/scratch/ga254/dem_bj/SOLAR/validation/nsrdb_tmy3/tmy3_txt
 # Diffuse horizontal irradiance  = Amount of solar radiation received from the sky (excluding the solar disk) on a horizontal  surface during the 60-minute period ending at the timestamp
 
 
-
-
 ls $INDIR/*.csv  | xargs   -n 1  -P 8 bash -c $'
 
 file=$1

@@ -22,7 +22,7 @@ export OUTDIRD=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/
 export INDIRM=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/${DIR}_Hrad_month_tiles
 export OUTDIRM=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/${DIR}_Hrad_month_merge
 
-for INPUT in T CA  ; do  
+for INPUT in CA  ; do  
 
 export INPUT=$INPUT
 

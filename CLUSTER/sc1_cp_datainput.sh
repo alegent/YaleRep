@@ -1,3 +1,4 @@
+
 #  cd    /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/intif
 #  scp   giuseppea@litoria.eeb.yale.edu:/mnt/data2/scratch/Clustering_ga_mt/*.tif .
 
@@ -18,38 +19,49 @@
 #PBS -e /scratch/fas/sbsc/ga254/stderr
 
 
-cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/intif
-pkcomposite   $( ls  /lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/beam_Hrad_month_merge/beam_HradCA_month??.tif | xargs -n 1 echo -i  ) -dstnodata -1 -srcnodata -1 -min 0 -max 20000 --crule mean   -o beam_HradCA_mean.tif
+# data preparateion 
+
+# for  barren.tif cultivated.tif forest.tif grassland.tif shrub.tif urban.tif water.tif  
+# no need to make a mask 
+
+export INDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/intif
+export MSKDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/mask 
+export OUTDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/normal
 
 
-gdalbuildvrt  -overwrite -separate   beam_HradCA_stack.vrt     /lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/beam_Hrad_month_merge/beam_HradCA_month??.tif
-gdal_translate  -projwin -180 +84  +180 -56     -co  COMPRESS=LZW -co ZLEVEL=9  beam_HradCA_stack.vrt   beam_HradCA_stack.tif 
+echo  bio1.tif  bio4.tif  bio12.tif  bio15.tif  | xargs -n 1 -P 4 bash -c $'  
+file=$1 
+filename=`basename $file .tif` 
+
+gdal_translate  -projwin -180 84 180 -56  -ot  Int16   -co  COMPRESS=LZW -co ZLEVEL=9  $INDIR/$file    $INDIR/${filename}_crop.tif 
+
+pkgetmask -min  -32700  -max 999999  -data 1 -nodata 0  -co  COMPRESS=LZW -co ZLEVEL=9 -i $INDIR/${filename}_crop.tif   -o  $MSKDIR/${filename}_msk.tif 
+' _ 
 
 
+gdalbuildvrt -separate   -te -180  -56  180 84       $MSKDIR/stack_msk.vrt  $MSKDIR/bio1_msk.tif   $MSKDIR/bio4_msk.tif   $MSKDIR/bio12_msk.tif   $MSKDIR/bio15_msk.tif  -overwrite
+gdal_translate  -projwin -180 84 180 -56  -ot  Int16   -co  COMPRESS=LZW -co ZLEVEL=9  $MSKDIR/stack_msk.vrt $MSKDIR/stack_msk.tif
 
-
-oft-calc  -ot Int16   beam_HradCA_stack.tif   beam_HradCA_stack2.tif <<EOF
+oft-calc  -ot Int16    $MSKDIR/stack_msk.tif    $MSKDIR/mask_tmp.tif   >  /dev/null   <<EOF
 1
-#1 #1 *
-#2 #2 *
-#3 #3 *
-#4 #4 *
-#5 #5 *
-#6 #6 *
-#7 #7 *
-#8 #8 *
-#9 #9 *
-#10 #10 *
-#11 #11 *
-#12 #12 *
+#1 #1 * #2 * #3 * #4 *
 EOF
 
-oft-calc  -ot Int16   beam_HradCA_stack2.tif   beam_HradCA_stack2sum.tif <<EOF
-12
-#1 #2 + #3 + #4 + #5 + #6 + #7 + #8 + #9 + #10 + #11 + #12 +
-EOF
+gdal_translate  -projwin -180 84 180 -56  -ot  Byte   -co  COMPRESS=LZW -co ZLEVEL=9  $MSKDIR/mask_tmp.tif  $MSKDIR/mask.tif
 
-oft-calc  -ot Int16   beam_HradCA_stack.tif   beam_HradCA_stacksum.tif <<EOF
-12
-#1 #2 + #3 + #4 + #5 + #6 + #7 + #8 + #9 + #10 + #11 + #12 +
-EO
+rm $MSKDIR/mask_tmp.tif  $MSKDIR/stack_msk.vrt $MSKDIR/stack_msk.tif
+
+
+
+
+echo  barren.tif cultivated.tif forest.tif grassland.tif shrub.tif urban.tif water.tif  cloud_intra.tif cloud_meanannual.tif eastness_md_GMTED2010_md.tif elevation_md_GMTED2010_md.tif northness_md_GMTED2010_md.tif glob_HradCA_mean.tif glob_HradCA_sd.tif   | xargs -n 1 -P 8  bash -c $'  
+file=$1 
+filename=`basename $file .tif` 
+
+gdal_translate  -projwin -180 84 180 -56  -ot  Int16   -co  COMPRESS=LZW  -co ZLEVEL=9  $INDIR/$file    $INDIR/${filename}_crop.tif 
+
+' _ 
+
+
+
+
