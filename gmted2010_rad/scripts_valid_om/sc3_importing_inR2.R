@@ -65,8 +65,6 @@ png('beamCAnsrdb.png')
 xyplot ( bCA_m~AVDIR  |as.factor(month) , data=radiation.nsrdb , xlab="Observations", pch=16 , cex=.3 ,   ylab="Model Prediction - Cloud effect" , xlab.top="Beam (Direct) Solar Radiation"   )+layer(panel.abline(0,1))+layer(panel.abline(lm(y~x),col="red"))
 dev.off()
 
-
-
 png('diffTnsrdb.png')
 xyplot ( dT_m~AVDIF |as.factor(month) , data=radiation.nsrdb , xlab="Observations",  pch=16 , cex=.3 , ylab="Model Prediction - Clear Sky" , xlab.top="Diff Solar Radiation"   )+layer(panel.abline(0,1))+layer(panel.abline(lm(y~x),col="red"))
 dev.off()

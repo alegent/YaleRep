@@ -20,3 +20,26 @@ filename=$(basename $file .html) ;  html2text  $file  >   $dir/$filename.txt
 
 done 
 
+
+
+# mv the file to omega /lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/wrdc/txt  
+
+#                                                                                                   station 
+
+# folder D > Diffuse radiation. Daily sums, monthly sums and means.                                   d 365
+# folder t1 > Global radiation. Daily sums, monthly sums and means (Africa).                          t1 235
+# folder t2 > Global radiation. Daily sums, monthly sums and means (Asia).                            t2 123
+# folder t3 > Global radiation. Daily sums, monthly sums and means (S. America).                      t3 135
+# folder t4 > Global radiation. Daily sums, monthly sums and means (N. America).                      t4 165
+# folder t5 > Global radiation. Daily sums, monthly sums and means (Australia and Oceania).           t5 84
+# folder t6 > Global radiation. Daily sums, monthly sums and means (Europe).                          t6 414
+# folder t7 > Global radiation. Daily sums, monthly sums and means (Antarctica).
+
+
+# scp -r d      ga254@omega.hpc.yale.edu:/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/wrdc/txt 
+# scp -r t*      ga254@omega.hpc.yale.edu:/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/wrdc/txt 
+
+#  for file in */*_????_*.txt ; do  echo $( grep "WMO Identifier"  $file | awk '{ print $3 }' )     $(grep -e Longitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;   gsub ("'\''"," " )  ;    print $2 , $3 , $4  }'  ) $(grep -e Latitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;  gsub ("'\''"," " )  ; print $2 , $3 , $4  }'   ) ; done | uniq | sort  -k 1 | uniq  > ../geo_file/stations_degree_minute.txt
+# awk '{ if ($4=="E") { sig="+" } ; if ($4=="W")  { sig="-" } ;  if ($7=="N")  { nsig="+" } ;  if ($7=="S")  { nsig="-"}  ;    print $1 , sig  $2+($3/60) , nsig  $5+($6/60)  }'    ../geo_file/stations_degree_minute.txt  >  ../geo_file/stations_degree_decimal.txt 
+
+# start to import in R 

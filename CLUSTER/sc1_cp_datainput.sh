@@ -52,8 +52,6 @@ gdal_translate  -projwin -180 84 180 -56  -ot  Byte   -co  COMPRESS=LZW -co ZLEV
 rm $MSKDIR/mask_tmp.tif  $MSKDIR/stack_msk.vrt $MSKDIR/stack_msk.tif
 
 
-
-
 echo  barren.tif cultivated.tif forest.tif grassland.tif shrub.tif urban.tif water.tif  cloud_intra.tif cloud_meanannual.tif eastness_md_GMTED2010_md.tif elevation_md_GMTED2010_md.tif northness_md_GMTED2010_md.tif glob_HradCA_mean.tif glob_HradCA_sd.tif   | xargs -n 1 -P 8  bash -c $'  
 file=$1 
 filename=`basename $file .tif` 
@@ -64,4 +62,13 @@ gdal_translate  -projwin -180 84 180 -56  -ot  Int16   -co  COMPRESS=LZW  -co ZL
 
 
 
+echo   GDD.tif PET_annual_mean.tif PET_seasonality.tif Prec_seasonality.tif | xargs -n 1 -P 8  bash -c $'  
+file=$1 
+filename=`basename $file .tif` 
 
+gdal_translate  -projwin -180 84 180 -56  -ot  Int16   -co  COMPRESS=LZW  -co ZLEVEL=9  $INDIR/$file    $INDIR/${filename}_crop.tif 
+
+' _ 
+
+
+gdal_translate  -projwin -180 84 180 -56    -co  COMPRESS=LZW  -co ZLEVEL=9   $INDIR/aridity_index.tif    $INDIR/aridity_index_crop.tif

@@ -8,14 +8,14 @@
 # ls  /mnt/data2/scratch/GMTED2010/tiles/mn75_grd_tif/2_2.tif  | xargs -n 1  -P 10  bash /mnt/data2/scratch/GMTED2010/scripts/sc2_real-sky-horiz-solar_Monthradiation.sh
 
 
-# for tile  in $( awk '{ if (NR>1) print $1 }' /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt ) ;  do  qsub -v tile=$tile /home/fas/sbsc/ga254/scripts/gmted2010_rad/scripts_r_sun_om/sc1_Monthradiation_bj.sh  ; done 
-# for tile  in $( awk '{ if (NR>1) print $1 }' /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt ) ;  do  bash  /home/fas/sbsc/ga254/scripts/gmted2010_rad/scripts_r_sun_om/sc1_Monthradiation_bj.sh $tile   ; done 
+# for tile  in h20v08   ;  do  qsub -v tile=$tile /home/fas/sbsc/ga254/scripts/gmted2010_rad/scripts_r_sun_om/sc1_Monthradiation_bj-delate.sh.sh  ; done 
+# for tile  in h20v08  ;  do  bash  /home/fas/sbsc/ga254/scripts/gmted2010_rad/scripts_r_sun_om/sc1_Monthradiation_bj.sh $tile   ; done 
 
 # un tile ha impiegato 6 ore
 
 #PBS -S /bin/bash 
-#PBS -q fas_normal
-#PBS -l walltime=1:00:00:00  
+#PBS -q fas_devel
+#PBS -l walltime=00:04:00:00  
 #PBS -l nodes=1:ppn=1
 #PBS -V
 #PBS -o  /scratch/fas/sbsc/ga254/stdout 
@@ -36,10 +36,10 @@ export RAMDIRG=/dev/shm/
 
 cd $INDIRG 
 
-ulx=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $4 - 1 }')
-uly=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $5 + 1 }')
-lrx=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $6 + 1 }')
-lry=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $7 - 1 }')
+ulx=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $4 }')
+uly=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $5 }')
+lrx=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $6 }')
+lry=$(grep $tile  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geo_file/tile_lat_long_20d.txt  | awk '{  print  $7 }')
 
 if [ $ulx -lt -180  ] ; then  ulx=-180 ; fi
 if [ $uly -gt  90   ] ; then  uly=90   ; fi 
@@ -115,7 +115,9 @@ r.horizon  elevin=$tile     horizonstep=$hstep  horizon=horiz   maxdistance=2000
 # r.mask raster=mask_point  --o 
 
 
-for monthc in  01 02 03 04 05 06 07 08 09 10 11 12 ; do 
+for monthc in  07  ; do 
+
+# for monthc in  01   ; do 
 
 daystart=$(awk -v monthc=$monthc '{ if (substr($1,0,2)==monthc) print $2  }'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/MERRAero/tif_day/MMDD_JD_0JD.txt  | head -1)
 dayend=$(awk   -v monthc=$monthc '{ if (substr($1,0,2)==monthc) print $2  }'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/MERRAero/tif_day/MMDD_JD_0JD.txt  | tail -1)
@@ -137,12 +139,12 @@ echo  import cloud
 # for this case import the same tif  for the full month
 # coef_bh 1 no cloud 0 full cloud 
 
-r.external -o input=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD/day_estimation_linear/cloud${day}.tif  output=cloud${day}_${tile}  --overwrite --quiet
-r.mapcalc  " cloud${day}_${tile}_coef = 1 -  ( cloud${day}_${tile} * 0.0001)" 
+# r.external -o input=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLOUD/day_estimation_linear/cloud${day}.tif  output=cloud${day}_${tile}  --overwrite --quiet
+# r.mapcalc  " cloud${day}_${tile}_coef = 1 -  ( cloud${day}_${tile} * 0.0001)" 
 
 echo import Aerosol 
 # coef_dh 1 no Aerosol 0 full Aerosol  
-r.external -o input=/lustre/scratch/client/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/temp_smoth_1km/AOD_1km_day${day}.tif  output=aeros${day}_${tile}  --overwrite --quiet
+# r.external -o input=/lustre/scratch/client/fas/sbsc/ga254/dataproces/AE_C6_MYD04_L2/temp_smoth_1km/AOD_1km_day${day}.tif  output=aeros${day}_${tile}  --overwrite --quiet
 
 # see http://en.wikipedia.org/wiki/Optical_depth 
 # 2.718281828^−(5000/1000) = 0.006737947
@@ -150,7 +152,7 @@ r.external -o input=/lustre/scratch/client/fas/sbsc/ga254/dataproces/AE_C6_MYD04
 # the animation formula is the following 1 - (  2.718281828^(- (aeros${day}_${tile} * 0.001))) "
 # for the coef_df take out -1 
 
-r.mapcalc " aeros${day}_${tile}_coef =  1 -  (  2.718281828^(- (aeros${day}_${tile} * 0.001))) "
+# r.mapcalc " aeros${day}_${tile}_coef =  1 -  (  2.718281828^(- (aeros${day}_${tile} * 0.001))) "
 
 # horizontal clear sky 
 # take out aspin=aspect_$tile  slopein=slope_$tile to simulate horizontal behaviur    better specify the slope=0 
@@ -168,41 +170,53 @@ r.mapcalc " aeros${day}_${tile}_coef =  1 -  (  2.718281828^(- (aeros${day}_${ti
 # transparent = T
 
 r.sun  --o   elev_in=$tile   \
-lin=3   \
-day=$day  horizon=horiz  horizonstep=$hstep   --overwrite  \
+lin=1   \
+day=$day step=1 horizon=horiz  horizonstep=$hstep   --overwrite  \
 diff_rad=diff_HradT_day${day}_month${monthc} \
 beam_rad=beam_HradT_day${day}_month${monthc} --q
-## glob_rad=glob_HradT_day${day}_month${monthc} \   # is real the sum of diff beam and rad so no calculation 
-##  refl_rad=refl_HradT_day${day}_month${monthc}     # orizontal 0 reflectance 
+# glob_rad=glob_HradT_day${day}_month${monthc} \   # is real the sum of diff beam and rad so no calculation 
+## refl_rad=refl_HradT_day${day}_month${monthc}     # orizontal 0 reflectance 
 
-r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=diff_HradT_day${day}_month${monthc}   output=$OUTDIR/diff_Hrad_day_tiles/$day/diff_HradT_day$day"_"month$monthc"_"$tile.tif --q --o
-r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=beam_HradT_day${day}_month${monthc}   output=$OUTDIR/beam_Hrad_day_tiles/$day/beam_HradT_day$day"_"month$monthc"_"$tile.tif --q --o
-r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=refl_HradT_day${day}_month${monthc}   output=$OUTDIR/refl_Hrad_day_tiles/$day/refl_HradT_day$day"_"month$monthc"_"$tile.tif --q --o 
+r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=diff_HradT_day${day}_month${monthc}   output=$OUTDIR/diff_Hrad_day_tiles/$day/diff_HradT_day$day"_"month$monthc"_larg"$tile.tif --q --o
+r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"    input=beam_HradT_day${day}_month${monthc}   output=$OUTDIR/beam_Hrad_day_tiles/$day/beam_HradT_day$day"_"month$monthc"_larg"$tile.tif --q --o
+# r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=refl_HradT_day${day}_month${monthc}   output=$OUTDIR/refl_Hrad_day_tiles/$day/refl_HradT_day$day"_"month$monthc"_"$tile.tif --q --o 
+
 
 # CLOUD AOD 
 
-r.sun  --o   elev_in=$tile     \
-lin=3  \
-day=$day   horizon=horiz  horizonstep=$hstep  --overwrite  \
-coef_bh=cloud${day}_${tile}_coef  coef_dh=aeros${day}_${tile}_coef \
-diff_rad=diff_HradCA_day${day}_month${monthc} \
-beam_rad=beam_HradCA_day${day}_month${monthc} --q 
+# r.sun  --o   elev_in=$tile     \
+# lin=1     coef_bh=cloud${day}_${tile}_coef  coef_dh=aeros${day}_${tile}_coef \
+# day=$day step=1 horizon=horiz  horizonstep=$hstep   --overwrite  \
+# diff_rad=diff_HradCA_day${day}_month${monthc} \
+# beam_rad=beam_HradCA_day${day}_month${monthc} --q 
 # glob_rad=glob_HradCA_day${day}_month${monthc} \
 # refl_rad=refl_HradCA_day${day}_month${monthc}     # orizontal 0 reflectance 
 
-g.mremove -f  rast=cloud${day}_${tile}_coef,aeros${day}_${tile}_coef
+# g.mremove -f  rast=cloud${day}_${tile}_coef,aeros${day}_${tile}_coef
 
-r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=diff_HradCA_day${day}_month${monthc}    output=$OUTDIR/diff_Hrad_day_tiles/$day/diff_HradCA_day$day"_"month$monthc"_"$tile.tif 
-r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=beam_HradCA_day${day}_month${monthc}    output=$OUTDIR/beam_Hrad_day_tiles/$day/beam_HradCA_day$day"_"month$monthc"_"$tile.tif 
+# r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=diff_HradCA_day${day}_month${monthc}    output=$OUTDIR/diff_Hrad_day_tiles/$day/diff_HradCA_day$day"_"month$monthc"_"$tile.tif 
+# r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=beam_HradCA_day${day}_month${monthc}    output=$OUTDIR/beam_Hrad_day_tiles/$day/beam_HradCA_day$day"_"month$monthc"_"$tile.tif 
 # r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=refl_HradCA_day${day}_month${monthc}  output=$OUTDIR/refl_Hrad_day_tiles/$day/refl_HradCA_day$day"_"month$monthc"_"$tile.tif 
 
 
+# if [ ${tile:1:2} = "00" ] ; then
+
+# this was inserted becouse the r.out.gdal of the 0_? was overpassing the -180 border and it was attach the tile to the right border
+
+# gdal_edit  -a_ullr  $(getCorners4Gtranslate $INDIRG/$tile.tif)    $OUTDIR/diff_Hrad_day_tiles/$day/diff_HradCA_day$day"_"month$monthc"_"$tile.tif 
+# gdal_edit  -a_ullr  $(getCorners4Gtranslate $INDIRG/$tile.tif)    $OUTDIR/beam_Hrad_day_tiles/$day/beam_HradCA_day$day"_"month$monthc"_"$tile.tif
+# gdal_edit  -a_ullr  $(getCorners4Gtranslate $INDIRG/$tile.tif)  $OUTDIR/refl_Hrad_day_tiles/$day/refl_HradCA_day$day"_"month$monthc"_"$tile.tif
+# fi
 
 ' _
 
+exit
+
 echo start  month $monthc average 
 
-for INPUT  in T  CA; do 
+# T 
+
+for INPUT in CA; do 
 
 r.series input=$(g.mlist rast pattern="diff_Hrad${INPUT}_day*_month${monthc}" sep=,)   output=tdiff_Hrad${INPUT}_m$monthc   method=average  --overwrite 
 r.series input=$(g.mlist rast pattern="beam_Hrad${INPUT}_day*_month${monthc}" sep=,)   output=tbeam_Hrad${INPUT}_m$monthc   method=average  --overwrite 
@@ -222,6 +236,13 @@ r.out.gdal -c type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=
 
 # remove the monthly mean 
 g.mremove -f  rast=glob_Hrad${INPUT}_m$monthc,diff_Hrad${INPUT}_m$monthc,beam_Hrad${INPUT}_m$monthc,refl_Hrad${INPUT}_m$monthc
+
+# if [ ${tile:1:2} = "00" ] ; then
+# this was inserted becouse the r.out.gdal of the 0_? was overpassing the -180 border and it was attach the tile to the right border
+# gdal_edit  -a_ullr  $(getCorners4Gtranslate $INDIRG/$tile)  output=$OUTDIR/diff_Hrad_month_tiles/$monthc/diff_Hrad${INPUT}_month$monthc"_"$tile.tif --q --o
+# gdal_edit  -a_ullr  $(getCorners4Gtranslate $INDIRG/$tile)  output=$OUTDIR/beam_Hrad_month_tiles/$monthc/beam_Hrad${INPUT}_month$monthc"_"$tile.tif --q --o
+# gdal_edit  -a_ullr  $(getCorners4Gtranslate $INDIRG/$tile)  output=$OUTDIR/refl_Hrad_month_tiles/$monthc/refl_Hrad${INPUT}_month$monthc"_"$tile.tif    --q --o
+# fi
 
 
 done 

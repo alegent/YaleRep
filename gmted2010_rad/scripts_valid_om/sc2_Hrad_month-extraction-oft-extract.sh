@@ -2,7 +2,7 @@
 # extracting data for the nsrdb
 
 export EXT=/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/extract
-
+cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/extract
 # start to extract export beam ( direct )
 
 ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/radiation/beam_Hrad_month_merge/beam_Hrad*_month*.tif    | xargs -n 1 -P 8 bash -c  $'

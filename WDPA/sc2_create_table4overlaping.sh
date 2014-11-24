@@ -1,22 +1,9 @@
-# create the list block 
+# create the relative idgrid list for each polygons
 # /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out_list/tif_out_list.txt 
 
-# for n in $(seq 1 21) ; do  
-#    hn=$(expr $n \* 10000 )  ;  
-#    head -$hn  /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out_list/tif_out_fulllist.txt   | tail -10000 >  /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out_list/tif_out_list$n.txt   
-# done
 
-# tail -137  tif_out_fulllist.txt > tif_out_list22.txt
 
-#  prepare the tar file 
-
-# ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out_list/tif_out_list*.txt | xargs  -n 1   -P 8 bash -c $' 
-# filelist=$1
-# filename=$(basename $filelist .txt )
-# tar -cf   /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out.tars/$filename.tar    $(for file in $(cat $filelist) ; do echo  /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out/$file ; done)
-# ' _ 
-
-# for filetar in /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out.tars/tif_out_list*.tar  ; do qsub -v filetar=$filetar /home/fas/sbsc/ga254/scripts/WDPA/sc10_create_table4overlaping.sh ; done 
+# for filetar in /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tifs_out.tar/*.tar   ; do qsub -v filetar=$filetar /home/fas/sbsc/ga254/scripts/WDPA/sc10_create_table4overlaping.sh ; done 
 
 # bash  /home/fas/sbsc/ga254/scripts/WDPA/sc10_create_table4overlaping.sh /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out.tars/tif_out_list2.tar 
 
@@ -30,7 +17,7 @@
 
 checkjob -v $PBS_JOBID > /scratch/fas/sbsc/ga254/stdnode/job_start_$PBS_JOBID.txt
 
-filetar=$filetar
+# filetar=$1
 
 echo processing $filetar 
 
@@ -45,10 +32,10 @@ cp /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/tif_ID/glob_ID_rast
 
 cd  /dev/shm/
 
-tar -xf  $filetar  --strip 9
+tar -xf  $filetar  
 
 
-ls /dev/shm/wdpa2014_id*.tif  | xargs -n 1 -P 8 bash -c  $'  
+ls /dev/shm/wdpa2014_id*.tif   | xargs -n 1 -P 8 bash -c  $'  
 
 filetif=$1
 filetifname=$( basename $filetif .tif  )
@@ -74,6 +61,6 @@ cat  $RAM/glob_ID_wdpa2014_id*.csv   >  /lustre/scratch/client/fas/sbsc/ga254/da
 
 tar -cf   /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/txt_out.tars/$filename.tar   $RAM/glob_ID_wdpa2014_id*.csv 
 
-rm  $RAM/glob_ID_wdpa2014_id*.csv   $RAM/$filetar $RAM/glob_ID_rast_super_compres.tif 
+rm  $RAM/glob_ID_wdpa2014_id*.csv   $RAM/$filename   $RAM/glob_ID_rast_super_compres.tif   $RAM/*.tif
 
 checkjob -v $PBS_JOBID > /scratch/fas/sbsc/ga254/stdnode/job_end_$PBS_JOBID.txt
