@@ -1,6 +1,6 @@
 #PBS -S /bin/bash 
-#PBS -q fas_normal
-#PBS -l walltime=0:08:00:00  
+#PBS -q fas_devel
+#PBS -l walltime=0:04:00:00  
 #PBS -l nodes=1:ppn=1
 #PBS -V
 #PBS -o  /scratch/fas/sbsc/ga254/stdout 
@@ -13,7 +13,10 @@ export NORDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/normal
 # ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/intif/{barren.tif,cultivated.tif,forest.tif,grassland.tif,shrub.tif,urban.tif,water.tif}    | xargs -n 1 -P 8 bash -c $'    
 # GDD_crop.tif,PET_annual_mean_crop.tif,PET_seasonality_crop.tif,Prec_seasonality_crop.tif
 
-ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/intif/{GDD_crop.tif,PET_annual_mean_crop.tif,PET_seasonality_crop.tif,Prec_seasonality_crop.tif} | xargs -n 1 -P 8 bash -c $'    
+# ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/intif/{GDD_crop.tif,PET_annual_mean_crop.tif,PET_seasonality_crop.tif,Prec_seasonality_crop.tif} | xargs -n 1 -P 8 bash -c $'    
+
+
+ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/intif/aridity_index_crop.tif | xargs -n 1 -P 8 bash -c $'    
 
 file=$1 
 filename=`basename $file .tif` 
@@ -27,7 +30,7 @@ stdev=$( awk \'{  print $8 }\'     $NORDIR/${filename}_msk.stat.txt    )
 
 echo start the normalization 
 
-oft-calc  -ot Int16 -um $MSKDIR/mask.tif     $NORDIR/${filename}_msk.tif   $NORDIR/${filename}_norm_tmp.tif  >  /dev/null   <<EOF
+oft-calc  -ot Int32 -um $MSKDIR/mask.tif     $NORDIR/${filename}_msk.tif   $NORDIR/${filename}_norm_tmp.tif  >  /dev/null   <<EOF
 1
 #1 $mean - $stdev / 1000 *
 EOF

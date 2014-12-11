@@ -27,7 +27,7 @@ geba.dif = read.table("/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/va
 geba.dir = read.table("/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/geba/geba_dir.txt", sep=" " , header=TRUE ,  na.strings=c("99999","-------") )
 geba.glo = read.table("/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/geba/geba_glo.txt", sep=" " , header=TRUE ,  na.strings=c("99999","-------") )
 
-save.image("/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/wrdc_gaw/Rdata/wrdc.gaw.RData")
+save.image("/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/geba/Rdata/geba.RData")
 
 EOF 
 

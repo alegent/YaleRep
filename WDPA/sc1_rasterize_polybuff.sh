@@ -1,7 +1,7 @@
 # rasterize poly and  buf 
 
-#  ogr2ogr  -sql "SELECT WDPAID  FROM  WDPA_point_Oct2014_buff" WDPA_point_Oct2014_buffWDPAID.shp  WDPA_point_Oct2014_buff.shp
-#  ogrinfo -al  -geom=no /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/shp_input/WDPA_point_Oct2014_buffWDPAID.shp  | grep "WDPAID " | awk ' { print $4}' > /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tables/WDPAID_buffr.txt
+#  ogr2ogr  -sql "SELECT WDPAID  FROM  wdpa2014_points_buffered" wdpa2014_points_bufferedWDPAID.shp  wdpa2014_points_buffered.shp
+#  ogrinfo -al  -geom=no /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/shp_input/wdpa2014_points_bufferedWDPAID.shp  | grep "WDPAID " | awk ' { print $4}' > /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tables/WDPAID_buffr.txt
 
 
 #  ogr2ogr -sql "SELECT WDPAID  FROM  'WDPA-poly_Oct2014_1-60k'"  WDPA-poly_Oct2014_1-60kWDPAID.shp  WDPA-poly_Oct2014_1-60k.shp
@@ -22,6 +22,8 @@
 #     awk -v file=$file ' {  print  $2  >  "Blkid"$1"_"file    }'  Blkid_$file
 # done 
 
+# total tif file 214696 includes poly and buffpoint
+
 # for file in  /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tables/Blkid?_WDPAID_?????.txt  ; do qsub -v file=$file /home/fas/sbsc/ga254/scripts/WDPA/sc1_rasterize_polybuff.sh  ; done 
 
 # bash  /home/fas/sbsc/ga254/scripts/WDPA/sc1_rasterize_polybuff.sh /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tables/Blkid0_WDPAID_buffr.txt
@@ -40,7 +42,6 @@ export OUTDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tifs_out.tar
 
 checkjob -v $PBS_JOBID  > /scratch/fas/sbsc/ga254/stdnode/job_start_$PBS_JOBID.txt
 
-
 # file=$1 
 
 blk=$(basename $file .txt ) 
@@ -48,7 +49,7 @@ shpend=${blk: -12}
 
 echo  $shpend
 
-if [  $shpend = WDPAID_buffr ] ; then shp=WDPA_point_Oct2014_buffWDPAID ; fi 
+if [  $shpend = WDPAID_buffr ] ; then shp=wdpa2014_points_bufferedWDPAID ; fi 
 if [  $shpend = WDPAID_poly1 ] ; then shp=WDPA-poly_Oct2014_1-60kWDPAID ; fi 
 if [  $shpend = WDPAID_poly2 ] ; then shp=WDPA-poly_Oct2014_60-120kWDPAID ; fi 
 if [  $shpend = WDPAID_poly3 ] ; then shp=WDPA-poly_Oct2014_120k-endWDPAID ; fi 

@@ -3,14 +3,14 @@
 
 
 
-# for filetar in /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tifs_out.tar/*.tar   ; do qsub -v filetar=$filetar /home/fas/sbsc/ga254/scripts/WDPA/sc10_create_table4overlaping.sh ; done 
+# for filetar in /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tifs_out.tar/*.tar   ; do qsub -v filetar=$filetar /home/fas/sbsc/ga254/scripts/WDPA/sc2_create_table4overlaping.sh ; done 
 
 # bash  /home/fas/sbsc/ga254/scripts/WDPA/sc10_create_table4overlaping.sh /lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/tif_out.tars/tif_out_list2.tar 
 
 #PBS -S /bin/bash 
 #PBS -q fas_normal
 #PBS -l walltime=2:00:00 
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=1:ppn=8
 #PBS -V
 #PBS -o /lustre/scratch/client/fas/sbsc/ga254/stdout 
 #PBS -e /lustre/scratch/client/fas/sbsc/ga254/stderr
@@ -24,7 +24,7 @@ echo processing $filetar
 filename=$(basename $filetar)
 export RAM=/dev/shm
    
-rm $RAM/*.csv  $RAM/*.tif $RAM/*.tx $RAM/*.asc
+rm $RAM/*.csv  $RAM/glob_ID*.tif $RAM/*.txt $RAM/*.asc
 
 cp $filetar  /dev/shm/
 cp /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/tif_ID/glob_ID_rast_super_compres.tif  /dev/shm/ 

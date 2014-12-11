@@ -20,7 +20,7 @@ awk '"x" $2 != prev { count++; prev = "x" $2 } {print $1, count}'   gridID_polyI
 
 
 # to do in litoria 
-cd  /mnt/data2/scratch/WDPA_new/grid_mol/
+cd  /mnt/data2/scratch/WDPA2014_lv/grid_mol
 
 scp  ga254@omega.hpc.yale.edu:/lustre/scratch/client/fas/sbsc/ga254/dataproces/WDPA/csv_out/gridID_molID.txt   . 
 
@@ -40,7 +40,7 @@ mv grid_mol_tmp.tif  grid_mol.tif
 ########## lockup table 
 
 join -1 1 -2 1  <( awk -F , '{ print $1 , $2  }' gridID_polyID_s.csv)      <( sort -k 1,1 -g  gridID_molID.txt )  >   gridID_polyID_molID.txt
-
+awk '{ print $2 , $3  }' gridID_molID_polyID.txt | sort -k 1 -g  | uniq  > polyID_molID.txt
 
 # stessa operazione precedente ma stamp la nr come id e le altre polyID per lockup table 
 

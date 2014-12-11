@@ -12,4 +12,5 @@
 # awk '{ if ($4=="E") { sig="+" } ; if ($4=="W")  { sig="-" } ;  if ($7=="N")  { nsig="+" } ;  if ($7=="S")  { nsig="-"}  ;    print $1 , sig  $2+($3/60) , nsig  $5+($6/60)  }'    geo_file/stations_degree_minute.txt  >  geo_file/stations_degree_decimal.txt 
 
 
+
 # start to import in R 

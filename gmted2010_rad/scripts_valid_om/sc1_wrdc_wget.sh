@@ -39,7 +39,15 @@ done
 # scp -r d      ga254@omega.hpc.yale.edu:/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/wrdc/txt 
 # scp -r t*      ga254@omega.hpc.yale.edu:/lustre/scratch/client/fas/sbsc/ga254/dataproces/SOLAR/validation/wrdc/txt 
 
-#  for file in */*_????_*.txt ; do  echo $( grep "WMO Identifier"  $file | awk '{ print $3 }' )     $(grep -e Longitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;   gsub ("'\''"," " )  ;    print $2 , $3 , $4  }'  ) $(grep -e Latitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;  gsub ("'\''"," " )  ; print $2 , $3 , $4  }'   ) ; done | uniq | sort  -k 1 | uniq  > ../geo_file/stations_degree_minute.txt
+# for file in d/*_????_*.txt ; do   filename=$(basename $file .txt ) ;  echo ${filename:0:${#filename}-7}    $(grep -e Longitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;   gsub ("'\''"," " )  ;    print $2 , $3 , $4  }'  ) $(grep -e Latitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;  gsub ("'\''"," " )  ; print $2 , $3 , $4  }'   ) ; done | uniq | sort  -k 1 | uniq  > ../geo_file/stations_degree_minute.txt
+
+# for file in t*/*_????_*.txt ; do   filename=$(basename $file .txt ) ;  echo ${filename:0:${#filename}-8}    $(grep -e Longitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;   gsub ("'\''"," " )  ;    print $2 , $3 , $4  }'  ) $(grep -e Latitude  $file  | awk '{ gsub ("=","" ) ;   gsub ("°"," " ) ;  gsub ("'\''"," " )  ; print $2 , $3 , $4  }'   ) ; done | uniq | sort  -k 1 | uniq  >> ../geo_file/stations_degree_minute.txt
+
+#  sort -k 1 ../geo_file/stations_degree_minute.txt  | uniq >  ../geo_file/stations_degree_minute_1.txt
+#  mv ../geo_file/stations_degree_minute_1.txt ../geo_file/stations_degree_minute.txt
+
 # awk '{ if ($4=="E") { sig="+" } ; if ($4=="W")  { sig="-" } ;  if ($7=="N")  { nsig="+" } ;  if ($7=="S")  { nsig="-"}  ;    print $1 , sig  $2+($3/60) , nsig  $5+($6/60)  }'    ../geo_file/stations_degree_minute.txt  >  ../geo_file/stations_degree_decimal.txt 
+
+
 
 # start to import in R 
