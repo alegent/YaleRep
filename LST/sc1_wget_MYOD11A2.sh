@@ -7,17 +7,17 @@
 
 #PBS -S /bin/bash
 #PBS -q fas_normal
-#PBS -l walltime=10:00:00
+#PBS -l walltime=12:00:00
 #PBS -l nodes=1:ppn=8
 #PBS -V
 #PBS -o /scratch/fas/sbsc/ga254/stdout/
 #PBS -e /scratch/fas/sbsc/ga254/stderr/
 
+echo  "DAY $DAY /home/fas/sbsc/ga254/scripts/LST/sc1_wget_MYOD11A2.sh"    > /scratch/fas/sbsc/ga254/stdnode/job_start_$PBS_JOBID.txt
+checkjob -v $PBS_JOBID >> /scratch/fas/sbsc/ga254/stdnode/job_start_$PBS_JOBID.txt
 
-checkjob -v $PBS_JOBID > /scratch/fas/sbsc/ga254/stdnode/job_start_$PBS_JOBID.txt
 
-
-export DAY=$1
+# export DAY=$1
 
 export DAY=$DAY
 
@@ -26,9 +26,9 @@ export HDFMYD11A2=/lustre/scratch/client/fas/sbsc/ga254/dataproces/LST/MYD11A2
 export LST=/lustre/scratch/client/fas/sbsc/ga254/dataproces/LST
 export RAMDIR=/dev/shm
 
-rm -f /dev/shm/*.hdf  /dev/shm/*.vrt   /dev/shm/*.tif  /dev/shm/.listing
+rm -f /dev/shm/M*.hdf  /dev/shm/M*.vrt   /dev/shm/M*.tif  /dev/shm/.listing
 
-seq 2000 2000  | xargs -n 1 -P 8  bash -c $' 
+seq 2000 2014  | xargs -n 1 -P 8  bash -c $' 
 
 YEAR=$1
 
@@ -65,32 +65,35 @@ if [ -s  $LST/${SENS}11A2/$YEAR/${SENS}11A2.A${YEAR}${DAY}_hdf.txt  ] ; then
 echo transform the hdf in vrt
 
 for file in   $RAMDIR/${SENS}11A2.A$YEAR${DAY}.??????.???.*.hdf   ; do  
-
 filename=$(basename $file .hdf)
 
-gdalbuildvrt    $RAMDIR/${filename}_LST.vrt        HDF4_EOS:EOS_GRID:"$file":MODIS_Grid_8Day_1km_LST:LST_Day_1km  
-gdalbuildvrt    $RAMDIR/${filename}_QC.vrt         HDF4_EOS:EOS_GRID:"$file":MODIS_Grid_8Day_1km_LST:QC_Day           
+gdal_translate -ot  UInt16    -co COMPRESS=DEFLATE -co ZLEVEL=9   -co  PREDICTOR=2     HDF4_EOS:EOS_GRID:"$file":MODIS_Grid_8Day_1km_LST:LST_Day_1km     $RAMDIR/${filename}_LST.tif
+gdal_translate -ot  UInt16    -co COMPRESS=DEFLATE -co ZLEVEL=9   -co  PREDICTOR=2     HDF4_EOS:EOS_GRID:"$file":MODIS_Grid_8Day_1km_LST:QC_Day          $RAMDIR/${filename}_QC.tif 
+
+rm -f $file
 
 done 
 
 echo start to spatial merge $YEAR  $DAY 
 
-gdalbuildvrt   -overwrite             $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_LST.vrt       $RAMDIR/${SENS}11A2.A${YEAR}${DAY}.??????.???.?????????????_LST.vrt
-gdalbuildvrt   -overwrite             $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_QC.vrt        $RAMDIR/${SENS}11A2.A${YEAR}${DAY}.??????.???.?????????????_QC.vrt
+gdalbuildvrt   -overwrite  $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_LST.vrt    $RAMDIR/${SENS}11A2.A$YEAR${DAY}.??????.???.*_LST.tif  
+gdalbuildvrt   -overwrite  $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_QC.vrt     $RAMDIR/${SENS}11A2.A$YEAR${DAY}.??????.???.*_QC.tif  
 
-gdalbuildvrt   -overwrite -separate   $RAMDIR/${SENS}11A2.A${YEAR}${DAY}.vrt   $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_LST.vrt   $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_QC.vrt 
+echo merge the LST and QC
+
+gdalbuildvrt   -overwrite -separate      $RAMDIR/${SENS}11A2.A${YEAR}${DAY}.vrt    $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_LST.vrt    $RAMDIR/${SENS}11A2.A${YEAR}${DAY}_QC.vrt
 
 gdal_translate  -ot  UInt16    -co COMPRESS=DEFLATE -co ZLEVEL=9   -co  PREDICTOR=2  $RAMDIR/${SENS}11A2.A${YEAR}${DAY}.vrt  $LST/${SENS}11A2/$YEAR/${SENS}11A2.A${YEAR}${DAY}.tif 
 
-# rm -f  $RAMDIR/*11A2.A*.??????.???.*.tif  $RAMDIR/*.vrt   $RAMDIR/${SENS}11A2.A$YEAR${DAY}.??????.???.*.hdf 
+rm -f  $RAMDIR/*11A2.A*.??????.???.*.tif  $RAMDIR/*.vrt   $RAMDIR/${SENS}11A2.A$YEAR${DAY}.??????.???.*.hdf 
 
 fi
 
 done
 
-
 ' _ 
 
-checkjob -v $PBS_JOBID > /scratch/fas/sbsc/ga254/stdnode/job_end_$PBS_JOBID.txt
+echo  "DAY $DAY /home/fas/sbsc/ga254/scripts/LST/sc1_wget_MYOD11A2.sh"    > /scratch/fas/sbsc/ga254/stdnode/job_end_$PBS_JOBID.txt
+checkjob -v $PBS_JOBID >> /scratch/fas/sbsc/ga254/stdnode/job_end_$PBS_JOBID.txt
 
 exit 

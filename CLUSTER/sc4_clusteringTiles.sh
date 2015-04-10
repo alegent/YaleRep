@@ -1,8 +1,12 @@
 
+# some of them fail in the wall time ...select the one that do not apper in the fas_long
 #  for CLUST in 50 ; do  for DENSITY in  20 ; do  qsub -q fas_devel -l walltime=4:00:00 -v CLUST=$CLUST,DENSITY=$DENSITY /home/fas/sbsc/ga254/scripts/CLUSTER/sc4_clusteringTiles.sh ; done ;  done 
-
 #  for CLUST in 200 500 1000 2000  ; do   for DENSITY in  20 50 ; do   qsub -q fas_normal  -l  walltime=1:00:00:00  -v CLUST=$CLUST,DENSITY=$DENSITY /home/fas/sbsc/ga254/scripts/CLUSTER/sc4_clusteringTiles.sh ; done ;  done 
-#  for CLUST in 5000 10000         ; do   for DENSITY in  20 50 ; do   qsub -q fas_long -l     walltime=3:00:00:00     -v CLUST=$CLUST,DENSITY=$DENSITY /home/fas/sbsc/ga254/scripts/CLUSTER/sc4_clusteringTiles.sh ; done ;  done 
+
+#  run it in fas_long
+#  for CLUST in 500 1000 2000 5000 10000  ; do   for DENSITY in  10 ; do   qsub -q fas_long -l     walltime=3:00:00:00     -v CLUST=$CLUST,DENSITY=$DENSITY /home/fas/sbsc/ga254/scripts/CLUSTER/sc4_clusteringTiles.sh ; done ;  done
+#  for CLUST in 5000 10000  ; do   for DENSITY in  20 ; do   qsub -q fas_long -l     walltime=3:00:00:00     -v CLUST=$CLUST,DENSITY=$DENSITY /home/fas/sbsc/ga254/scripts/CLUSTER/sc4_clusteringTiles.sh ; done ;  done 
+#  for CLUST in 10000  ; do   for DENSITY in  50 ; do   qsub -q fas_long -l     walltime=3:00:00:00     -v CLUST=$CLUST,DENSITY=$DENSITY /home/fas/sbsc/ga254/scripts/CLUSTER/sc4_clusteringTiles.sh ; done ;  done 
 
 
 #PBS -S /bin/bash 
