@@ -91,6 +91,9 @@ rm -f $TMP/tmp_${filename}_${mm}.tif
 
 # rm -f  $OUTDIR/slope/tiles/$filename.tif
 
+
+##########################################################################################
+
 echo  generate a Terrain Ruggedness Index TRI  with file   $file
 gdaldem TRI  -co COMPRESS=LZW   $INDIR/$filename.tif  $OUTDIR/tri/tiles/${filename}_${mm}.tif
 # tri median 

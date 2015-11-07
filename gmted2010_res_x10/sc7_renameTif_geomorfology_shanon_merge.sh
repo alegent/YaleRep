@@ -1,5 +1,5 @@
 
-cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geomorphon/
+cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/
 
 mv geomorphon/count/geomorphon_count.tif  geomorphon/count/geomorphic_count_GMTED2010_md.tif
 gdal_edit.py \
@@ -11,6 +11,7 @@ gdal_edit.py \
 -a_ullr  -180 +84  +180 -56 \
 geomorphon/count/geomorphic_count_GMTED2010_md.tif
 
+#
 mv geomorphon/majority/geomorphon_majority.tif  geomorphon/majority/geomorphic_mode_GMTED2010_md.tif
 gdal_edit.py \
 -mo "TIFFTAG_ARTIST=Giuseppe Amatulli (giuseppe.amatulli@yale.edu , giuseppe.amatulli@gmail.com)" \
@@ -21,21 +22,48 @@ gdal_edit.py \
 -a_ullr  -180 +84  +180 -56 \
 geomorphon/majority/geomorphic_mode_GMTED2010_md.tif
 
-gdal_calc.py  --overwrite   --type=UInt16  --creation-option=COMPRESS=LZW  --creation-option=ZLEVEL=9   -A  geomorphon/shannon/geomorphon_shannon.tif     --calc="( A * 1000 )"  --outfile=geomorphon/shannon/geomorphic_shannon_GMTED2010_md.tif
+#
+gdal_translate -co COMPRESS=LZW  -co ZLEVEL=9  geomorphon/shannon/geomorphon_shannon.tif  geomorphon/shannon/geomorphic_shannon_GMTED2010_md.tif
 gdal_edit.py \
 -mo "TIFFTAG_ARTIST=Giuseppe Amatulli (giuseppe.amatulli@yale.edu , giuseppe.amatulli@gmail.com)" \
 -mo "TIFFTAG_DATETIME=2014" \
 -mo "TIFFTAG_DOCUMENTNAME=30 arc-seconds Geomorphic Shannon index" \
 -mo "TIFFTAG_IMAGEDESCRIPTION=30 arc-seconds  Geomorphic class Shannon index derived from GMTED2010 Medium Statistic, 7.5 arc-seconds prduct" \
 -mo "TIFFTAG_SOFTWARE=gdal 1.10.0 & pktools 2.5.2 & Open Foris Geospatial Toolkit 1.25.4 & GRASS 7.0 r.geomorphon " \
--mo "Offset: 0,   Scale:0.0001" \
+-mo "Offset: 0,   Scale:1" \
 -a_ullr  -180 +84  +180 -56 \
 geomorphon/shannon/geomorphic_shannon_GMTED2010_md.tif
+
+#
+gdal_translate -co COMPRESS=LZW  -co ZLEVEL=9   geomorphon/asm/geomorphon_asm.tif  geomorphon/asm/geomorphic_uni_GMTED2010_md.tif
+gdal_edit.py \
+-mo "TIFFTAG_ARTIST=Giuseppe Amatulli (giuseppe.amatulli@yale.edu , giuseppe.amatulli@gmail.com)" \
+-mo "TIFFTAG_DATETIME=2014" \
+-mo "TIFFTAG_DOCUMENTNAME=30 arc-seconds Geomorphic Uniformity index" \
+-mo "TIFFTAG_IMAGEDESCRIPTION=30 arc-seconds  Geomorphic class Uniformity index derived from GMTED2010 Medium Statistic, 7.5 arc-seconds prduct" \
+-mo "TIFFTAG_SOFTWARE=gdal 1.10.0 & pktools 2.5.2 & Open Foris Geospatial Toolkit 1.25.4 & GRASS 7.0 r.geomorphon " \
+-mo "Offset: 0,   Scale:1" \
+-a_ullr  -180 +84  +180 -56 \
+geomorphon/asm/geomorphic_uni_GMTED2010_md.tif
+
+#
+gdal_translate -co COMPRESS=LZW  -co ZLEVEL=9   geomorphon/ent/geomorphon_ent.tif  geomorphon/ent/geomorphic_ent_GMTED2010_md.tif
+gdal_edit.py \
+-mo "TIFFTAG_ARTIST=Giuseppe Amatulli (giuseppe.amatulli@yale.edu , giuseppe.amatulli@gmail.com)" \
+-mo "TIFFTAG_DATETIME=2014" \
+-mo "TIFFTAG_DOCUMENTNAME=30 arc-seconds Geomorphic Entropy index" \
+-mo "TIFFTAG_IMAGEDESCRIPTION=30 arc-seconds  Geomorphic class Entropy index derived from GMTED2010 Medium Statistic, 7.5 arc-seconds prduct" \
+-mo "TIFFTAG_SOFTWARE=gdal 1.10.0 & pktools 2.5.2 & Open Foris Geospatial Toolkit 1.25.4 & GRASS 7.0 r.geomorphon " \
+-mo "Offset: 0,   Scale:1" \
+-a_ullr  -180 +84  +180 -56 \
+geomorphon/ent/geomorphic_ent_GMTED2010_md.tif
 
 
 cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geomorphon/percent
 
 # the reclass process is not perfect there few pixel on the border that are not correct 
+
+exit
 
 seq 1 10 | xargs -n 1 -P 10 bash -c $'  
 

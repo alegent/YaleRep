@@ -7,6 +7,8 @@
 
 # qsub -v density=50  /home/fas/sbsc/ga254/scripts/CLUSTER/sc3_traningset.sh
 
+#   density = collect info evry n pixel 
+
 #PBS -S /bin/bash 
 #PBS -q fas_normal
 #PBS -l walltime=24:00:00 
@@ -87,6 +89,7 @@ paste -d " " <(awk \'{ print $2, $3}\' /dev/shm/mask_x${1}_y${2}.txt   )  <(awk 
 cp /dev/shm/training_x${1}_y${2}.txt   /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER/cluster/training_x${1}_y${2}_evry$density.txt
 
 echo cleaning the /dev/shm/training_x_y.txt
+
 
 oft-extr -o /dev/shm/training_x${1}_y${2}_stack.txt /dev/shm/training_x${1}_y${2}.txt     $INPUT <<EOF
 1

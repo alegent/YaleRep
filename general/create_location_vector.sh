@@ -7,14 +7,14 @@ export GISDBASE=$1
 export LOCATION=$2
 export file=$3
 
-export filename=$(basename  $file .tif)
+export filename=$(basename  $file .shp)
 
 rm -rf  $GISDBASE/$LOCATION $GISDBASE/loc_tmp
 
 mkdir -p  $GISDBASE/loc_tmp/tmp
 
 echo "LOCATION_NAME: loc_tmp"                                                       > $HOME/.grass7/rc_$filename
-echo "GISDBASE: $1"                                                          >> $HOME/.grass7/rc_$filename
+echo "GISDBASE: /dev/shm"                                                          >> $HOME/.grass7/rc_$filename
 echo "MAPSET: tmp"                                                                 >> $HOME/.grass7/rc_$filename
 echo "GRASS_GUI: text"                                                             >> $HOME/.grass7/rc_$filename
 
@@ -41,7 +41,9 @@ export GRASS_OVERWRITE=1
 rm -rf  $GISDBASE/$LOCATION
 
 echo start importing 
-r.in.gdal in=$file   out=$filename  location=$LOCATION
+v.in.ogr -o  -e -c  dsn=$file   output=$filename  location=$LOCATION 
+ 
+echo end import 
 
 g.mapset mapset=PERMANENT  location=$LOCATION
 
