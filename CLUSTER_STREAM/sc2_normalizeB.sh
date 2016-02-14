@@ -43,8 +43,10 @@ rm  $NORDIR/${filename}_norm_tmp.tif
 
 cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/normal  
 
-for file in *_norm.tif  ; do gdal_edit.py -a_srs EPSG:4326  $file ; done
-gdalbuildvrt -separate   -overwrite stack.vrt      *_norm.tif 
+for file in    ; do gdal_edit.py -a_srs EPSG:4326  $file ; done
 
-gdal_translate   -ot  Int16 -co  BIGTIFF=YES -co  COMPRESS=LZW -co ZLEVEL=9   stack.vrt      stack.tif 
+
+gdalbuildvrt -separate   -overwrite stack.vrt $(ls $INDIR/elevation/dem_avg.tif $INDIR/slope/slope_avg.tif  $INDIR/stream_topo/upcells_land.tif  $INDIR/bioclim/avg/BIO_7.tif $INDIR/bioclim/avg/BIO_12.tif $INDIR/landuse/wavg/lu_1.tif $INDIR/landuse/wavg/lu_2.tif $INDIR/landuse/wavg/lu_3.tif $INDIR/landuse/wavg/lu_4.tif $INDIR/landuse/wavg/lu_5.tif $INDIR/landuse/wavg/lu_6.tif $INDIR/landuse/wavg/lu_7.tif $INDIR/landuse/wavg/lu_8.tif $INDIR/landuse/wavg/lu_9.tif $INDIR/landuse/wavg/lu_10.tif $INDIR/soil/wavg/soil_wavg_01.tif $INDIR/soil/wavg/soil_wavg_02.tif $INDIR/soil/wavg/soil_wavg_03.tif $INDIR/soil/wavg/soil_wavg_05.tif )
+
+gdal_translate   -ot  Int32 -co  BIGTIFF=YES -co  COMPRESS=LZW -co ZLEVEL=9   stack.vrt      stack.tif 
 

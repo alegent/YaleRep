@@ -48,7 +48,7 @@ echo majority
 pkfilter -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND -ot Byte -nodata 255 -dx $res -dy $res -f mode -d $res -i $IN/x${xoff}_y${yoff}.tif -o $OUT/majority/tiles/x${xoff}_y${yoff}_km${km}.tif
 
 echo countid 
-pkfilter -co COMPRESS=LZW  -co ZLEVEL=9  -co INTERLEAVE=BAND -ot Byte  -nodata 255  -dx 4 -dy $res  -f countid  -d $res -i $IN/x${xoff}_y${yoff}.tif -o $OUT/count/tiles/x${xoff}_y${yoff}_km${km}.tif
+pkfilter -co COMPRESS=LZW  -co ZLEVEL=9  -co INTERLEAVE=BAND -ot Byte  -nodata 255  -dx $res -dy $res  -f countid  -d $res -i $IN/x${xoff}_y${yoff}.tif -o $OUT/count/tiles/x${xoff}_y${yoff}_km${km}.tif
 
 for class in $(seq 1 10) ;  do  
 
@@ -70,6 +70,8 @@ fi
 ' _ 
 
 rm -fr /dev/shm/*
+
+# segue this  /home/fas/sbsc/ga254/scripts/gmted2010_res_x10/sc7c_geomorf_asm_ent_count_perce_merge_resKM.sh
 
 exit 
 

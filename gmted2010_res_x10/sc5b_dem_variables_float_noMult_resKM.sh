@@ -16,21 +16,20 @@
 # bash  /home/fas/sbsc/ga254/scripts/gmted2010_res_x10/sc5b_dem_variables_float_noMult_resKM.sh 5 
 
 #PBS -S /bin/bash 
-#PBS -q fas_high
-#PBS -l walltime=24:00:00
+#PBS -q fas_long
+#PBS -l walltime=3:00:00:00
 #PBS -l nodes=1:ppn=8
 #PBS -l mem=34
 #PBS -V
 #PBS -o /scratch/fas/sbsc/ga254/stdout
 #PBS -e /scratch/fas/sbsc/ga254/stderr
 
-
 INDIR_MI=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/mi75_grd_tif
 INDIR_MD=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/md75_grd_tif
 INDIR_MX=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/mx75_grd_tif
 INDIR_MN=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/mn75_grd_tif
 
-for var in mi md mx mn  ; do
+for var in mi md mx mn sd  ; do
 rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/${var}75_grd_tif.vrt
 gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/${var}75_grd_tif.vrt  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/?_?.tif  
 done 
@@ -78,52 +77,47 @@ xsize=$3
 ysize=$4
 
 # 30 min for this 
-echo max of the max with file   $INDIR_MX/mx75_grd_tif_x${1}_y${2}.vrt 
+# echo max of the max with file   $INDIR_MX/mx75_grd_tif_x${1}_y${2}.vrt 
 
-gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MX/mx75_grd_tif.vrt  $INDIR_MX/mx75_grd_tif_x${1}_y${2}.vrt
-pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f max -d $res -i $INDIR_MX/mx75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/max_of_mx/tiles/x${1}_y${2}_km$km.tif  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
+# gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MX/mx75_grd_tif.vrt  $INDIR_MX/mx75_grd_tif_x${1}_y${2}.vrt
+# pkfilter -of GTiff -nodata -32768 -dx $res -dy $res -f max -d $res -i $INDIR_MX/mx75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/max_of_mx/tiles/x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32 
 
-echo min of the min with file 
+# echo min of the min with file 
 
-gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MI/mi75_grd_tif.vrt  $INDIR_MI/mi75_grd_tif_x${1}_y${2}.vrt
-pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f min -d $res -i $INDIR_MI/mi75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/min_of_mi/tiles/x${1}_y${2}_km$km.tif  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
+# gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MI/mi75_grd_tif.vrt  $INDIR_MI/mi75_grd_tif_x${1}_y${2}.vrt
+# pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res -f min -d $res -i $INDIR_MI/mi75_grd_tif_x${1}_y${2}.vrt -o $OUTDIR/altitude/min_of_mi/tiles/x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
  
-echo mean of the mn with file  
-gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MN/mn75_grd_tif.vrt  $INDIR_MN/mn75_grd_tif_x${1}_y${2}.vrt
-pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f mean  -d $res -i $INDIR_MN/mn75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/mean_of_mn/tiles/x${1}_y${2}_km$km.tif  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
+# echo mean of the mn with file  
+# gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MN/mn75_grd_tif.vrt  $INDIR_MN/mn75_grd_tif_x${1}_y${2}.vrt
+# pkfilter -of GTiff -nodata -32768 -dx $res -dy $res -f mean -d $res -i $INDIR_MN/mn75_grd_tif_x${1}_y${2}.vrt -o $OUTDIR/altitude/mean_of_mn/tiles/x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
 
-echo median of the md with file  
-gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MD/md75_grd_tif.vrt  $INDIR_MD/md75_grd_tif_x${1}_y${2}.vrt
-pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f median  -d $res -i $INDIR_MD/md75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/median_of_md/tiles/x${1}_y${2}_km$km.tif  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
+# echo median of the md with file  
+# gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $INDIR_MD/md75_grd_tif.vrt  $INDIR_MD/md75_grd_tif_x${1}_y${2}.vrt
+# pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f median  -d $res -i $INDIR_MD/md75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/median_of_md/tiles/x${1}_y${2}_km$km.tif  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
 
-echo stdev of mn with file 
+# echo stdev of mn with file 
 
-pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f var  -d $res -i $INDIR_MN/mn75_grd_tif_x${1}_y${2}.vrt  -o $RAM/mn75_grd_tif_x${1}_y${2}_km$km.tif  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
-gdal_calc.py   --NoDataValue=-9999 --co=COMPRESS=LZW  --co=ZLEVEL=9 -A  $RAM/mn75_grd_tif_x${1}_y${2}_km$km.tif   --calc="sqrt(A)" --type=Float32 --overwrite --outfile $OUTDIR/altitude/stdev_of_mn/tiles/x${1}_y${2}_km$km.tif
-rm -f  $RAM/mn75_grd_tif_x${1}_y${2}_km$km.tif
+# pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f stdev  -d $res -i $INDIR_MN/mn75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/stdev_of_mn/tiles/x${1}_y${2}_km$km.tif   -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
 
-echo stdev of md with file 
+# echo stdev of md with file 
 
-pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res   -f var  -d $res -i $INDIR_MD/md75_grd_tif_x${1}_y${2}.vrt  -o $RAM/md75_grd_tif_x${1}_y${2}_km$km.tif  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  
-gdal_calc.py   --NoDataValue=-9999 --co=COMPRESS=LZW  --co=ZLEVEL=9 -A  $RAM/md75_grd_tif_x${1}_y${2}_km$km.tif   --calc="sqrt(A)" --type=Float32 --overwrite --outfile $OUTDIR/altitude/stdev_of_md/tiles/x${1}_y${2}_km$km.tif
-rm -f  $RAM/md75_grd_tif_x${1}_y${2}_km$km.tif
+# pkfilter -of GTiff   -nodata -32768 -dx $res -dy $res -f stdev  -d $res -i $INDIR_MD/md75_grd_tif_x${1}_y${2}.vrt  -o $OUTDIR/altitude/stdev_of_md/tiles/x${1}_y${2}_km$km.tif   -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32 
+
 
 INDIR=$INDIR_MD
 mm=md
 
-for TOPO in  slope tpi tri vrm roughness ; do 
-    gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}.vrt   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt
+# for TOPO in  slope tpi tri vrm roughness ; do 
+#     gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}.vrt   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt
 
-    for MAT in mean median min max ; do                                                                                                         
-	echo  $TOPO  $MAT $res 
-	pkfilter  -of GTiff   -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt -o $OUTDIR/${TOPO}/$MAT/tiles/x${1}_y${2}_km$km.tif -co COMPRESS=LWZ -co ZLEVEL=9 -ot Float32
-    done
+#     for MAT in mean median min max ; do                                                                                                         
+# 	echo  $TOPO  $MAT $res 
+# 	pkfilter  -of GTiff   -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt -o $OUTDIR/${TOPO}/$MAT/tiles/x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
+#     done
 
-    # stdev 
-    pkfilter -nodata -9999  -co COMPRESS=LWZ -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f var -d $res -i $OUTDIR/stdev/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt   -o $RAM/x${1}_y${2}_km$km.tif 
-    gdal_calc.py  --NoDataValue=-9999   --co=COMPRESS=LWZ --co=ZLEVEL=9 -A   -o $RAM/x${1}_y${2}_km$km.tif   --calc="sqrt(A)" --type=Float32  --overwrite --outfile  $OUTDIR/${TOPO}/stdev/tiles/x${1}_y${2}_km$km.tif
-    rm -f $RAM/x${1}_y${2}_km$km.tif 
-done 
+#     # stdev 
+#     pkfilter -of GTiff  -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/x${1}_y${2}_km$km.tif
+# done 
 
 TOPO=aspect
 for DER in sin cos Ew Nw ; do 
@@ -131,13 +125,11 @@ for DER in sin cos Ew Nw ; do
     gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize  $OUTDIR/$TOPO/tiles/${DER}_${mm}.vrt  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt        
     for MAT in mean median min max ; do                                                                                                         
 	echo  $TOPO  $MAT $res 
-	pkfilter  -of GTiff     -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/$MAT/tiles/${DER}_x${1}_y${2}_km$km.tif -co COMPRESS=LWZ -co ZLEVEL=9 -ot Float32
+	pkfilter  -of  GTiff  -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt  -o $OUTDIR/${TOPO}/$MAT/tiles/${DER}_x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
     done
 
     # stdev 
-    pkfilter  -of GTiff   -nodata -9999  -co COMPRESS=LWZ -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f var -d $res -i $OUTDIR/stdev/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt   -o $RAM/${DER}_x${1}_y${2}_km$km.tif  
-    gdal_calc.py  --NoDataValue=-9999   --co=COMPRESS=LWZ --co=ZLEVEL=9 -A   -o $RAM/${DER}_x${1}_y${2}_km$km.tif   --calc="sqrt(A)" --type=Float32  --overwrite --outfile  $OUTDIR/${TOPO}/stdev/tiles/${DER}_x${1}_y${2}_km$km.tif
-    rm -f  $RAM/${DER}_x${1}_y${2}_km$km.tif  
+    pkfilter  -of GTiff   -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/${DER}_x${1}_y${2}_km$km.tif
 done 
 
 ' _ 

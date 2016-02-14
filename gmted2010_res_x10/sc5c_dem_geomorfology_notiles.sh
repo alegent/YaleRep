@@ -59,47 +59,28 @@ rm -fr /dev/shm/*
 
 exit 
 
+# correct the data becouse 1 line on top and last line has -nan 
+
+export OUTGEO=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geomorphon/tiles
+echo  pcurv tcurv dx dxx dy dyy | xargs -n 1 -P 8 bash -c $' 
+type=$1                                                                                                                                                                                                             
+
+gdal_translate    -srcwin 0 0 172800 1       $OUTGEO/${type}/md75_grd_tif.tif /dev/shm/${type}_top.tif
+gdal_translate    -srcwin 0 67199 172800 1   $OUTGEO/${type}/md75_grd_tif.tif /dev/shm/${type}_bot.tif
+
+pkgetmask -ot Float32  -min 3 -max 6  -i /dev/shm/${type}_top.tif -o /dev/shm/${type}_top0.tif
+pkgetmask -ot Float32  -min 3 -max 6  -i /dev/shm/${type}_bot.tif -o /dev/shm/${type}_bot0.tif
+
+pkcomposite -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND  -co  BIGTIFF=YES  -co  BIGTIFF=YES -i $OUTGEO/${type}/md75_grd_tif.tif -i  /dev/shm/${type}_top0.tif -i /dev/shm/${type}_bot0.tif  -o $OUTGEO/${type}/md75_grd_tif0.tif
+rm -f /dev/shm/${type}_top0.tif  /dev/shm/${type}_bot0.tif 
+
+' _
 
 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Byte     input=positive_$filename      output=$OUTGEO/positive/${filename}_s3.tif  
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Byte     input=negative_$filename      output=$OUTGEO/negative/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Float32  input=intensity_$filename     output=$OUTGEO/intensity/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Int16    input=exposition_$filename    output=$OUTGEO/exposition/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=UInt16   input=range_$filename         output=$OUTGEO/range/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Float32  input=variance_$filename      output=$OUTGEO/variance/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Float32  input=elongation_$filename    output=$OUTGEO/elongation/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Float32  input=azimuth_$filename       output=$OUTGEO/azimuth/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Float32  input=extend_$filename        output=$OUTGEO/extend/${filename}_s3.tif 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Float32  input=with_$filename          output=$OUTGEO/with/${filename}_s3.tif  
-
-rm -r /dev/shm/*
-
-# crop all the tiles with 4 pixels arround due 
-# the border has 1 pix of  255 no data 
-# cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geomorphon/tiles/forms
-# ls  ?_?_s3.tif  |  xargs -n 1 -P 8 bash -c $' gdal_translate  -co COMPRESS=DEFLATE  -co ZLEVEL=9  -co INTERLEAVE=BAND    -srcwin 4 4 17288 13448  $1 crop_$1  ' _
+# gdalbuildvrt  -te -180 -56  -179.9  +84   -overwrite  -o  /dev/shm/${type}.vrt        $OUTGEO/${type}/md75_grd_tif.tif  /dev/shm/${type}_top0.tif /dev/shm/${type}_bot0.tif 
+# gdal_translate -projwin -180 +84  -179.9   -56   -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND  /dev/shm/${type}.vrt /dev/shm/${type}.tif
+# pkcrop -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND -co  BIGTIFF=YES -i $OUTGEO/${type}/md75_grd_tif.tif -i  /dev/shm/${type}_top0.tif -i /dev/shm/${type}_bot0.tif  -o $OUTGEO/${type}/md75_grd_tif0.tif
 
 
-
-exit
-
-echo profc planc longc crosc minic maxic feature | xargs -n 1 -P 7 bash -c $' 
-method=$1
-r.param.scale  param=$method  input=$filename output=${method}_$filename 
-r.out.gdal -c  createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Int32 input=${method}_$filename  output=$OUTPARAM/${method}/$filename  
-ERROR: Lat/Long locations are not supported by this module
-' _  
-
-
-
-cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geomorphon/tiles/forms/ 
-
-pkcreatect  -min 1 -max 10   > /dev/shm/color.txt
-
-ls    /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/geomorphon/tiles/forms/*.tif  | xargs -n 1 -P 20 bash -c $' 
-filename=$(basename $1 .tif  )
-pkcreatect   -co COMPRESS=LZW -co ZLEVEL=9   -ct   /dev/shm/color.txt   -i $1   -o  ${filename}_ct.tif  
-
-' _ 
 
 

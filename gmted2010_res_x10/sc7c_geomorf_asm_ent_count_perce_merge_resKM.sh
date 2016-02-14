@@ -6,7 +6,7 @@
 #PBS -S /bin/bash 
 #PBS -q fas_high
 #PBS -l walltime=2:00:00 
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=1:ppn=8
 #PBS -V
 #PBS -o /scratch/fas/sbsc/ga254/stdout
 #PBS -e /scratch/fas/sbsc/ga254/stderr
@@ -42,7 +42,7 @@ fi
 
 if [ $DIR = percent  ] ; then
 
-echo 1 5 10 50   100   | xargs -n 1 -P 8 bash -c $'
+echo 1 5 10 50 100   | xargs -n 1 -P 8 bash -c $'
 
 for class in $(seq 1 10) ; do 
 
@@ -54,7 +54,13 @@ gdalbuildvrt -overwrite   -o  $RAM/${DIR}_km${km}.vrt $OUTDIR/$DIR/tiles/${prefi
 
 gdal_translate -ot $type   -projwin -180  84 180 -56 -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/${DIR}_km${km}.vrt       $RAM/geomorphon_${DIR}_km${km}.tif  
 
+if [ $class -eq 1   ] ; then 
+pksetmask  -msknodata 0 -nodata  $nodata -i  $RAM/geomorphon_${DIR}_km${km}.tif    -m  $RAM/geomorphon_${DIR}_km${km}.tif   -o $OUTDIR/$DIR/geomorphon_class${class}_km${km}.tif  
+else
 pksetmask  -msknodata 255 -nodata  $nodata -i  $RAM/geomorphon_${DIR}_km${km}.tif    -m  $RAM/geomorphon_${DIR}_km${km}.tif   -o $OUTDIR/$DIR/geomorphon_class${class}_km${km}.tif  
+fi
+
+
 gdal_edit.py -a_nodata -9999  $OUTDIR/$DIR/geomorphon_class${class}_km${km}.tif  
 rm  $RAM/${DIR}_km${km}.vrt       $RAM/geomorphon_${DIR}_km${km}.tif  
 
