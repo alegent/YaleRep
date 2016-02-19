@@ -5,7 +5,7 @@ export MSKDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/ma
 export INCLUST=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/$DIR
 export OUTCLUST=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/cluster_$DIR
 
-export INDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/
+export INDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM
 
 export RAM=/dev/shm
 
