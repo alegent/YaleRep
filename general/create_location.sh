@@ -9,14 +9,14 @@ export file=$3
 
 export filename=$(basename  $file .tif)
 
-rm -rf  $GISDBASE/$LOCATION $GISDBASE/loc_tmp
+rm -rf  $GISDBASE/$LOCATION $GISDBASE/loc_tmp$$
 
-mkdir -p  $GISDBASE/loc_tmp/tmp
+mkdir -p  $GISDBASE/loc_tmp$$/tmp
 
-echo "LOCATION_NAME: loc_tmp"                                                       > $HOME/.grass7/rc_$filename
-echo "GISDBASE: $1"                                                          >> $HOME/.grass7/rc_$filename
-echo "MAPSET: tmp"                                                                 >> $HOME/.grass7/rc_$filename
-echo "GRASS_GUI: text"                                                             >> $HOME/.grass7/rc_$filename
+echo "LOCATION_NAME: loc_tmp$$"             > $HOME/.grass7/rc_$filename
+echo "GISDBASE: $1"                        >> $HOME/.grass7/rc_$filename
+echo "MAPSET: tmp"                         >> $HOME/.grass7/rc_$filename
+echo "GRASS_GUI: text"                     >> $HOME/.grass7/rc_$filename
 
 # path to GRASS settings file
 export GISRC=$HOME/.grass7/rc_$filename
@@ -45,7 +45,7 @@ r.in.gdal in=$file   out=$filename  location=$LOCATION
 
 g.mapset mapset=PERMANENT  location=$LOCATION
 
-rm -rf  $GISDBASE/loc_tmp
+rm -rf  $GISDBASE/loc_tmp$$
 
 echo "########################"
 echo  Welcome to GRASS

@@ -19,27 +19,24 @@ if [ $MAT = "median" ]  ; then MAT2="md"   ; fi
 if [ $MAT = "stdev"  ]  ; then MAT2="sd"   ; fi
 
 for km in 1 5 10 50 100 ; do 
-    
     for dir1 in slope tri tpi roughness vrm ; do 
 	gdal_translate  -a_nodata "none"  -projwin 6 48 11 45  -co COMPRESS=LZW  -co ZLEVEL=9    $SRTM/${dir1}/${MAT}/${dir1}_${MAT}_km${km}.tif  $OUTDIR/SRTM/${dir1}_${MAT}_SRTM_km${km}.tif
 	gdal_translate  -a_nodata "none"  -projwin  $(getCorners4Gtranslate  $OUTDIR/GMTED/md75_grd_tif.tif  )  -co COMPRESS=LZW  -co ZLEVEL=9  $GMTED/final/${dir1}/${dir1}_${MAT2}_GMTED2010_md_km${km}.tif  $OUTDIR/GMTED/${dir1}_${MAT2}_GMTED2010_md_km${km}.tif
     done 
 
-    echo aspect 
-
     for var in cos sin Ew Nw ; do 
-	gdal_translate  -a_nodata "none" -projwin  $(getCorners4Gtranslate    $OUTDIR/GMTED/md75_grd_tif.tif )  -co COMPRESS=LZW  -co ZLEVEL=9    $SRTM/aspect/${MAT}/aspect_${MAT}_${var}_km${km}.tif     $OUTDIR/SRTM/aspect_${var}_SRTM_km${km}.tif
+	gdal_translate -a_nodata "none" -projwin $(getCorners4Gtranslate  $OUTDIR/GMTED/md75_grd_tif.tif) -co COMPRESS=LZW -co ZLEVEL=9  $SRTM/aspect/${MAT}/aspect_${MAT}_${var}_km${km}.tif  $OUTDIR/SRTM/aspect_${var}_${MAT}_SRTM_km${km}.tif
 	if [ $var = "cos" ]  ; then var2=aspect-cosine    ; fi 
 	if [ $var = "sin" ]  ; then var2=aspect-sine      ; fi 
 	if [ $var = "Ew" ]   ; then var2=eastness         ; fi 
 	if [ $var = "Nw" ]   ; then var2=northness        ; fi
-    gdal_translate -a_nodata "none"   -projwin  $(getCorners4Gtranslate    $OUTDIR/GMTED/md75_grd_tif.tif )   -co COMPRESS=LZW  -co ZLEVEL=9   $GMTED/final/aspect/${var2}_${MAT2}_GMTED2010_md_km${km}.tif  $OUTDIR/GMTED/${var2}_${MAT2}_GMTED2010_md_km${km}.tif
-done 
-    
-done 
+	gdal_translate -a_nodata "none"  -projwin  $(getCorners4Gtranslate    $OUTDIR/GMTED/md75_grd_tif.tif )   -co COMPRESS=LZW  -co ZLEVEL=9   $GMTED/final/aspect/${var2}_${MAT2}_GMTED2010_md_km${km}.tif  $OUTDIR/GMTED/${var2}_${MAT2}_GMTED2010_md_km${km}.tif
+    done 
 done 
 
+done 
 
+exit
 
 for km in 1 5 10 50 100 ; do 
 gdal_translate  -a_nodata "none"  -projwin  $(getCorners4Gtranslate    $OUTDIR/GMTED/md75_grd_tif.tif )    -co COMPRESS=LZW  -co ZLEVEL=9  $SRTM/altitude/stdev/altitude_stdev_km${km}.tif                   $OUTDIR/SRTM/elevation_psd_SRTM_km${km}.tif

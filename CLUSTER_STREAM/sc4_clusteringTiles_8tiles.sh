@@ -1,8 +1,8 @@
 # run the first time to create a sampled training dataset 
 
 # if (NR%10==0)
-# cat /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_normal/training_x*_y*_stack.txt |  awk '{if ({for (col=1 ; col<=NF ; col++) { printf ("%i ",$col)} ; printf ("\n",$NF)}}' >  /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_normal/training_stack.txt
-# cat /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_random/training_x*_y*_stack.txt |  awk '{if ({for (col=1 ; col<=NF ; col++) { printf ("%i ",$col)} ; printf ("\n",$NF)}}' >  /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_random/training_stack.txt
+# cat /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_normal/training_x*_y*_stack.txt | awk '{ if (NR%5==0) {for (col=1 ; col<=NF ; col++) { printf ("%i ",$col)} ; printf ("\n",$NF)}}' >  /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_normal/training_stack.txt
+# cat /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_random/training_x*_y*_stack.txt | awk '{ if (NR%5==0) {for (col=1 ; col<=NF ; col++) { printf ("%i ",$col)} ; printf ("\n",$NF)}}' >  /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/training_random/training_stack.txt
 
 #  for CLUST in $(seq 4 100) ; do  qsub -v CLUST=$CLUST,DIR=normal  /home/fas/sbsc/ga254/scripts/CLUSTER_STREAM/sc4_clusteringTiles_8tiles.sh  ; done  
 #  for CLUST in $(seq 4 100) ; do  qsub -v CLUST=$CLUST,DIR=random  /home/fas/sbsc/ga254/scripts/CLUSTER_STREAM/sc4_clusteringTiles_8tiles.sh  ; done 
@@ -45,8 +45,11 @@ echo 29250 6960 9750 6960  >> $RAM/tiles_xoff_yoff.txt
 
 echo sampling the data
 
+# this is for the full dataset
+# cat   $TRAIN/training_x*_y*_stack.txt  >   $RAM/training_stack.txt   
+
 # copy the sampled training 
-cat   $TRAIN/training_x*_y*_stack.txt  >   $RAM/training_stack.txt
+cp $TRAIN/training_stack.txt     $RAM/training_stack.txt   
 
 cat $RAM/tiles_xoff_yoff.txt  | xargs -n 4 -P 8  bash -c $'
 # n 4 even if only use 2 
@@ -71,15 +74,15 @@ echo "############################################################### start the 
 
 gdalbuildvrt -overwrite -tr 0.0083333333333 0.0083333333333 $RAM/cluster_vrt.vrt $RAM/training_x*_y*_cluster${CLUST}.tif
 
-gdal_translate -co COMPRESS=LZW -co ZLEVEL=9  -ot Byte   $RAM/cluster_vrt.vrt   $OUTCLUST/cluster${CLUST}.tif
+gdal_translate -co COMPRESS=LZW -co ZLEVEL=9  -ot Byte   $RAM/cluster_vrt.vrt   $RAM/cluster${CLUST}.tif
 
 
 echo 0 255 255 255  >   /dev/shm/color.txt ; 
 for n in $( seq 1 ${CLUST}  ) ; do echo -n $n $[ RANDOM % 256 ]" " ; echo -n  $[ RANDOM % 256 ]" "  ; echo -n  $[ RANDOM % 256 ]" " ; echo ""  ;  done  >>   /dev/shm/color.txt
 
-pkcreatect  -ot Byte   -co COMPRESS=LZW -co ZLEVEL=9   -ct   /dev/shm/color.txt   -i   $OUTCLUST/cluster${CLUST}.tif -o  $OUTCLUST/cluster${CLUST}_ct.tif
+pkcreatect  -ot Byte   -co COMPRESS=LZW -co ZLEVEL=9   -ct   /dev/shm/color.txt   -i   $RAM/cluster${CLUST}.tif -o  $OUTCLUST/cluster${CLUST}_ct.tif
 
-oft-stat -i $INCLUST/stack.vrt -mm   -o $TXT/stat/cluster${CLUST}_stat.txt -um $OUTCLUST/cluster${CLUST}_ct.tif  
+oft-stat -i $INCLUST/stack.vrt -mm   -o $TXT/stat/cluster${CLUST}_stat.txt -um $RAM/cluster${CLUST}.tif 
 
 # -nan = standard deviation =0 
 awk '{ gsub("-nan","0"  ) ; for (col=NF-19+1  ; col<=NF ; col++) {   sum = sum + ((($col)^2 ) * ($2-1)/100000 ) }} END { printf ("%f\n",sum ) }'      $TXT/stat/cluster${CLUST}_stat.txt  > $TXT/wss/cluster${CLUST}_wss.txt
@@ -87,7 +90,7 @@ awk '{ gsub("-nan","0"  ) ; for (col=NF-19+1  ; col<=NF ; col++) {   sum = sum +
 
 # hist of the cluster to detect errors by cheking the 0 number values 
 # the nodata in the mask are 519560159 so should be the same in all the cluster hist 
-pkstat  -hist  -src_min -1   -i $OUTCLUST/cluster${CLUST}_ct.tif > $TXT/hist_clust/cluster${CLUST}_hist.txt
+pkstat  -hist  -src_min -1   -i $RAM/cluster${CLUST}.tif > $TXT/hist_clust/cluster${CLUST}_hist.txt
 
 cleanram
 

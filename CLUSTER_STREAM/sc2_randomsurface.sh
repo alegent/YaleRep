@@ -1,4 +1,4 @@
-# for K in $(seq 1 10 ) do ; qsub  -v K=$K  /home/fas/sbsc/ga254/scripts/CLUSTER_STREAM/sc2_randomsurface.sh ; done 
+# for K in $(seq 1 10 ) ; do  qsub  -v K=$K  /home/fas/sbsc/ga254/scripts/CLUSTER_STREAM/sc2_randomsurface.sh ; done 
 
 #PBS -S /bin/bash 
 #PBS -q fas_devel
@@ -11,12 +11,15 @@
 export MSKDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/mask
 export RAND=/lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/random 
 export RAM=/dev/shm
-export K=2
+export K=$K
 
 cleanram
-# set P to 2 if not you get saturation of the ram 
 
-filen=$(gdalinfo  /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/normal/stack.vrt  | grep tif | wc -l  )
+rm -fr $RAND/grass_locs/loc_random_K$K
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh $RAND/grass_locs loc_random_K$K /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/mask/mask.tif 
+r.mask raster=mask
+
+filen=$(gdalinfo  /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/normal/stack.vrt | grep tif | wc -l  )
 
 seq 1 $filen  | xargs -n 1 -P 8  bash -c $'  
 export LYR=$1
@@ -34,11 +37,7 @@ export Lmax=$(echo $minmax | awk -F , \'{  print int($2) }\')
  
 echo processing random  $LYR with min $Lmin max $Lmax
 
-rm -fr $RAND/grass_locs/loc_random${LYR}_K$K
-
-source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh  $RAND/grass_locs  loc_random${LYR}_K$K   /lustre/scratch/client/fas/sbsc/ga254/dataproces/CLUSTER_STREAM/mask/mask.tif 
 # setting the mask allow fast computation and smaller raster size 
-r.mask raster=mask
 
 echo create  grass rand${LYR} uniform 
 
@@ -47,6 +46,8 @@ r.surf.random out=rand${LYR} min=${Lmin} max=${Lmax}
 rm -f $RAND/K$K/rand${LYR}_K$K.tif 
 r.out.gdal   nodata=2147483647  -c createopt="COMPRESS=LZW,ZLEVEL=9"  --overwrite   format=GTiff type=Float64  input=rand${LYR} output=$RAND/K$K/rand${LYR}_K$K.tif 
 
+g.remove rast=rand${LYR} 
+
 echo setting the mask for $RAND/K$K/rand${LYR}_K$K.tif 
 
 pksetmask -ot Int32 -msknodata 0 -nodata 2147483647 -m $MSKDIR/mask.tif -co COMPRESS=LZW -co ZLEVEL=9 -i $RAND/K$K/rand${LYR}_K$K.tif -o $RAND/K$K/rand${LYR}_K${K}_int_msk.tif
@@ -54,10 +55,10 @@ gdal_edit.py -a_srs EPSG:4326 $RAND/K$K/rand${LYR}_K${K}_int_msk.tif
 
 gdalinfo -mm $RAND/K$K/rand${LYR}_K${K}_int_msk.tif  | grep Computed | awk -F = \'{ print $2  }\' |  awk -F , \'{  print $1 , $2  }\'  > $RAND/K$K/minmax/rand${LYR}_K${K}.txt
 
-# rm -r $RAND/grass_locs/loc_random${LYR}_K$K
-
 
 ' _ 
+
+rm -fr $RAND/grass_locs/loc_random_K$K
 
 cleanram 
 
