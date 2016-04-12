@@ -1,4 +1,4 @@
-# calculate geomorfology parameter http://grass.osgeo.org/grass70/manuals/addons/r.geomorphon.html &  http://grass.osgeo.org/grass64/manuals/r.param.scale.html 
+## calculate geomorfology parameter http://grass.osgeo.org/grass70/manuals/addons/r.geomorphon.html &  http://grass.osgeo.org/grass64/manuals/r.param.scale.html 
 # rm  /scratch/fas/sbsc/ga254/stdout/* /scratch/fas/sbsc/ga254/stderr/*
 
 

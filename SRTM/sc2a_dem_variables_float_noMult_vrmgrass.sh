@@ -1,10 +1,10 @@
-# for list in /lustre/scratch/client/fas/sbsc/ga254/dataproces/SRTM/geo_file/list/tiles8_list12000F*.txt  ; do qsub -v list=$list  /lustre/home/client/fas/sbsc/ga254/scripts/SRTM/sc2a_dem_variables_float_noMult.sh    ; done 
+# for list in /lustre/scratch/client/fas/sbsc/ga254/dataproces/SRTM/geo_file/list/tiles8_list12000F*.txt  ; do qsub -v list=$list /lustre/home/client/fas/sbsc/ga254/scripts/SRTM/sc2a_dem_variables_float_noMult_vrmgrass.sh    ; done 
 
 # 16 hour for all the variables
 
 #PBS -S /bin/bash 
 #PBS -q fas_normal
-#PBS -l walltime=16:00:00
+#PBS -l walltime=2:00:00
 #PBS -l nodes=1:ppn=8
 #PBS -V
 #PBS -o /scratch/fas/sbsc/ga254/stdout
@@ -59,8 +59,6 @@ cat $list  | xargs -n 1 -P 8  bash -c $'
 file=$1
 filename=$(basename $file .vrt )
 
-echo start the $filename 
-
 # take the coridinates from the orginal files and increment on 1 pixels
 # ulx=$(gdalinfo $INDIR/vrt/$file | grep "Upper Left"  | awk \'{ gsub ("[(),]","") ; printf ("%.16f"  $3  -  0.000833333333333 ) }\')
 # uly=$(gdalinfo $INDIR/vrt/$file | grep "Upper Left"  | awk \'{ gsub ("[(),]","") ; printf ("%.16f"  $4  +  0.000833333333333 ) }\')
@@ -72,35 +70,35 @@ echo start the $filename
 
 # force the nodata to be -32768. gdaldem any number that is labeled to nodata will convert it in -9999 
 
-gdal_edit.py -a_nodata -32768  $OUTDIR/altitude/tiles/$filename.tif
+# gdal_edit.py -a_nodata -32768  $OUTDIR/altitude/tiles/$filename.tif
 
-echo  slope with file  
+# echo  slope with file  
 # gdaldem slope    -s 111120 -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND   $OUTDIR/altitude/tiles/$filename.tif $RAM/slope_${filename}.tif 
 # gdal_translate   -srcwin 1 1 12000 12000   -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/slope_${filename}.tif  $OUTDIR/slope/tiles/${filename}.tif  
 # rm $RAM/slope_${filename}.tif 
 # -s to consider xy in degree and z in meters
 
-echo  aspect  with file 
+# echo  aspect  with file 
 
 # gdaldem aspect  -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND  $OUTDIR/altitude/tiles/$filename.tif   $RAM/aspect_${filename}.tif  
 # gdal_translate   -srcwin 1 1 12000 12000   -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/aspect_${filename}.tif  $OUTDIR/aspect/tiles/${filename}.tif
 # rm $RAM/aspect_${filename}.tif 
 
-echo sin and cos of slope and aspect  
+# echo sin and cos of slope and aspect  
 
 # gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9  --co=INTERLEAVE=BAND -A $OUTDIR/aspect/tiles/${filename}.tif --calc="(sin(A.astype(float) * 3.141592 / 180))" --outfile   $OUTDIR/aspect/tiles/${filename}_sin.tif --overwrite --type=Float32
 # gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9  --co=INTERLEAVE=BAND -A $OUTDIR/aspect/tiles/${filename}.tif --calc="(cos(A.astype(float) * 3.141592 / 180))" --outfile   $OUTDIR/aspect/tiles/${filename}_cos.tif --overwrite --type=Float32
 # gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9  --co=INTERLEAVE=BAND -A $OUTDIR/slope/tiles/${filename}.tif  --calc="(sin(A.astype(float) * 3.141592 / 180))" --outfile   $OUTDIR/slope/tiles/${filename}_sin.tif  --overwrite --type=Float32
 # gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9  --co=INTERLEAVE=BAND -A $OUTDIR/slope/tiles/${filename}.tif  --calc="(cos(A.astype(float) * 3.141592 / 180))" --outfile   $OUTDIR/slope/tiles/${filename}_cos.tif  --overwrite --type=Float32
 
-echo   Ew  Nw   median  
+# echo   Ew  Nw   median  
 
 # gdal_calc.py --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A $OUTDIR/slope/tiles/${filename}.tif -B $OUTDIR/aspect/tiles/${filename}_sin.tif --calc="((sin(A.astype(float) * 3.141592 / 180)) * B.astype(float))" --outfile  $OUTDIR/aspect/tiles/${filename}_Ew.tif --overwrite --type=Float32
 # gdal_calc.py --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A $OUTDIR/slope/tiles/${filename}.tif -B $OUTDIR/aspect/tiles/${filename}_cos.tif --calc="((sin(A.astype(float) * 3.141592 / 180)) * B.astype(float))" --outfile  $OUTDIR/aspect/tiles/${filename}_Nw.tif --overwrite --type=Float32
 
 ###############  VRM  ########################################
 
-# echo VRM ${filename}.tif
+echo VRM ${filename}.tif
 #     A                  B             C                  A             D
 #  z=cos (slope  )  x= sin(aspect ) * sin(slope)   y =  sin(slope) * cos(aspect )   ;  | r | sqrt ( (sum x)^2  + (sum y)^2 + (sum z)^2  )  
 
@@ -136,23 +134,23 @@ echo   Ew  Nw   median
 
 # rm -f  $RAM/${filename}_sumx0.tif   $RAM/${filename}_sumy0.tif   $RAM/${filename}_sumz1.tif $RAM/${filename}_*.tif
 
-##################################################################
 
-rm -rf $OUTDIR/vrm/tiles/loc_$filename 
+#########################3 vrm grass #################################
+echo start grass  $OUTDIR/vrm/tiles/loc_$filename
+rm -rf $OUTDIR/vrm/tiles/loc_$filename
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh $OUTDIR/vrm/tiles  loc_$filename  $OUTDIR/altitude/tiles/$filename.tif 
+~/.grass7/addons/bin/r.vector.ruggedness.py      elevation=$filename   output=${filename}_vrm  
+r.out.gdal -c  createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff type=Float64  input=${filename}_vrm  output=$OUTDIR/vrm/tiles/${filename}_"gr.tif" --o
 
-source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh $OUTDIR/vrm/tiles  loc_$filename $OUTDIR/altitude/tiles/$filename.tif  
-~/.grass7/addons/bin/r.vector.ruggedness.py      elevation=$filename   output=${filename}_vrm
-r.out.gdal -c  createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff type=Float64  input=${filename}_vrm  output=$OUTDIR/vrm/tiles/${filename}".tif" --o
+rm -rf $OUTDIR/vrm/tiles/loc_$filename
 
-rm -rf $OUTDIR/vrm/tiles/loc_$filename 
+###############
 
-################################################
-
-echo  generate a Terrain Ruggedness Index TRI  with file   $file
+# echo  generate a Terrain Ruggedness Index TRI  with file   $file
 # gdaldem TRI -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND $OUTDIR/altitude/tiles/$filename.tif  $RAM/tri_${filename}.tif
 # gdal_translate   -srcwin 1 1 12000 12000   -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND $RAM/tri_${filename}.tif  $OUTDIR/tri/tiles/${filename}.tif
 # rm $RAM/tri_${filename}.tif
-echo  generate a Topographic Position Index TPI  with file  $filename.tif
+# echo  generate a Topographic Position Index TPI  with file  $filename.tif
 
 # gdaldem TPI  -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND $OUTDIR/altitude/tiles/$filename.tif $RAM/tpi_${filename}.tif
 # gdal_translate   -srcwin 1 1 12000 12000   -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND $RAM/tpi_${filename}.tif  $OUTDIR/tpi/tiles/${filename}.tif

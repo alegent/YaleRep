@@ -25,10 +25,10 @@ for km in 1 5 10; do
 	if [ $dir1 = "slope" ]      ; then dir2=slope_median              ; fi 
 	if [ $dir1 = "roughness" ]  ; then dir2=roughness_median          ; fi 
 
-	if [ $dir1 = "aspect-cosine" ] ; then dir2=aspect_cos             ; fi 
-	if [ $dir1 = "aspect-sine" ]  ; then dir2=aspect_sin              ; fi 
-	if [ $dir1 = "eastness" ]      ; then dir2=aspect_Ew              ; fi 
-	if [ $dir1 = "northness" ]     ; then dir2=aspect_Nw              ; fi
+	if [ $dir1 = "aspect-cosine" ] ; then dir2=aspect_cos_median      ; fi 
+	if [ $dir1 = "aspect-sine" ]  ; then dir2=aspect_sin_median       ; fi 
+	if [ $dir1 = "eastness" ]      ; then dir2=aspect_Ew_median       ; fi 
+	if [ $dir1 = "northness" ]     ; then dir2=aspect_Nw_median       ; fi
 
 	gdal_translate -of XYZ $SRTM/${dir2}_SRTM_km$km.tif $SRTM/txt/${dir1}_SRTM_km$km.txt
     done 

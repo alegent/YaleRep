@@ -56,10 +56,10 @@ for ( km in c(1,5,10,50,100)) {
 for ( km in c(1,5,10,50,100)) {
     for ( file in c("tpi" , "tri" , "vrm" ,  "roughness" ,"slope" , "aspect_cos","aspect_sin","aspect_Ew","aspect_Nw","elevation_md")) {
 
-        if ( file == "aspect_cos" )   { raster  <- raster(paste0(SRTM,file,"_SRTM_km", km , ".tif"))   ; file = "aspect-cosine" }
-        if ( file == "aspect_sin" )   { raster  <- raster(paste0(SRTM,file,"_SRTM_km", km , ".tif"))   ; file = "aspect-sine"   }
-        if ( file == "aspect_Ew" )    { raster  <- raster(paste0(SRTM,file,"_SRTM_km", km , ".tif"))   ; file = "eastness"      }
-        if ( file == "aspect_Nw" )    { raster  <- raster(paste0(SRTM,file,"_SRTM_km", km , ".tif"))   ; file = "northness"     }
+        if ( file == "aspect_cos" )   { raster  <- raster(paste0(SRTM,file,"_median_SRTM_km", km , ".tif"))   ; file = "aspect-cosine" }
+        if ( file == "aspect_sin" )   { raster  <- raster(paste0(SRTM,file,"_median_SRTM_km", km , ".tif"))   ; file = "aspect-sine"   }
+        if ( file == "aspect_Ew" )    { raster  <- raster(paste0(SRTM,file,"_median_SRTM_km", km , ".tif"))   ; file = "eastness"      }
+        if ( file == "aspect_Nw" )    { raster  <- raster(paste0(SRTM,file,"_median_SRTM_km", km , ".tif"))   ; file = "northness"     }
         if ( file == "elevation_md" ) { raster  <- raster(paste0(SRTM,file,"_SRTM_km", km , ".tif"))   ; file = "elevation"     }
 
 	if ( file == "tpi" ||  file == "tri" ||  file == "vrm" ||  file == "roughness" ||  file == "slope" ) { raster  <- raster(paste0(SRTM,file,"_median_SRTM_km", km , ".tif"))  }
