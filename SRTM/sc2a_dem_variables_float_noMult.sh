@@ -100,43 +100,6 @@ echo   Ew  Nw   median
 
 ###############  VRM  ########################################
 
-# echo VRM ${filename}.tif
-#     A                  B             C                  A             D
-#  z=cos (slope  )  x= sin(aspect ) * sin(slope)   y =  sin(slope) * cos(aspect )   ;  | r | sqrt ( (sum x)^2  + (sum y)^2 + (sum z)^2  )  
-
-# echo z 
-
-# pkfilter -nodata -9999 -dx 3 -dy 3 -f sum  -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32   -i   $OUTDIR/slope/tiles/${filename}_cos.tif -o   $RAM/${filename}_sumz.tif
-
-# echo x      slope does not have no data -9999
-
-# pkreclass  -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND  -ot Float32  -c -9999  -r 0  -i $OUTDIR/aspect/tiles/${filename}_sin.tif     -o $OUTDIR/aspect/tiles/${filename}_sin_0.tif
-
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A  $OUTDIR/aspect/tiles/${filename}_sin_0.tif   -B  $OUTDIR/slope/tiles/${filename}_sin.tif  --calc="(A.astype(float) * B.astype(float))" --type=Float32 --overwrite --outfile   $RAM/${filename}_x.tif
-
-# pkreclass  -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND   -ot Float32  -c -9999  -r 0  -i   $RAM/${filename}_x.tif -o   $RAM/${filename}_x0.tif
-
-# pkfilter  -dx 3 -dy 3 -f sum  -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND -ot Float32   -i   $RAM/${filename}_x0.tif -o   $RAM/${filename}_sumx0.tif 
-
-# echo y 
-
-# pkreclass  -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND  -ot Float32  -c -9999  -r 0  -i $OUTDIR/aspect/tiles/${filename}_cos.tif     -o $OUTDIR/aspect/tiles/${filename}_cos_1.tif
-
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A  $OUTDIR/slope/tiles/${filename}_sin.tif -B $OUTDIR/aspect/tiles/${filename}_cos_1.tif --calc="(A.astype(float) * B.astype(float))" --type=Float32 --overwrite --outfile   $RAM/${filename}_y.tif
-
-# pkreclass -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND -ot Float32 -c -9999  -r 0  -i   $RAM/${filename}_y.tif -o   $RAM/${filename}_y0.tif
-
-# pkfilter -nodata -9999 -dx 3 -dy 3 -f sum  -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND -ot Float32 -i $RAM/${filename}_y0.tif -o $RAM/${filename}_sumy0.tif 
-
-# # vrm 
-
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A $RAM/${filename}_sumx0.tif  -B  $RAM/${filename}_sumy0.tif  -C  $RAM/${filename}_sumz.tif  --calc="( 1 - ( (sqrt ( ( A.astype(float) * A.astype(float) ) + (B.astype(float) * B.astype(float) ) + ( C.astype(float) * C.astype(float) ) )) / 9 ) )" --type=Float32 --overwrite --outfile   $RAM/${filename}.tif 
-
-# pksetmask  -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND    -msknodata 0 -nodata 0 -p  "<" -m $RAM/${filename}.tif -i  $RAM/${filename}.tif -o   $OUTDIR/vrm/tiles/${filename}.tif
-
-# rm -f  $RAM/${filename}_sumx0.tif   $RAM/${filename}_sumy0.tif   $RAM/${filename}_sumz1.tif $RAM/${filename}_*.tif
-
-##################################################################
 
 rm -rf $OUTDIR/vrm/tiles/loc_$filename 
 

@@ -9,8 +9,6 @@
 # for the full computation 14 
 
 
-
-
 #PBS -S /bin/bash 
 #PBS -q fas_high
 #PBS -l walltime=0:14:00:00
@@ -41,11 +39,12 @@ filename=$(basename $file .vrt )
 echo vrt    $SRTM/altitude/vrt/${filename}_clip.vrt   
 gdal_translate -of VRT   -srcwin 1 1 12000 12000   $SRTM/altitude/tiles/$filename.tif     $SRTM/altitude/vrt/${filename}_clip${km}.vrt   
 
-for MAT in mean median min max stdev ; do
-     pkfilter  -nodata -32768  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MAT -d $res -i $SRTM/altitude/vrt/${filename}_clip${km}.vrt -o $SRTM/altitude/$MAT/tiles/${filename}_km$km.tif
-done 
+# for MAT in mean median min max stdev ; do
+#      pkfilter  -nodata -32768  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MAT -d $res -i $SRTM/altitude/vrt/${filename}_clip${km}.vrt -o $SRTM/altitude/$MAT/tiles/${filename}_km$km.tif
+# done 
 
-for TOPO in  slope tpi tri vrm roughness ; do 
+# for TOPO in  slope tpi tri vrm roughness ; do 
+for TOPO in  vrm ; do 
     gdal_translate -of VRT  -srcwin 1 1 12000 12000  $SRTM/${TOPO}/tiles/$filename.tif  $SRTM/${TOPO}/vrt/${filename}_clip${km}.vrt 
     for MAT in mean median min max stdev ; do                                                                                                         
     echo  $TOPO  $MAT $res 
@@ -54,15 +53,15 @@ for TOPO in  slope tpi tri vrm roughness ; do
     done 
 done
  
-TOPO=aspect
-for DER in sin cos Ew Nw ; do 
-echo vrt 
-gdal_translate -of VRT   -srcwin 1 1 12000 12000  $SRTM/${TOPO}/tiles/${filename}_${DER}.tif    $SRTM/${TOPO}/vrt/${filename}_${DER}_clip${km}.vrt  
-    for MAT in mean median min max stdev ; do                                                                                                         
-        echo $TOPO $MAT $res 
-        pkfilter  -nodata -9999   -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MAT -d $res -i  $SRTM/${TOPO}/vrt/${filename}_${DER}_clip${km}.vrt  -o $SRTM/$TOPO/$MAT/tiles/${filename}_${DER}_km$km.tif 
-    done
-done
+# TOPO=aspect
+# for DER in sin cos Ew Nw ; do 
+# echo vrt 
+# gdal_translate -of VRT   -srcwin 1 1 12000 12000  $SRTM/${TOPO}/tiles/${filename}_${DER}.tif    $SRTM/${TOPO}/vrt/${filename}_${DER}_clip${km}.vrt  
+#     for MAT in mean median min max stdev ; do                                                                                                         
+#         echo $TOPO $MAT $res 
+#         pkfilter  -nodata -9999   -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MAT -d $res -i  $SRTM/${TOPO}/vrt/${filename}_${DER}_clip${km}.vrt  -o $SRTM/$TOPO/$MAT/tiles/${filename}_${DER}_km$km.tif 
+#     done
+# done
 
 ' _ 
 

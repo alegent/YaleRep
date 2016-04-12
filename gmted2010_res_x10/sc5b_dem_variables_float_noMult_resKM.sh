@@ -31,92 +31,23 @@ INDIR_MD=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/md75_g
 INDIR_MX=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/mx75_grd_tif
 INDIR_MN=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/mn75_grd_tif
 
-# for var in mi md mx mn sd  ; do
-# rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/${var}75_grd_tif.vrt
-# gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/${var}75_grd_tif.vrt  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/?_?.tif  
-# done 
+for var in mi md mx mn sd  ; do
+rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/${var}75_grd_tif.vrt
+gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/${var}75_grd_tif.vrt  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/${var}75_grd_tif/?_?.tif  
+done 
 
-# for var in sin cos Ew Nw ; do 
-# rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/tiles/${var}_md.vrt
-# gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/tiles/${var}_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/tiles/?_?_md_${var}.tif 
-# done 
+for var in sin cos Ew Nw ; do 
+rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/tiles/${var}_md.vrt
+gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/tiles/${var}_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/tiles/?_?_md_${var}.tif 
+done 
 
-# for var in slope tri tpi roughness aspect; do
-# rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/${var}_md.vrt 
-# gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/${var}_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/?_?_md.tif 
-# done 
+for var in slope tri tpi roughness aspect; do
+rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/${var}_md.vrt 
+gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/${var}_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/?_?_md.tif 
+done 
 
-# rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/vrm_md.vrt
-# gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/vrm_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/md75_grd_vrm64.tif
-
-#################### vrt for the vrm ############################
-
-# export VRM=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles
-
-# size is  Size is 17296, 13456    basta che si tolgono 2 pixel intorno 
-
-# echo left tiles center 
-# ls $VRM/0_[1-3]_md.tif | xargs -n 1  -P 3  bash -c $' 
-# file=$1 ; filename=`basename $file .tif`  ;  xoff=0 ; yoff=2 ; xsize=17292, ; ysize=13452
-# gdal_translate -of VRT  -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-# ' _ 
-
-# echo right tiles center 
-# ls $VRM/9_[1-3]_md.tif | xargs -n 1  -P 3  bash -c $' 
-# file=$1 ; filename=`basename $file .tif  ` ; xoff=2 ; yoff=2 ;  xsize=17292 ; ysize=13452 ; 
-# gdal_translate -of VRT   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vr
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-# ' _ 
-
-# echo top tiles center  
-# ls $VRM/[1-8]_0_md.tif  | xargs -n 1  -P 8  bash -c $'
-# file=$1 ; filename=`basename $file .tif  ` ;  xoff=2 ; yoff=0 ;  xsize=17280 ; ysize=13454 
-# gdal_translate -of VRT  -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-# ' _ 
-
-# echo botton  tiles center  
-# ls  $VRM/[1-8]_4_md.tif  | xargs -n 1  -P 8  bash -c $'
-# file=$1 ; filename=`basename $file .tif  ` ; xoff=2 ; yoff=2 ;  xsize=17292 ; ysize=13452
-# gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-# ' _ 
-
-# echo top left 
-# file=$VRM/0_0_md.tif ; filename=`basename $file .tif ` ; xoff=0 ; yoff=0 ; xsize=17294  ; ysize=13454
-# gdal_translate  -of VRT -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-
-# echo top right 
-# file=$VRM/9_0_md.tif ; filename=`basename $file .tif  ` ; xoff=2 ; yoff=0 ; xsize=17292  ; ysize=13454
-# gdal_translate  -of VRT -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-
-# echo botton left 
-# file=$VRM/0_4_md.tif ; filename=`basename $file .tif ` ; xoff=0 ; yoff=2  ; xsize=17294  ; ysize=13452
-# gdal_translate  -of VRT -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-
-# echo botton  right 
-# file=$VRM/9_4_md.tif ; filename=`basename $file .tif ` ; xoff=2 ; yoff=2  ; xsize=17292  ; ysize=13452
-# gdal_translate  -of VRT -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-
-# echo central immage 
-# ls  $VRM/[1-8]_[1-3]_md.tif  | xargs -n 1  -P 8  bash -c $'
-# file=$1 ; filename=`basename $file .tif ` ; xoff=2 ; yoff=2 ; xsize=17292 ; ysize=13452
-# gdal_translate  -of VRT -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.vrt
-# gdal_translate   -srcwin  $xoff $yoff $xsize $ysize  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32 $file $VRM/clip$filename.tif
-# ' _ 
-
-# var=vrm
-# rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/${var}_md.vrt 
-#  gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/${var}_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/${var}/tiles/clip?_?_md.vrt
-
-#################################################################
-
-
+rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/vrm_md.vrt
+gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/vrm_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/md75_grd_vrm64.tif
 
 
 
@@ -183,9 +114,7 @@ ysize=$4
 INDIR=$INDIR_MD
 mm=md
 
-# for TOPO in  slope tpi tri vrm roughness ; do 
-
-for TOPO in vrm; do 
+for TOPO in  slope tpi tri vrm roughness ; do 
     gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}.vrt   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt
 
     for MAT in mean median min max ; do                                                                                                         
@@ -197,18 +126,18 @@ for TOPO in vrm; do
     pkfilter -of GTiff  -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/x${1}_y${2}_km$km.tif
 done 
 
-# TOPO=aspect
-# for DER in sin cos Ew Nw ; do 
+TOPO=aspect
+for DER in sin cos Ew Nw ; do 
 
-#     gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize  $OUTDIR/$TOPO/tiles/${DER}_${mm}.vrt  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt        
-#     for MAT in mean median min max ; do                                                                                                         
-# 	echo  $TOPO  $MAT $res 
-# 	pkfilter  -of  GTiff  -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt  -o $OUTDIR/${TOPO}/$MAT/tiles/${DER}_x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
-#     done
+     gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize  $OUTDIR/$TOPO/tiles/${DER}_${mm}.vrt  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt        
+     for MAT in mean median min max ; do                                                                                                         
+ 	echo  $TOPO  $MAT $res 
+ 	pkfilter  -of  GTiff  -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt  -o $OUTDIR/${TOPO}/$MAT/tiles/${DER}_x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
+     done
 
-#     # stdev 
-#     pkfilter  -of GTiff   -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/${DER}_x${1}_y${2}_km$km.tif
-# done 
+     # stdev 
+     pkfilter  -of GTiff   -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/${DER}_x${1}_y${2}_km$km.tif
+done 
 
 ' _ 
 

@@ -50,104 +50,50 @@ INDIR=$INDIR_MD
 mm=md
 
 echo  slope with file   $INDIR/$filename.tif
-# gdaldem slope  -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/slope/tiles/${filename}_${mm}.tif  
+gdaldem slope  -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/slope/tiles/${filename}_${mm}.tif  
 
 # -s to consider xy in degree and z in meters
 
-# echo  aspect  with file   $INDIR/$filename.tif
+echo  aspect  with file   $INDIR/$filename.tif
 
-# gdaldem aspect  -zero_for_flat -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/aspect/tiles/${filename}_${mm}.tif
+gdaldem aspect  -zero_for_flat -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/aspect/tiles/${filename}_${mm}.tif
 
 # r1 aspect , r2 slope 
 
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/aspect/tiles/${filename}_${mm}.tif --calc="(sin(A.astype(float)  * 3.141592 / 180 ))" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_sin.tif" --overwrite --type=Float64
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/aspect/tiles/${filename}_${mm}.tif --calc="(cos(A.astype(float)  * 3.141592 / 180))" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_cos.tif" --overwrite --type=Float64
+gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/aspect/tiles/${filename}_${mm}.tif --calc="(sin(A.astype(float)  * 3.141592 / 180 ))" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_sin.tif" --overwrite --type=Float64
+gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/aspect/tiles/${filename}_${mm}.tif --calc="(cos(A.astype(float)  * 3.141592 / 180))" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_cos.tif" --overwrite --type=Float64
 
 
 ####
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif --calc="(sin(A.astype(float)  * 3.141592 / 180 ))" --outfile   $OUTDIR/slope/tiles/${filename}_${mm}"_sin.tif" --overwrite --type=Float64
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif --calc="(cos(A.astype(float)  * 3.141592 / 180))" --outfile   $OUTDIR/slope/tiles/${filename}_${mm}"_cos.tif" --overwrite --type=Float64
+gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif --calc="(sin(A.astype(float)  * 3.141592 / 180 ))" --outfile   $OUTDIR/slope/tiles/${filename}_${mm}"_sin.tif" --overwrite --type=Float64
+gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif --calc="(cos(A.astype(float)  * 3.141592 / 180))" --outfile   $OUTDIR/slope/tiles/${filename}_${mm}"_cos.tif" --overwrite --type=Float64
 
 #### sin   cos  Ew  Nw   median 
 
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9  --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif -B  $OUTDIR/aspect/tiles/${filename}_${mm}"_sin.tif"  --calc="((sin(A.astype(float) * 3.141592 / 180 ))*B)" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_Ew.tif" --overwrite --type=Float64
-# gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9  --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif -B  $OUTDIR/aspect/tiles/${filename}_${mm}"_cos.tif"  --calc="((sin(A.astype(float) * 3.141592 / 180 ))*B)" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_Nw.tif" --overwrite --type=Float64
-
-###############  VRM  ########################################
-
-####
-# echo  cut the border slope and aspect 
-
-# pkgetmask -ot Byte  -min -9990 -max 10000000  -co COMPRESS=LZW  -co ZLEVEL=9   -i $OUTDIR/slope/tiles/${filename}_md.tif -o $RAM/${filename}_msk.tif
-# geo_string=$(oft-bb $RAM/${filename}_msk.tif  1   | grep BB | awk \'{ print    $6,$7,$8,$9   }\' )
-# xoff=$(  echo $geo_string | awk \'{  print $1 }\'   )
-# yoff=$(  echo $geo_string | awk \'{  print $2 }\'   )
-# xsize=$( echo $geo_string | awk \'{  print $3 - $1 }\'  )
-# ysize=$( echo $geo_string | awk \'{  print $4 - $2 }\'  )
-
-# gdal_translate -ot Float64  -co COMPRESS=LZW -co ZLEVEL=9  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/slope/tiles/${filename}_${mm}".tif"       $OUTDIR/slope/tiles/${filename}_${mm}"_ct.tif"
-# gdal_translate -ot Float64  -co COMPRESS=LZW -co ZLEVEL=9  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/slope/tiles/${filename}_${mm}"_sin.tif"   $OUTDIR/slope/tiles/${filename}_${mm}"_sin_ct.tif"
-# gdal_translate -ot Float64  -co COMPRESS=LZW -co ZLEVEL=9  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/slope/tiles/${filename}_${mm}"_cos.tif"   $OUTDIR/slope/tiles/${filename}_${mm}"_cos_ct.tif"
-
-# # cut the border with the slope file 
-
-# gdal_translate -ot Float64 -co COMPRESS=LZW -co ZLEVEL=9  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/aspect/tiles/${filename}_${mm}".tif"       $OUTDIR/aspect/tiles/${filename}_${mm}"_ct.tif"
-# gdal_translate -ot Float64  -co COMPRESS=LZW -co ZLEVEL=9  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/aspect/tiles/${filename}_${mm}"_sin.tif"   $OUTDIR/aspect/tiles/${filename}_${mm}"_sin_ct.tif"
-# gdal_translate -ot Float64   -co COMPRESS=LZW -co ZLEVEL=9  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/aspect/tiles/${filename}_${mm}"_cos.tif"   $OUTDIR/aspect/tiles/${filename}_${mm}"_cos_ct.tif"
-
-# ###############  ${filename}_${mm}.tif
-echo VRM ${filename}_${mm}.tif
-#     A                  A             B                  A             B
-# z=cos (slope  )  x= sin(aspect ) * sin(slope)   y =  sin(slope) * cos(aspect )   ;  | r | sqrt ( (sum x)^2  + (sum y)^2 + (sum z)^2  )  
-#                                      xy                 xy
-echo z 
-pkfilter   -nodata -9999 -dx 3 -dy 3 -f sum  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float64   -i   $OUTDIR/slope/tiles/${filename}_${mm}"_cos_ct.tif" -o   $OUTDIR/vrm/tiles/${filename}_${mm}"_sumz.tif" 
- 
-echo x 
-
-gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A  $OUTDIR/aspect/tiles/${filename}_${mm}"_sin_ct.tif"   -B  $OUTDIR/slope/tiles/${filename}_${mm}"_sin_ct.tif"  --calc="(A.astype(float)  * B.astype(float) )" --type=Float64 --overwrite --outfile   $OUTDIR/vrm/tiles/${filename}_${mm}"_x.tif"
-
-pkfilter -ot Float64   -nodata -9999 -dx 3 -dy 3 -f sum  -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND -ot Float64   -i   $OUTDIR/vrm/tiles/${filename}_${mm}"_x.tif" -o   $OUTDIR/vrm/tiles/${filename}_${mm}"_sumx.tif" 
-rm -rf  $OUTDIR/vrm/tiles/${filename}_${mm}"_x.tif" 
-
-echo y 
-
-rm -f $OUTDIR/vrm/tiles/${filename}_${mm}"_y.tif" 
-gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A  $OUTDIR/slope/tiles/${filename}_${mm}"_sin_ct.tif"   -B  $OUTDIR/aspect/tiles/${filename}_${mm}"_cos_ct.tif"  --calc="( A.astype(float)  * B.astype(float) )" --type=Float64 --overwrite --outfile   $OUTDIR/vrm/tiles/${filename}_${mm}"_y.tif"
-
-pkfilter -ot Float64   -nodata -9999 -dx 3 -dy 3 -f sum  -co COMPRESS=LZW -co ZLEVEL=9 -co INTERLEAVE=BAND -ot Float64   -i   $OUTDIR/vrm/tiles/${filename}_${mm}"_y.tif" -o   $OUTDIR/vrm/tiles/${filename}_${mm}"_sumy.tif" 
-rm -rf  $OUTDIR/vrm/tiles/${filename}_${mm}"_y.tif"
-
-# vrm 
-
-gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND -A $OUTDIR/vrm/tiles/${filename}_${mm}"_sumx.tif"  -B  $OUTDIR/vrm/tiles/${filename}_${mm}"_sumy.tif"  -C  $OUTDIR/vrm/tiles/${filename}_${mm}"_sumz.tif"  --calc="( 1 - ( (sqrt ( ( A.astype(float)  * A.astype(float)) + (B.astype(float)  * B.astype(float)) + ( C.astype(float)  * C.astype(float)  ) )) / 9 ))" --type=Float64 --overwrite --outfile   $OUTDIR/vrm/tiles/${filename}_${mm}".tif" 
-rm -f  $OUTDIR/vrm/tiles/${filename}_${mm}"_sumx.tif"   $OUTDIR/vrm/tiles/${filename}_${mm}"_sumy.tif"   $OUTDIR/vrm/tiles/${filename}_${mm}"_sumz.tif"
-pksetmask -ot Float64   -co COMPRESS=LZW -co ZLEVEL=9  -co INTERLEAVE=BAND    -msknodata 0 -nodata 0 -p  "<" -m $OUTDIR/vrm/tiles/${filename}_${mm}".tif"  -i  $OUTDIR/vrm/tiles/${filename}_${mm}".tif"  -o   $OUTDIR/vrm/tiles/${filename}_${mm}"_msk.tif"
-
-
-
+gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9  --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif -B  $OUTDIR/aspect/tiles/${filename}_${mm}"_sin.tif"  --calc="((sin(A.astype(float) * 3.141592 / 180 ))*B)" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_Ew.tif" --overwrite --type=Float64
+gdal_calc.py  --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9  --co=INTERLEAVE=BAND --NoDataValue -9999 -A $OUTDIR/slope/tiles/${filename}_${mm}.tif -B  $OUTDIR/aspect/tiles/${filename}_${mm}"_cos.tif"  --calc="((sin(A.astype(float) * 3.141592 / 180 ))*B)" --outfile   $OUTDIR/aspect/tiles/${filename}_${mm}"_Nw.tif" --overwrite --type=Float64
 
 #########################3 vrm grass #################################
 
-# rm -rf $OUTDIR/vrm/tiles/loc_$filename
-# source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh $OUTDIR/vrm/tiles  loc_$filename $INDIR/$filename.tif  
-# ~/.grass7/addons/bin/r.vector.ruggedness.py      elevation=$filename   output=${filename}_vrm  
-# r.out.gdal -c  createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff type=Float64  input=${filename}_vrm  output=$OUTDIR/vrm/tiles/${filename}_"gr.tif" --o
+rm -rf $OUTDIR/vrm/tiles/loc_$filename
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh $OUTDIR/vrm/tiles  loc_$filename $INDIR/$filename.tif  
+~/.grass7/addons/bin/r.vector.ruggedness.py      elevation=$filename   output=${filename}_vrm  
+r.out.gdal -c  createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff type=Float64  input=${filename}_vrm  output=$OUTDIR/vrm/tiles/${filename}_"gr.tif" --o
 
-# rm -rf $OUTDIR/vrm/tiles/loc_$filename
+rm -rf $OUTDIR/vrm/tiles/loc_$filename
 
 ###############
 
-# echo  generate a Terrain Ruggedness Index TRI  with file   $file
-# gdaldem TRI -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND    $INDIR/$filename.tif  $OUTDIR/tri/tiles/${filename}_${mm}.tif
+echo  generate a Terrain Ruggedness Index TRI  with file   $file
+gdaldem TRI -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND    $INDIR/$filename.tif  $OUTDIR/tri/tiles/${filename}_${mm}.tif
 
-# echo  generate a Topographic Position Index TPI  with file   $INDIR/$filename.tif
+echo  generate a Topographic Position Index TPI  with file   $INDIR/$filename.tif
 
-# gdaldem TPI  -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/tpi/tiles/${filename}_${mm}.tif
+gdaldem TPI  -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/tpi/tiles/${filename}_${mm}.tif
 
-# echo  generate roughness   with file   $INDIR/$filename.tif
+echo  generate roughness   with file   $INDIR/$filename.tif
 
-# gdaldem  roughness   -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/roughness/tiles/${filename}_${mm}.tif 
+gdaldem  roughness   -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND   $INDIR/$filename.tif  $OUTDIR/roughness/tiles/${filename}_${mm}.tif 
 
 ' _ 
 
