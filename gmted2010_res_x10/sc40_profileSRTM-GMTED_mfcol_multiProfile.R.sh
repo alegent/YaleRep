@@ -2,11 +2,13 @@
 # qsub /home/fas/sbsc/ga254/scripts/gmted2010_res_x10/sc40_profileSRTM-GMTED_mfcol_multiProfile.R.sh
 
 # qsub -X  -I -q fas_devel -l walltime=4:00:00  
-# source ("/home/fas/sbsc/ga254/scripts/gmted2010_res_x10/sc40_profileSRTM-GMTED_mfcol.R.sh") 
+# source ("/home/fas/sbsc/ga254/scripts/gmted2010_res_x10/sc40_profileSRTM-GMTED_mfcol_multiProfile.R.sh") 
+
+# ho inserito i valori di y manualmente e sono validi solo per alps.
 
 #PBS -S /bin/bash 
-#PBS -q fas_devel
-#PBS -l walltime=0:4:00:00  
+#PBS -q fas_normal
+#PBS -l walltime=0:2:00:00  
 #PBS -l nodes=1:ppn=8
 #PBS -V
 #PBS -o  /scratch/fas/sbsc/ga254/stdout 
@@ -18,15 +20,15 @@
 # borneo vertical 
 # alps2 vertical 
 
-echo  andes alps borneo alps2    | xargs -n 1 -P 3 bash -c $'
+# echo  andes alps borneo alps2    | xargs -n 1 -P 4 bash -c $'
 
-export AREA=$1
+# export AREA=$1
 
-R --vanilla --no-readline   -q  <<\'EOF\' 
+# R --vanilla --no-readline   -q  <<\'EOF\' 
 
-AREA = Sys.getenv(c(\'AREA\'))
+# AREA = Sys.getenv(c(\'AREA\'))
 
-# AREA = "borneo"
+AREA = "alps"
 
 require(raster)
 require(rgdal)
@@ -39,7 +41,7 @@ line <- readOGR(dsn=paste0("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMT
 # inport data 
 # full resolution  GMTED_250
 
-# if ( AREA  == "alps2" )   { AREA=alps }
+if ( AREA  == "alps2" )   { AREA=alps }
 
 for ( file in c("altitude_GMTED.tif","aspect_cos_GMTED.tif","aspect_Ew_GMTED.tif","aspect_GMTED.tif","aspect_Nw_GMTED.tif","aspect_sin_GMTED.tif","roughness_GMTED.tif","slope_GMTED.tif","tpi_GMTED.tif","tri_GMTED.tif","vrm_GMTED.tif")){
 raster  <- raster(paste(GMTED,"/",AREA,"/GMTED_250/", file  ,sep="")) 
@@ -96,9 +98,10 @@ for ( km in c(1,5,10,50,100)) {
 }
 
 
+
 postscript(paste0("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/",AREA,"_profile_SRTMGMTED_90_250m_mfcol.ps") ,  paper="special" ,  horizo=F , width=8, height=10  )	
 
-par (oma=c(4,1,6,1) , mar=c(1,4,0,0) , cex.lab=0.8 , cex=0.8 , cex.axis=0.8  , mfcol=c(10,2) , xpd=TRUE )
+par (oma=c(4,1,6,1) , mar=c(1,4,0,0) , cex.lab=1 , cex=1 , cex.axis=1  , mfcol=c(10,2) , xpd=TRUE )
 
 for (file in c("altitude_GMTED.tif","tpi_GMTED.tif","tri_GMTED.tif","vrm_GMTED.tif","roughness_GMTED.tif","slope_GMTED.tif","aspect_cos_GMTED.tif","aspect_sin_GMTED.tif","aspect_Ew_GMTED.tif","aspect_Nw_GMTED.tif")){
 
@@ -111,27 +114,30 @@ my.min <- function(x) ifelse( !all(is.na(x)), min(x, na.rm=T), NA)
 ymax=max(my.max(get(paste(filename,"GMTED.tif.extract", sep=""))[[1]]) , my.max(get(paste(filename,"SRTM.tif.extract", sep=""))[[1]] ))
 ymin=min(my.min(get(paste(filename,"GMTED.tif.extract", sep=""))[[1]]) , my.min(get(paste(filename,"SRTM.tif.extract", sep=""))[[1]] ))
 
- if ( file == "altitude_GMTED.tif" )   { ylab = "Elevation" } 
- if ( file == "tpi_GMTED.tif" )        { ylab = "TPI" } 
- if ( file == "tri_GMTED.tif" )        { ylab = "TRI" } 
- if ( file == "vrm_GMTED.tif" )        { ylab = "VRM" } 
- if ( file == "roughness_GMTED.tif" )  { ylab = "Roughness" } 
- if ( file == "slope_GMTED.tif" )      { ylab = "Slope" } 
- if ( file == "aspect_cos_GMTED.tif" ) { ylab = "Aspect-cosine" } 
- if ( file == "aspect_sin_GMTED.tif" ) { ylab = "Aspect-sine"   } 
- if ( file == "aspect_Ew_GMTED.tif" )  { ylab = "Eastness"      } 
- if ( file == "aspect_Nw_GMTED.tif" )  { ylab = "Northness"     }
 
-plot  (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_gmted ) , get(paste(filename,"GMTED.tif.extract", sep=""))[[1]] ,  ylim=c(ymin,ymax) ,  type="l" , ylab=ylab , xaxt="n" , xlab=""  , col="blue" ,  lwd=.5  ,  mar=c(2,4,4,1)  )  
+ if ( file == "altitude_GMTED.tif" )   { ylab = "Elevation" ; txt="a"      ; at=c(500,1100,1700) ; labels=at  } 
+ if ( file == "tpi_GMTED.tif" )        { ylab = "TPI" ; txt="c"            ; at=c(-40,11,60) ; labels=at   } 
+ if ( file == "tri_GMTED.tif" )        { ylab = "TRI" ; txt="f"            ; at=c(0,50,100) ; labels=at  } 
+ if ( file == "vrm_GMTED.tif" )        { ylab = "VRM" ; txt="h"            ; at=c(0,0.07,0.14) ; labels=at } 
+ if ( file == "roughness_GMTED.tif" )  { ylab = "Roughness" ; txt="j"      ; at=c(0,250,500) ; labels=at  } 
+ if ( file == "slope_GMTED.tif" )      { ylab = "Slope" ; txt="l"          ; at=c(0,20,40) ; labels=at } 
+ if ( file == "aspect_cos_GMTED.tif" ) { ylab = "Aspect-cosine" ; txt="n"  ; at=c(-0.8,0,0.8) ; labels=at } 
+ if ( file == "aspect_sin_GMTED.tif" ) { ylab = "Aspect-sine"  ; txt="p"   ; at=c(-0.8,0,0.8) ; labels=at } 
+ if ( file == "aspect_Ew_GMTED.tif" )  { ylab = "Eastness"    ; txt="r"    ; at=c(-0.3,0,+0.3) ; labels=at } 
+ if ( file == "aspect_Nw_GMTED.tif" )  { ylab = "Northness"   ; txt="t"    ; at=c(-0.4,0.1,0.6) ; labels=at  }
+
+plot  (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_gmted ) , get(paste(filename,"GMTED.tif.extract", sep=""))[[1]] ,  ylim=c(ymin,ymax) ,  type="l" , ylab=ylab , yaxt="n",   xaxt="n" , xlab=""  , col="blue" ,  lwd=.5  ,  mar=c(2,4,4,1)  )  
 
 trunc <- function(x, ..., prec = 0) base::trunc(x * 10^prec, ...) / 10^prec
 
 axis(side = 1,  at = c(trunc( seq ( line@bbox[2,1] , line@bbox[2,2] , abs((line@bbox[2,1] - line@bbox[2,2]  )/4) ) , prec = 8 ) )   , labels=FALSE  ,    tck = -0.1)
+axis(side = 2,  at = at   , labels=labels  ,    tck = -0.1)
 
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_srtm  ) , get(paste(filename,"SRTM.tif.extract", sep=""))[[1]] ,  lwd=.5 ,  col="red", xlab="") 
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_gmted ) , get(paste(filename,"GMTED.tif.extract", sep=""))[[1]],  lwd=.5 ,  lty=2    , col="blue", xlab="") 
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_srtm  ) , get(paste(filename,"SRTM.tif.extract", sep=""))[[1]] ,  lwd=.5 ,  lty=2    , col="red"  , xlab="") 
 
+text( 47.416 , max(  cbind (get(paste(filename,"GMTED.tif.extract", sep=""))[[1]] , get(paste(filename,"SRTM.tif.extract", sep=""))[[1]] ) ) * 0.9  , txt  )
 }
 
 if ( AREA == "andes" ) {
@@ -148,15 +154,27 @@ by_100km =  ( line_length  / (length(vrm_GMTED_km100.extract[[1]]) -1 ) )
 
 for ( file in c("elevation","tpi" , "tri" , "vrm" ,  "roughness" ,"slope","aspect-cosine","aspect-sine","eastness","northness")) {
 
-file
+ if ( file == "elevation" )   {  txt="b"   ; at=c(500,1100,1700) ; labels=at   } 
+ if ( file == "tpi" )        {   txt="d"   ; at=c(-15,0,15)      ; labels=at } 
+ if ( file == "tri" )        {   txt="g"   ; at=c(0,40,80)      ; labels=at } 
+ if ( file == "vrm" )        {  txt="i"    ; at=c(0,0.015,0.03)     ; labels=at } 
+ if ( file == "roughness" )  {   txt="k"   ; at=c(0,125,250)     ; labels=at  } 
+ if ( file == "slope" )      {   txt="m"   ; at=c(0,10,20)       ; labels=at } 
+ if ( file == "aspect-cosine" ) {  txt="o" ;  at=c(-0.8,0,0.8)   ; labels=at  } 
+ if ( file == "aspect-sine" ) {   txt="q"  ;  at=c(-0.8,0,0.8)   ; labels=at } 
+ if ( file == "eastness" )    { txt="s"    ; at=c(-0.2,0,0.2)   ; labels=at } 
+ if ( file == "northness" )   {  txt="u"   ;  at=c(-0.3,0,0.3) ; labels=at }
+
 
 ymax=max(my.max(get(paste(file,"_GMTED_km1.extract", sep=""))[[1]]) , my.max(get(paste(file,"_SRTM_km1.extract", sep=""))[[1]]) , my.max( get(paste(file,"_GMTED_km100.extract", sep=""))[[1]])  , my.max(get(paste(file,"_SRTM_km100.extract", sep=""))[[1]] ))
 ymin=min(my.min(get(paste(file,"_GMTED_km1.extract", sep=""))[[1]]) , my.min(get(paste(file,"_SRTM_km1.extract", sep=""))[[1]]) , my.min( get(paste(file,"_GMTED_km100.extract", sep=""))[[1]])  , my.min(get(paste(file,"_SRTM_km100.extract", sep=""))[[1]] ))
 
-plot  (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_1km ) , get(paste(file,"_GMTED_km1.extract", sep=""))[[1]] ,  ylim=c(ymin,ymax) ,  type="l" , ylab=""  , xaxt="n" , xlab="" ,   col="blue" ,  lwd=.5 ,  )
+plot  (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_1km ) , get(paste(file,"_GMTED_km1.extract", sep=""))[[1]] ,  ylim=c(ymin,ymax) ,  type="l" , ylab=""  , yaxt="n" ,   xaxt="n" , xlab="" ,   col="blue" ,  lwd=.5 ,  )
 
 axis(side = 1,  at = c(trunc( seq ( line@bbox[2,1] , line@bbox[2,2] , abs((line@bbox[2,1] - line@bbox[2,2]  )/4) ) , prec = 8 ) )  , labels=FALSE ,  tck = -0.1)
+axis(side = 2,  at = at   , labels=labels  ,    tck = -0.1)
 
+text( 47.416 , max(  cbind (   get(paste(file,"_GMTED_km1.extract", sep=""))[[1]]) ,  get(paste(file,"_SRTM_km1.extract", sep=""))[[1]])    * 0.9  , txt  )
   
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_1km ) , get(paste(file,"_SRTM_km1.extract", sep=""))[[1]][1:length(seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_1km ))]  ,  col="red", xlab="") 
 
@@ -166,6 +184,8 @@ lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_5km ) , get(paste(file
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_10km ) , get(paste(file,"_GMTED_km10.extract", sep=""))[[1]][1:length(seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_10km ))]  ,lty=2  , lwd=.5 ,  col="blue", xlab="") 
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_10km ) , get(paste(file,"_SRTM_km10.extract" , sep=""))[[1]][1:length(seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_10km ))]   ,lty=2  , lwd=.5 ,  col="red"  , xlab="") 
 
+
+
 if ( AREA != "alps" ) {
 
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_50km ) , get(paste(file,"_GMTED_km50.extract", sep=""))[[1]][1:length(seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_50km ))]  ,lty=4  , lwd=.5 ,  col="blue", xlab="") 
@@ -174,7 +194,6 @@ lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_50km ) , get(paste(fil
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_100km ) , get(paste(file,"_GMTED_km100.extract", sep=""))[[1]][1:length(seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_100km ))] ,lty=5 , lwd=.5 ,  col="blue", xlab="") 
 lines (  seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_100km ) , get(paste(file,"_SRTM_km100.extract" , sep=""))[[1]][1:length(seq( line@bbox[2,1] ,  line@bbox[2,2] ,  by = by_100km ))]  ,lty=5 , lwd=.5 ,  col="red"  , xlab="") 
 }
-
 }
 
 if ( AREA == "andes" ) {
@@ -189,7 +208,9 @@ mtext ("GMTED250", side=3 , cex=0.7 , line=1.5 , outer=TRUE , at=c(0.3) , col = 
 if ( AREA == "alps" ) {
 mtext ("SRTM    1km"  , side=3 , cex=0.7 , line=3  , outer=TRUE , at=c(0.65) , col = "red"  )  ; mtext ("GMTED   1km" , side=3 , cex=0.7 , line=3   , outer=TRUE , at=c(0.80) , col = "blue"  )  
 mtext ("SRTM    5km"  , side=3 , cex=0.7 , line=2  , outer=TRUE , at=c(0.65) , col = "red"  )  ; mtext ("GMTED   5km" , side=3 , cex=0.7 , line=2   , outer=TRUE , at=c(0.80) , col = "blue"  )
-mtext ("SRTM 10km"  , side=3 , cex=0.7 , line=1  , outer=TRUE , at=c(0.65) , col = "red" )    ; mtext ("GMTED 10km" , side=3 , cex=0.7 , line=1   , outer=TRUE , at=c(0.80) , col = "blue"  )
+mtext ("SRTM 10km"    , side=3 , cex=0.7 , line=1  , outer=TRUE , at=c(0.65) , col = "red" )    ; mtext ("GMTED 10km" , side=3 , cex=0.7 , line=1   , outer=TRUE , at=c(0.80) , col = "blue"  )
+
+segments(0.65,0.65, 0.2,0.2 , col="red", xpd=TRUE)
 
 } else  { 
 
@@ -211,13 +232,11 @@ mtext ( "Longitude " ,   side=1.2 , cex=0.6 , line=1 , outer=TRUE , at=c(0.035) 
 mtext ( trunc(line@bbox[1,1],prec = 2) ,   side=1.2 , cex=0.5 , line=1 , outer=TRUE , at=c(0.085) , col = "black"  ) 
 }
 
-
-
 dev.off()
 
  
 
-EOF
+# EOF
 
 ps2pdf  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/${AREA}_profile_SRTMGMTED_90_250m_mfcol.ps /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/${AREA}_profile_SRTMGMTED_90_250m_mfcol.pdf
 convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/${AREA}_profile_SRTMGMTED_90_250m_mfcol.ps /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/${AREA}_profile_SRTMGMTED_90_250m_mfcol.png
@@ -226,4 +245,4 @@ ps2epsi /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/S
 # evince  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/${AREA}_profile_SRTMGMTED_90_250m_mfcol.ps
 
 
-' _ 
+# ' _ 

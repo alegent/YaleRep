@@ -1,4 +1,3 @@
-
 # qsub -X  -I -q fas_devel -l walltime=4:00:00  
 # source ("/home/fas/sbsc/ga254/scripts/gmted2010_res_x10/sc40_profileSRTM-GMTED_mfcol.R.sh") 
 
