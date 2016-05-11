@@ -54,26 +54,34 @@ gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23
 
 # slope in percentage so * 10 to get in km 
 
-gdaldem slope -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  -p $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009r.tif   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope_1960-2009.tif
-gdaldem slope -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  -p $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009r.tif   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope_1960-2009.tif
+gdaldem slope -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  -p $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009r.tif   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope_1960-2009.tif
+gdaldem slope -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  -p $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009r.tif   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope_1960-2009.tif
 
 # multiply to 10   
 gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif  -A  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope_1960-2009.tif   --calc="( A.astype(float) * 10 )"  --overwrite
 gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif  -A  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope_1960-2009.tif   --calc="( A.astype(float) * 10 )"  --overwrite
 # the slope is not = to 0 in any place, due to + random 
 
+# single cell have slope value 0 o 
+pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif  -o $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009_msk.tif 
+gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009_msk.tif 
+
+pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif  -o $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009_msk.tif 
+gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009_msk.tif 
+
+
+
 # velocity temporal regression / spatial slope 
 
-gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif -A $DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009_year.tif  -B  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif   --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite
-gdal_calc.py --type=Float32 --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif -A $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009_year.tif  -B  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   --calc="( A.astype(float) / ( B.astype(float) ))"  --overwrite
-
+gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif -A $DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009_year.tif  -B  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009_msk.tif   --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite
+gdal_calc.py --type=Float32 --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif -A $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009_year.tif  -B  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009_msk.tif   --calc="( A.astype(float) / ( B.astype(float) ))"  --overwrite
 
 # mask out the sea final velocity  =  velocity*_msk.tif 
 
-pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif  -msknodata 100   -p ">"   -nodata -9999   -i $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif -o $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009_msk.tif
+pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif  -msknodata 100   -p ">"   -nodata -9999  -m   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif -o $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009_msk.tif
 gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009_msk.tif
 
-pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif  -msknodata 100   -p ">"   -nodata -9999   -i $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif -o $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009_msk.tif
+pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif  -msknodata 100   -p ">"   -nodata -9999  -m   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif -o $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009_msk.tif
 gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009_msk.tif
 
 # # start to make temporal regression in to the model shenarios 
@@ -83,8 +91,18 @@ gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1
 # # regression/MOHC.HadGEM2-ES/tas/tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc Size is 192, 145
 # # regression/MOHC.HadGEM2-ES/tas/tas_Amon_HadGEM2-ES_rcp45_r3i1p1_200512-210012.nc Size is 192, 145
 
+# change file input/MOHC.HadGEM2-ES/pr/pr_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-209911.nc to   name input/MOHC.HadGEM2-ES/pr/pr_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-210011.nc 
 
-tail -60 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc_time_frame.csv | grep -ve tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc -ve tas_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-209911.nc  -ve tas_Amon_HadGEM2-ES_rcp45_r3i1p1_200512-210012.nc -ve tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc  | xargs -n 6 -P 8 bash -c $' 
+
+
+echo "########################################################################################"
+echo "#################MODEL START ###########################################################"
+echo "########################################################################################"
+
+
+for timetxt in /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc*YearWindow.txt ; do 
+
+tail -60 $timetxt | grep -ve tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc -ve tas_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-209911.nc  -ve tas_Amon_HadGEM2-ES_rcp45_r3i1p1_200512-210012.nc -ve tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc | xargs -n 7 -P 8 bash -c $' 
                                                                                                      
 
 file=$1
@@ -138,7 +156,7 @@ rm -f   $DIR/regression/$dir/${filename}_reg_${YEARS}_right.tif      $DIR/regres
 gdal_calc.py --outfile=$DIR/regression/$dir/${filename}_reg_${YEARS}_year.tif   -A $DIR/regression/$dir/${filename}_reg_${YEARS}.tif   --calc="( A.astype(float)  * 12 )"  --overwrite  --type=Float32   --overwrite
 
 # mask the sea  based the cru sea  
-pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif -msknodata 100   -p ">"   -nodata -9999   -i  $DIR/regression/$dir/${filename}_reg_${YEARS}_year.tif -o  $DIR/regression/$dir/${filename}_reg_${YEARS}_year_msk.tif 
+pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif -msknodata 100   -p ">"   -nodata -9999  -m   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999   -i  $DIR/regression/$dir/${filename}_reg_${YEARS}_year.tif -o  $DIR/regression/$dir/${filename}_reg_${YEARS}_year_msk.tif 
 
 gdal_edit.py  -a_nodata -9999 $DIR/regression/$dir/${filename}_reg_${YEARS}_year_msk.tif 
 fi 
@@ -165,7 +183,7 @@ pkcomposite  -co COMPRESS=LZW -co ZLEVEL=9  -cr mean   $( ls ${1}r?i$2 | xargs -
 # ls    $DIR/regression/*/*/*r?i1p1*_year.tif   | awk '{ gsub ("r1i", " ") ; gsub ("r2i", " ") ; gsub ("r3i", " ") ; gsub ("r4i", " ")  ; gsub ("r5i", " ")  ;   print  }' | sort | uniq  | xargs -n 2 -P 8  bash -c $' 
 # echo $1   $2 
 # pkcomposite  -co COMPRESS=LZW -co ZLEVEL=9  -cr stdev  $( ls ${1}r?i$2 | xargs -n 1  echo  -i  ) -o   ${1}stdev_SEA${2:3} ; gdal_edit.py  -a_nodata -9999  ${1}stdev_SEA${2:3}
- #pkcomposite  -co COMPRESS=LZW -co ZLEVEL=9  -cr mean   $( ls ${1}r?i$2 | xargs -n 1  echo  -i  ) -o   ${1}mean_SEA${2:3}  ; gdal_edit.py  -a_nodata # -9999  ${1}mean$_SEA{2:3}
+# pkcomposite  -co COMPRESS=LZW -co ZLEVEL=9  -cr mean   $( ls ${1}r?i$2 | xargs -n 1  echo  -i  ) -o   ${1}mean_SEA${2:3}  ; gdal_edit.py  -a_nodata # -9999  ${1}mean$_SEA{2:3}
 # 
 # ' _  
 
@@ -179,7 +197,7 @@ filename=$(basename $file _year_msk.tif)
 dir=$(dirname $file)
 
 gdal_calc.py --outfile=$dir/${filename}_velocity.tif -A $file -B $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif --calc="( A.astype(float) /  B.astype(float) )"  --overwrite   --type=Float32
-pksetmask  -co COMPRESS=LZW -co ZLEVEL=9  -m /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif -msknodata 100   -p ">"   -nodata -9999  -i $dir/${filename}_velocity.tif  -o $dir/${filename}_velocity_msk.tif 
+pksetmask  -co COMPRESS=LZW -co ZLEVEL=9  -m /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif -msknodata 100   -p ">"   -nodata -9999 -m   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999   -i $dir/${filename}_velocity.tif  -o $dir/${filename}_velocity_msk.tif 
 gdal_edit.py  -a_nodata -9999 $dir/${filename}_velocity_msk.tif 
 ' _ 
 
@@ -193,12 +211,13 @@ filename=$(basename $file _year_msk.tif)
 dir=$(dirname $file)
 
 gdal_calc.py --outfile=$dir/${filename}_velocity.tif -A $file -B  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif  --calc="(  A.astype(float)  / B.astype(float) )"  --overwrite   --type=Float32
-pksetmask  -co COMPRESS=LZW -co ZLEVEL=9  -m /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif -msknodata 100   -p ">"   -nodata -9999  -i $dir/${filename}_velocity.tif  -o $dir/${filename}_velocity_msk.tif 
+pksetmask  -co COMPRESS=LZW -co ZLEVEL=9  -m /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif -msknodata 100   -p ">"   -nodata -9999 -m   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999   -i $dir/${filename}_velocity.tif  -o $dir/${filename}_velocity_msk.tif 
 gdal_edit.py  -a_nodata -9999 $dir/${filename}_velocity_msk.tif 
 
 rm $dir/${filename}_velocity.tif 
 ' _ 
 
+done 
 
 echo This is for printing the results 
 
