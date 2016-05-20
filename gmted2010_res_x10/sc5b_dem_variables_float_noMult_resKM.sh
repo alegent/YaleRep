@@ -49,8 +49,6 @@ done
 rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/vrm_md.vrt
 gdalbuildvrt -srcnodata -9999 -vrtnodata -9999 -te -180 -56  +180 +84 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/vrm_md.vrt      /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/vrm/tiles/md75_grd_vrm64.tif
 
-
-
 export INDIR_MI=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/mi75_grd_tif
 export INDIR_MD=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/md75_grd_tif
 export INDIR_MX=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/mx75_grd_tif
@@ -114,26 +112,27 @@ ysize=$4
 INDIR=$INDIR_MD
 mm=md
 
-for TOPO in  slope tpi tri vrm roughness ; do 
-    gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}.vrt   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt
+# for TOPO in  slope tpi tri vrm roughness ; do 
+#     gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}.vrt   $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt
 
-    for MAT in mean median min max ; do                                                                                                         
-	echo  $TOPO  $MAT $res 
-        pkfilter  -of GTiff   -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt -o $OUTDIR/${TOPO}/$MAT/tiles/x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
-    done
+#     for MAT in mean median min max ; do                                                                                                         
+# 	echo  $TOPO  $MAT $res 
+#         pkfilter  -of GTiff   -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt -o $OUTDIR/${TOPO}/$MAT/tiles/x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
+#     done
 
-    # stdev 
-    pkfilter -of GTiff  -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/x${1}_y${2}_km$km.tif
-done 
+#     # stdev 
+#     pkfilter -of GTiff  -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${TOPO}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/x${1}_y${2}_km$km.tif
+# done 
 
 TOPO=aspect
-for DER in sin cos Ew Nw ; do 
+# for DER in sin cos Ew Nw ; do 
+for DER in sin cos  ; do 
 
-     gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize  $OUTDIR/$TOPO/tiles/${DER}_${mm}.vrt  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt        
-     for MAT in mean median min max ; do                                                                                                         
- 	echo  $TOPO  $MAT $res 
- 	pkfilter  -of  GTiff  -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt  -o $OUTDIR/${TOPO}/$MAT/tiles/${DER}_x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
-     done
+     # gdal_translate  -of VRT  -srcwin  $xoff $yoff $xsize $ysize  $OUTDIR/$TOPO/tiles/${DER}_${mm}.vrt  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt        
+     # for MAT in mean median min max ; do                                                                                                         
+     # 	echo  $TOPO  $MAT $res 
+     # 	pkfilter  -of  GTiff  -nodata -9999 -dx $res -dy $res -f $MAT   -d $res -i  $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt  -o $OUTDIR/${TOPO}/$MAT/tiles/${DER}_x${1}_y${2}_km$km.tif -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32
+     # done
 
      # stdev 
      pkfilter  -of GTiff   -nodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -ot Float32   -dx $res -dy $res -f stdev  -d $res -i $OUTDIR/$TOPO/tiles/${DER}_${mm}_x${1}_y${2}.vrt   -o $OUTDIR/${TOPO}/stdev/tiles/${DER}_x${1}_y${2}_km$km.tif

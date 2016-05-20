@@ -74,12 +74,65 @@ cdo ifnotthen  $RAM/${filename}_zeroPos.nc  $RAM/${filename}_year_mean.nc  $RAM/
 
 # The file  $RAM/${filename}_minTime.nc contain for each leyer-year  the minimum values recorded in that year 
 
-
 mv $RAM/${filename}_minTime.nc    $DIR/piecewise/$dir/$par/${filename}_minTime.nc 
 
 ' _ 
 
 cleanram
+
+# mean of the 3 model run
+
+ls   $DIR/piecewise/*/*/*r?i1p1*_year_mean.nc  | xargs -n 3 -P 8  bash -c $' 
+
+r1=$(basename $1 .nc )
+r2=$(basename $2 .nc )
+r3=$(basename $3 .nc )
+
+dir=$(dirname  $1 )
+mod=$( basename $( dirname   $dir) )
+filename=$(echo $r1 | awk \'{ gsub ("r1i1p1" ,  "ensamble" ) ; print $0  }\')
+ensamble=$( basename $filename .nc ) 
+
+if [ ${ensamble:0:3} = "tas"   ] ; then par=${ensamble:0:3} ; fi 
+if [ ${ensamble:0:3} = "pr_"   ] ; then par=${ensamble:0:2} ; fi 
+
+# ensamble model
+
+cdo ensmean   $dir/$r1.nc $dir/$r2.nc  $dir/$r3.nc $RAM/${ensamble}.nc
+cp $RAM/${ensamble}.nc  $DIR/piecewise/$mod/$par/${ensamble}.nc
+
+for band in $(seq 1 50) ; do
+     echo vfr $band band 
+     gdalbuildvrt   -b $band   $RAM/${ensamble}_year_mean_band$band.vrt   $RAM/${ensamble}.nc    -overwrite
+done 
+
+echo composite the minimum 
+pkcomposite  -co  COMPRESS=LZW -co ZLEVEL=9   -of GTiff  -cr minband  -file 2  $( for band in $( seq 1 50) ; do  echo  -i  $RAM/${ensamble}_year_mean_band$band.vrt  ; done ) -o  $RAM/${r1}_year_min2B.tif
+rm  -f     $RAM/${r1}_band$band.vrt    $RAM/${r2}_band$band.vrt   $RAM/${r3}_band$band.vrt
+
+echo invert left to right 
+
+gdal_translate -ot Float32  -srcwin 0 0  360 360   -a_ullr    0 +90 180 -90     -co COMPRESS=LZW -co ZLEVEL=9      $RAM/${r1}_year_min2B.tif $RAM/${r1}_year_min_right.tif
+gdal_translate -ot Float32  -srcwin 360 0  360 360 -a_ullr -180 +90 0 -90  -co COMPRESS=LZW -co ZLEVEL=9      $RAM/${r1}_year_min2B.tif $RAM/${r1}_year_min_left.tif
+
+gdalbuildvrt  -a_srs EPSG:4326  -te -180 -90 180 +90  -tr 0.5 0.5 -b 1  $RAM/${r1}_year_min.vrt    $RAM/${r1}_year_min_right.tif $RAM/${r1}_year_min_left.tif  -overwrite
+gdalbuildvrt  -a_srs EPSG:4326  -te -180 -90 180 +90  -tr 0.5 0.5 -b 2  $RAM/${r1}_year_minOBS.vrt $RAM/${r1}_year_min_right.tif $RAM/${r1}_year_min_left.tif  -overwrite
+
+echo split the band in minimum and year observation 
+
+gdal_translate -a_nodata -32768 -ot Float32 -of GTiff   -a_srs EPSG:4326 -a_ullr  -180 +90 +180 -90  -co COMPRESS=LZW -co ZLEVEL=9  $RAM/${r1}_year_min.vrt      $DIR/piecewise/$mod/$par/${ensamble}_year_min.tif
+gdal_translate -a_nodata -32768 -ot Int16   -of GTiff   -a_srs EPSG:4326 -a_ullr  -180 +90 +180 -90  -co COMPRESS=LZW -co ZLEVEL=9  $RAM/${r1}_year_minOBS.vrt   $RAM/${r1}_year_minOBS.tif
+
+gdal_calc.py --outfile=$RAM/${r1}_year_minOBSY.tif     -A    $RAM/${r1}_year_minOBS.tif  --calc="( A + 2020 )"  --overwrite  --type=Int16
+
+mv $RAM/${r1}_year_minOBSY.tif $DIR/piecewise/$mod/$par/${ensamble}_year_minOBSY.tif
+
+rm -f  $RAM/${r1}_year_min_right.tif  $RAM/${r1}_year_min_left.tif  $RAM/${r1}_year_min.vrt $RAM/${r1}_year_minOBS.vrt   $RAM/${r1}_year_minOBS.tif  $RAM/${r1}_year_min2B.tif     $RAM/${r1}_year_minOBSY.tif
+
+
+' _ 
+
+cleanram 
 
 exit 
 

@@ -1,3 +1,13 @@
+#PBS -S /bin/bash 
+#PBS -q fas_devel
+#PBS -l walltime=4:00:00
+#PBS -l nodes=1:ppn=8
+#PBS -V
+#PBS -o /scratch/fas/sbsc/ga254/stdout
+#PBS -e /scratch/fas/sbsc/ga254/stderr
+
+
+
 module load Tools/CDO/1.6.4  
 
 export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING
@@ -113,7 +123,7 @@ dir=$(echo ${dirinput:6:20})
 
 echo  $2 $3 $4 $5 $6 
 
-for YEARS in $2 $3 $4 $5 $6 ; do 
+for YEARS in $2 $3 $4 $5 $6 $7; do 
 
 if [ $YEARS != "NA" ]  ; then  
 
