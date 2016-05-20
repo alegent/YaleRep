@@ -21,10 +21,8 @@ GMTED_HETE_1km[GMTED_HETE_1km == -9999 ] <- NA
 GMTED_CURV_1km <- na.omit (GMTED_CURV_1km  )
 GMTED_HETE_1km <- na.omit (GMTED_HETE_1km  )
 
-
-
-## obtain samples
-sampleRow  = sample.int(nrow(GMTED_CURV_1km), 10000)
+## obtain samples full dataset 216001 
+sampleRow  = sample.int(nrow(GMTED_CURV_1km), 200000)
 
 GMTED_CURV_1km  = GMTED_CURV_1km[sampleRow,]
 GMTED_HETE_1km = GMTED_HETE_1km[sampleRow,]
@@ -83,13 +81,13 @@ colnames(GMTED_HETE_1km)[32] =  "geom.pit_1km-perc"
 ## cluster                                                            ### tree brances 
 pcGMTED_HETE_1km = prcomp(t(scale(GMTED_HETE_1km)))
 fitGMTED_HETE_1km = hclust(distance(pcGMTED_HETE_1km$x), method="ward")
-postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/cluster_GMTED_HETE_1km.ps", width=8, height=8 , paper="special" ,  horizo=F)
+postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps", width=8, height=8 , paper="special" ,  horizo=F)
 plot(fitGMTED_HETE_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
 dev.off()
 
 pcGMTED_CURV_1km = prcomp(t(scale(GMTED_CURV_1km)))
 fitGMTED_CURV_1km = hclust(distance(pcGMTED_CURV_1km$x), method="ward")
-postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/cluster_GMTED_CURV_1km.ps", width=8, height=8 , paper="special" ,  horizo=F)
+postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.ps", width=8, height=8 , paper="special" ,  horizo=F)
 plot(fitGMTED_CURV_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
 dev.off()
 
@@ -133,23 +131,20 @@ GMTED_HETE_1km_cor = cor (GMTED_HETE_1km)
 
 cols = c("red","red","red","blue","blue","blue","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red")
 
-postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/corplot_GMTED_CURV.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
+postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
 corrplot( GMTED_CURV_1km_cor     , order="hclust", hclust.method="ward", tl.col=cols, addrect=6)
 dev.off()
 
-postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/corplot_GMTED_HETE.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
+postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
 corrplot(GMTED_HETE_1km_cor , order="hclust", hclust.method="ward", tl.col=cols, addrect=6)
 dev.off()
 
 
+system("convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.png" )
+system("convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.ps  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.png" )
 
-
-
-system("convert -flatten -density 300  Fig5_corplot_GMTED_HETE.ps   Fig5_corplot_GMTED_HETE.png" )
-system("convert -flatten -density 300  Fig5_corplot_GMTED_CURV.ps   Fig5_corplot_GMTED_CURV.png" )
-
-system("ps2epsi   Fig5_corplot_GMTED_HETE.ps   Fig5_corplot_GMTED_HETE.eps" )
-system("ps2epsi   Fig5_corplot_GMTED_CURV.ps   Fig5_corplot_GMTED_CURV.eps" )
+system("ps2epsi   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.ps  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.eps" )
+system("ps2epsi   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.ps   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.eps" )
 
 
 
