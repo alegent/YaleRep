@@ -112,7 +112,7 @@ echo "##########################################################################
 
 for timetxt in /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc*YearWindow.txt ; do 
 
-tail -60 $timetxt | grep -ve tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc -ve tas_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-209911.nc  -ve tas_Amon_HadGEM2-ES_rcp45_r3i1p1_200512-210012.nc -ve tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc | xargs -n 7 -P 8 bash -c $' 
+tail -60 $timetxt  | xargs -n 7 -P 8 bash -c $' 
                                                                                                      
 
 file=$1

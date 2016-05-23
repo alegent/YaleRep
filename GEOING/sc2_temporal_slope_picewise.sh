@@ -1,3 +1,13 @@
+# qsub /lustre/home/client/fas/sbsc/ga254/scripts/GEOING/sc2_temporal_slope_picewise.sh 
+
+#PBS -S /bin/bash 
+#PBS -q fas_devel
+#PBS -l walltime=4:00:00
+#PBS -l nodes=1:ppn=8
+#PBS -V
+#PBS -o /scratch/fas/sbsc/ga254/stdout
+#PBS -e /scratch/fas/sbsc/ga254/stderr
+
 module load Tools/CDO/1.6.4  
 
 export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING
