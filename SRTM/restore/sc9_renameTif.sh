@@ -48,7 +48,7 @@ gdal_edit.py \
 -mo "TIFFTAG_IMAGEDESCRIPTION= $res $DIR2  ${dir}  derived from SRTM4.1dev" \
 -mo "TIFFTAG_SOFTWARE=gdal 1.10.0 & pktools 2.6.4 & GRASS7" \
 -a_ullr -180 +60  +180 -60  \
--a_nodata -9999 $OUTDIR/$DIR/${DIR2}_${km}KM${dir2}_SRTM.tif
+-a_nodata -32768 $OUTDIR/$DIR/${DIR2}_${km}KM${dir2}_SRTM.tif
 
 done 
 done 
@@ -65,8 +65,8 @@ if [ $dir = stdev ] ; then dir2="sd" ; fi
 
 for var in cos sin Ew Nw ; do
 
-if [ $var  = cos ] ; then var2="aspectcosine" ; fi   
-if [ $var = sin ] ; then var2="aspectsine" ; fi   
+if [ $var  = cos ] ; then var2="aspect-cosine" ; fi   
+if [ $var = sin ] ; then var2="aspect-sine" ; fi   
 if [ $var = Ew  ] ; then var2="eastness" ; fi   
 if [ $var = Nw  ] ; then var2="northness" ; fi   
 
@@ -81,7 +81,7 @@ gdal_edit.py \
 -mo "TIFFTAG_IMAGEDESCRIPTION ${res} ${dir}  ${var2} derived from SRTM4.1dev" \
 -mo "TIFFTAG_SOFTWARE=gdal 1.10.0 & pktools 2.6.4 & GRASS7" \
 -a_ullr -180 +60  +180 -60  \
--a_nodata -9999 $OUTDIR/aspect/${var2}_${km}KM${dir2}_SRTM.tif
+-a_nodata -32768 $OUTDIR/aspect/${var2}_${km}KM${dir2}_SRTM.tif
 
 done 
 done
