@@ -8,8 +8,9 @@ source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh   /
 g.region n=33 e=98 w=65
 r.buffer  input=IndiaMya_mask  output=IndiaMya_maskB  distances=1 --overwrite
 
-r.out.gdal -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Byte     input=IndiaMya_maskB  output=$INDIR/IndiaMya_maskLarg.tif
+r.out.gdal --overwrite  -c     createopt="COMPRESS=LZW,ZLEVEL=9" format=GTiff  type=Byte     input=IndiaMya_maskB  output=$INDIR/IndiaMya_maskLarg.tif
 
+exit 
 
 pkgetmask -co COMPRESS=LZW -co ZLEVEL=9    -min -1   -max 102  -data 1 -nodata 0   -i $INDIR/IndiaMya_maskLarg.tif -o   $INDIR/IndiaMya_maskLarg01.tif  
 

@@ -6,8 +6,6 @@
 #PBS -o /scratch/fas/sbsc/ga254/stdout
 #PBS -e /scratch/fas/sbsc/ga254/stderr
 
-
-
 module load Tools/CDO/1.6.4  
 
 export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING
@@ -15,91 +13,6 @@ export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING
 cd $DIR
 
 rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/regression/*/*/*
-
-# make a  select only day 1960 2014 
-
-# observation temporal monthly regression 
-cdo regres  -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done)    $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc    $DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009.nc   
-cdo regres  -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done)    $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc    $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009.nc   
-
-# transform to tif 
-gdal_translate -ot Float32  -co COMPRESS=LZW -co ZLEVEL=9   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009.nc     $DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009.tif 
-gdal_translate -ot Float32  -co COMPRESS=LZW -co ZLEVEL=9   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009.nc     $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009.tif  
-
-# multiply the montly regression to 12 to get yearly regression   
-gdal_calc.py --type=Float32   --outfile=$DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009_year.tif    -A $DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009.tif     --calc="( A.astype(float) * 12 )"   --overwrite
-gdal_calc.py --type=Float32   --outfile=$DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009_year.tif    -A $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009.tif     --calc="( A.astype(float) * 12 )"  --overwrite
-
-# spatial change  
-
-# observation temporal mean  
-
-cdo timmean -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done)    $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc     $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009.nc   
-cdo timmean -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done)    $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc     $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.nc   
-
-# observation temporal mean   transform to tif
-
-gdal_translate  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009.nc     $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009.tif 
-gdal_translate  -co COMPRESS=LZW -co ZLEVEL=9 -ot Float32  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.nc     $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif  
-
-echo create random variable for temperature 
-R --vanilla -q <<EOF
-library(raster)
-raster=raster(matrix(runif(259200,max=0.05, min=-0.05),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009_random.tif",options=c("COMPRESS=LZW","ZLEVEL=9"),formats=GTiff,overwrite=TRUE)
-EOF
-
-echo create random variable for precipitation 
-R --vanilla -q <<EOF
-library(raster)
-raster=raster(matrix(runif(259200,max=0.1, min=-0.1),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009_random.tif",options=c("COMPRESS=LZW","ZLEVEL=9"),formats=GTiff,overwrite=TRUE)
-EOF
-
-# add the random to temporal mean for precipitation and temperature 
-
-gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009r.tif  -A  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009.tif -B   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009_random.tif   --calc="( A.astype(float) +  B.astype(float) )"  --overwrite
-
-gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009r.tif  -A  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009.tif -B   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009_random.tif  --calc="( A.astype(float) +  B.astype(float) )"  --overwrite
-
-# slope in percentage so * 10 to get in km 
-
-gdaldem slope -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  -p $DIR/mean/cru_ts3.23.1901.2014.pre.dat_mean_1960-2009r.tif   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope_1960-2009.tif
-gdaldem slope -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  -p $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_mean_1960-2009r.tif   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope_1960-2009.tif
-
-# multiply to 10   
-gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif  -A  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope_1960-2009.tif   --calc="( A.astype(float) * 10 )"  --overwrite
-gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif  -A  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope_1960-2009.tif   --calc="( A.astype(float) * 10 )"  --overwrite
-# the slope is not = to 0 in any place, due to + random 
-
-# single cell have slope value 0 o 
-pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif  -o $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009_msk.tif 
-gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009_msk.tif 
-
-pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif  -o $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009_msk.tif 
-gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009_msk.tif 
-
-
-
-# velocity temporal regression / spatial slope 
-
-gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif -A $DIR/mean/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009_year.tif  -B  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009_msk.tif   --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite
-gdal_calc.py --type=Float32 --NoDataValue=-9999  --outfile=$DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif -A $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_reg_1960-2009_year.tif  -B  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009_msk.tif   --calc="( A.astype(float) / ( B.astype(float) ))"  --overwrite
-
-# mask out the sea final velocity  =  velocity*_msk.tif 
-
-pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif  -msknodata 100   -p ">"   -nodata -9999  -m   $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009.tif -o $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009_msk.tif
-gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009_msk.tif
-
-pksetmask   -co COMPRESS=LZW -co ZLEVEL=9  -m  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif  -msknodata 100   -p ">"   -nodata -9999  -m   $DIR/mean/cru_ts3.23.1901.2014.pre.dat_slope10_1960-2009.tif   -msknodata 0 -p "=" -nodata -9999  -i $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009.tif -o $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009_msk.tif
-gdal_edit.py  -a_nodata -9999  $DIR/mean/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009_msk.tif
-
-# # start to make temporal regression in to the model shenarios 
-
-# # Size is 192, 145  remove from now 
-# # regression/MOHC.HadGEM2-ES/tas/tas_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-209911.nc Size is 192, 145
-# # regression/MOHC.HadGEM2-ES/tas/tas_Amon_HadGEM2-ES_rcp45_r2i1p1_200512-210012.nc Size is 192, 145
-# # regression/MOHC.HadGEM2-ES/tas/tas_Amon_HadGEM2-ES_rcp45_r3i1p1_200512-210012.nc Size is 192, 145
 
 # change file input/MOHC.HadGEM2-ES/pr/pr_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-209911.nc to   name input/MOHC.HadGEM2-ES/pr/pr_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-210011.nc 
 
@@ -110,7 +23,7 @@ echo "#################MODEL START #############################################
 echo "########################################################################################"
 
 
-for timetxt in /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc*YearWindow.txt ; do 
+for timetxt in /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow5model.txt ; do 
 
 tail -60 $timetxt  | xargs -n 7 -P 8 bash -c $' 
                                                                                                      
