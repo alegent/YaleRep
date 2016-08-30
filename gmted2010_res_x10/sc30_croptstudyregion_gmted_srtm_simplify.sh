@@ -29,13 +29,16 @@ export OUTDIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correla
 
 echo  andes borneo
 
-for AREA in alps  andes borneo   ; do 
+for AREA in rombo fin alps  andes borneo   ; do 
 
 export AREA=$AREA
 
-if [  $AREA = "alps"  ] ; then export geo_string="5.83333333333333  48.166666666666666 10.83333333333333333333333 44.833333333333333333333333" ; fi 
-if [  $AREA = "andes"  ] ; then export geo_string="-80 -4 -75 -7" ; fi 
+if [  $AREA = "rombo"    ] ; then export geo_string="-106.0000000 31.1000000 -104.4000000 29.0000000" ; fi 
+if [  $AREA = "alps"    ] ; then export geo_string="5.83333333333333  48.166666666666666 10.83333333333333333333333 44.833333333333333333333333" ; fi 
+if [  $AREA = "andes"   ] ; then export geo_string="-80 -4 -75 -7" ; fi 
 if [  $AREA = "borneo"  ] ; then export geo_string="114 6 117 0" ; fi 
+if [  $AREA = "fin"     ] ; then export geo_string="70.8333333333333333  68.166666666666666666  85  57.3333333333333333333333333333" ; fi 
+
 
 gdal_translate -co COMPRESS=LZW -co ZLEVEL=9   -a_nodata "none" -co COMPRESS=LZW -co ZLEVEL=9 -projwin ${geo_string}  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/tiles/md75_grd_tif/md75_grd_tif.vrt  $OUTDIR/GMTED/$AREA/md75_grd_tif.tif
 
@@ -78,7 +81,7 @@ gdal_translate  -co COMPRESS=LZW    -projwin  $geo_string   /lustre/scratch/clie
 
 echo  original resolution SRTM  $AREA    original resolution SRTM  $AREA    original resolution SRTM  $AREA    original resolution SRTM  $AREA     original resolution SRTM  $AREA    original resolution SRTM  $AREA   
 
-for dir in  altitude  aspect  roughness  slope  tpi  tri  vrm ; do
+for dir in  altitude roughness  slope  tpi  tri  vrm ; do
  
      	if [ $dir = "altitude" ]   ; then dir2=elevation    ; fi 
  	if [ $dir = "roughness" ]  ; then dir2=roughness    ; fi 
@@ -87,6 +90,9 @@ for dir in  altitude  aspect  roughness  slope  tpi  tri  vrm ; do
  	if [ $dir = "tri" ]        ; then dir2=tri          ; fi
  	if [ $dir = "vrm" ]        ; then dir2=vrm          ; fi
 
+	echo $dir changed to $dir2
+
+    rm  /tmp/$AREA.vrt 
     gdalbuildvrt -overwrite  /tmp/$AREA.vrt   $SRTM/../${dir}/tiles/tiles_*_*.tif  
     gdal_translate  -co COMPRESS=LZW    -projwin   $geo_string  /tmp/$AREA.vrt $OUTDIR/SRTM/$AREA/SRTM_90/${dir2}_90M_SRTM.tif 
 done 
@@ -98,14 +104,11 @@ for var in cos sin Ew Nw ; do
  	if [ $var = "sin" ]  ; then var2=aspect-sine      ; fi 
  	if [ $var = "Ew" ]   ; then var2=eastness         ; fi 
  	if [ $var = "Nw" ]   ; then var2=northness        ; fi
-
+     rm  /tmp/$AREA.vrt 
      gdalbuildvrt -overwrite   /tmp/$AREA.vrt    $SRTM/../aspect/tiles/tiles_*_*_${var}.tif  
      gdal_translate  -co COMPRESS=LZW   -projwin  $geo_string   /tmp/$AREA.vrt  $OUTDIR/SRTM/$AREA/SRTM_90/${var2}_90M_SRTM.tif 
 done 
 rm  /tmp/$AREA.vrt 
-
-
-
 
 
 done 

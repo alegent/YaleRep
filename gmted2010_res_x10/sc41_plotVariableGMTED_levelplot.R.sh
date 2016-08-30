@@ -79,9 +79,9 @@ if(file == "geomorphic_majority_GMTED" ){  des="Geomorphic classes majority"; ma
 if(file == "geomorphic_class3_GMTED" )  {  des="Geomorphic ridge percentage" ; raster=raster/100  ;   max=100 ; min=raster@data@min ; at=seq (min , max  , 25 ) ; labels=seq (min , max , 25 ) ;  letter="(t)" }
 
 if(file == "geomorphic_count_GMTED" )   {  des="Geomorphic classes count" ; max=10 ; min=1 ; at=seq (min , max  , 2 ) ; labels=seq (min , max , 2 ) ;  letter="(u)" } 
-if(file == "geomorphic_shannon_GMTED" ) {  des="Geomorphic classes shannon";  max=1.8 ; min=0 ; at=seq (min , max  , 0.4 ) ; labels=seq (min , max , 0.4 )  ;  letter="(u)" }  
-if(file == "geomorphic_uni_GMTED" )     {  des="Geomorphic classes uniformity" ; max=1 ; min=0 ;  at=seq (min , max  , 0.2 ) ; labels=seq (min , max , 0.2 )  ; letter="(v)" } 
-if(file == "geomorphic_ent_GMTED" )     {  des="Geomorphic classes entropy"  ; max=2.8 ; min=0 ; at=seq (min , max  , 0.4 ) ; labels=seq (min , max , 0.4 )  ; letter="(w)" }  
+if(file == "geomorphic_shannon_GMTED" ) {  des="Geomorphic classes shannon";  max=1.8 ; min=0 ; at=seq (min , max  , 0.4 ) ; labels=seq (min , max , 0.4 )  ;  letter="(v)" }  
+if(file == "geomorphic_uni_GMTED" )     {  des="Geomorphic classes uniformity" ; max=1 ; min=0 ;  at=seq (min , max  , 0.2 ) ; labels=seq (min , max , 0.2 )  ; letter="(w)" } 
+if(file == "geomorphic_ent_GMTED" )     {  des="Geomorphic classes entropy"  ; max=2.8 ; min=0 ; at=seq (min , max  , 0.4 ) ; labels=seq (min , max , 0.4 )  ; letter="(x)" }  
 
 raster[raster  > max] <-  max
 raster[raster  < min] <-  min
@@ -97,6 +97,7 @@ plot(raster   , col=colorRampPalette(c("blue","green","yellow", "orange" , "red"
 plot(raster, axis.args=list(at=at ,  labels=labels   , line=-0.68, tck=0  ), smallplot=c(0.83,0.87, 0.1,0.8), zlim=c( min, max ) , legend.only=TRUE ,  legend.width=1, legend.shrink=0.75 ,  col=colorRampPalette(c("blue","green","yellow", "orange" , "red", "brown", "black" ))(10)  )
 text(9.88, 47.23, letter , xpd=TRUE  , cex=0.6 )
 }
+
 
 if ( file == "geomorphic_count_GMTED"  )   { 
 plot(raster , col=cols , yaxp=c(46.6 , 47.2 , 4 ) , xaxp=c(8.8 , 9.8 , 4 ) ,  main=des   , legend=FALSE   , cex.main=0.65 , font.main=2   )

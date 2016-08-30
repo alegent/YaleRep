@@ -1,14 +1,17 @@
 # source ("/home/fas/sbsc/ga254/scripts/gmted2010_res_x10/sc43_Topo_correlation_plot_hetero_curvat.R.sh")
 
+# module load Apps/R/3.1.1-generic
+
 library(raster)
 library(ecodist)
 library(corrplot)
+library(ggplot2 , lib="/lustre/home/client/fas/sbsc/ga254/R/x86_64-unknown-linux-gnu-library/3.1")
+library(ggdendro , lib="/lustre/home/client/fas/sbsc/ga254/R/x86_64-unknown-linux-gnu-library/3.1")
+library(grid)
 
 ##### plotting correlation figures from data tables #####
 
 ## import data
-# GMTED1km = read.table("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/GMTED/txt/GMTED_km1.txt", sep=" ", header=T)
-# SRTM1km = read.table("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/SRTM/txt/SRTM_km1.txt", sep=" ", header=T)
 
 GMTED_CURV_1km = read.table("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/GMTED/txt/GMTED_curvature_km1.txt", sep=" ", header=T)
 GMTED_HETE_1km = read.table("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/GMTED/txt/GMTED_hetero_km1.txt", sep=" ", header=T)
@@ -29,66 +32,72 @@ GMTED_HETE_1km = GMTED_HETE_1km[sampleRow,]
 
 ## change colnames
 
-colnames(GMTED_CURV_1km)[1] =  "slope_1km.md"
-colnames(GMTED_CURV_1km)[2] =  "aspect-cosine_1km-md"
-colnames(GMTED_CURV_1km)[3] =  "aspect-sine_1km-md"  
-colnames(GMTED_CURV_1km)[4] =  "eastness_1km-md"     
-colnames(GMTED_CURV_1km)[5] =  "northness_1km-md"    
-colnames(GMTED_CURV_1km)[6] =  "pcurv_1km.md"        
-colnames(GMTED_CURV_1km)[7] =  "tcurv_1km.md"        
-colnames(GMTED_CURV_1km)[8] =  "dx_1km-md"           
-colnames(GMTED_CURV_1km)[9] =  "dxx_1km-md"          
-colnames(GMTED_CURV_1km)[10] = "dy_1km-md"           
-colnames(GMTED_CURV_1km)[11] = "dyy_1km-md"          
+colnames(GMTED_CURV_1km)[1] =  "slope md"
+colnames(GMTED_CURV_1km)[2] =  "aspect-cosine md"
+colnames(GMTED_CURV_1km)[3] =  "aspect-sine md"  
+colnames(GMTED_CURV_1km)[4] =  "eastness md"     
+colnames(GMTED_CURV_1km)[5] =  "northness md"    
+colnames(GMTED_CURV_1km)[6] =  "pcurv md"        
+colnames(GMTED_CURV_1km)[7] =  "tcurv md"        
+colnames(GMTED_CURV_1km)[8] =  "dx md"           
+colnames(GMTED_CURV_1km)[9] =  "dxx md"          
+colnames(GMTED_CURV_1km)[10] = "dy md"           
+colnames(GMTED_CURV_1km)[11] = "dyy md"          
 
 
 ## change colnames
 
-colnames(GMTED_HETE_1km)[1] =  "elevation_1km-sd"   
-colnames(GMTED_HETE_1km)[2] =  "elevation_1km-psd"  
-colnames(GMTED_HETE_1km)[3] =  "tri_1km-md"         
-colnames(GMTED_HETE_1km)[4] =  "tpi_1km-md"         
-colnames(GMTED_HETE_1km)[5] =  "roughness_1km-md"   
-colnames(GMTED_HETE_1km)[6] =  "vrm_1km-md"         
-colnames(GMTED_HETE_1km)[7] =  "slope_1km-sd"       
-colnames(GMTED_HETE_1km)[8] =  "aspect.cosine_1km-sd"
-colnames(GMTED_HETE_1km)[9] =  "aspect.sine_1km-sd"  
-colnames(GMTED_HETE_1km)[10] =  "eastness_1km-sd"     
-colnames(GMTED_HETE_1km)[11] =  "northness_1km-sd"    
-colnames(GMTED_HETE_1km)[12] =  "pcurv_1km-sd"        
-colnames(GMTED_HETE_1km)[13] =  "tcurv_1km-sd"        
-colnames(GMTED_HETE_1km)[14] =  "dx_1km-sd"           
-colnames(GMTED_HETE_1km)[15] =  "dxx_1km-sd"         
-colnames(GMTED_HETE_1km)[16] =  "dy_1km-sd"          
-colnames(GMTED_HETE_1km)[17] =  "dyy_1km-sd"         
-colnames(GMTED_HETE_1km)[18] =  "geom_1km-count"     
-colnames(GMTED_HETE_1km)[19] =  "geom_1km-maj"       
-colnames(GMTED_HETE_1km)[20] =  "geom_1km-sha"      
-colnames(GMTED_HETE_1km)[21] =  "geom_1km-uni"      
-colnames(GMTED_HETE_1km)[22] =  "geom_1km-ent"      
-colnames(GMTED_HETE_1km)[23] =  "geom.flat_1km-perc"
-colnames(GMTED_HETE_1km)[24] =  "geom.peak_1km-perc"
-colnames(GMTED_HETE_1km)[25] =  "geom.ridge_1km-perc" 
-colnames(GMTED_HETE_1km)[26] =  "geom.shoulder_1km-perc"
-colnames(GMTED_HETE_1km)[27] =  "geom.spur_1km-perc"    
-colnames(GMTED_HETE_1km)[28] =  "geom.slope_1km-perc"   
-colnames(GMTED_HETE_1km)[29] =  "geom.hollow_1km-perc"  
-colnames(GMTED_HETE_1km)[30] =  "geom.footslope_1km-perc"
-colnames(GMTED_HETE_1km)[31] =  "geom.valley_1km-perc"   
-colnames(GMTED_HETE_1km)[32] =  "geom.pit_1km-perc"      
+colnames(GMTED_HETE_1km)[1] =  "elevation sd"   
+colnames(GMTED_HETE_1km)[2] =  "elevation psd"  
+colnames(GMTED_HETE_1km)[3] =  "tri md"         
+colnames(GMTED_HETE_1km)[4] =  "tpi md"         
+colnames(GMTED_HETE_1km)[5] =  "roughness md"   
+colnames(GMTED_HETE_1km)[6] =  "vrm md"         
+colnames(GMTED_HETE_1km)[7] =  "slope sd"       
+colnames(GMTED_HETE_1km)[8] =  "aspect-cosine sd"
+colnames(GMTED_HETE_1km)[9] =  "aspect-sine sd"  
+colnames(GMTED_HETE_1km)[10] =  "eastness sd"     
+colnames(GMTED_HETE_1km)[11] =  "northness sd"    
+colnames(GMTED_HETE_1km)[12] =  "pcurv sd"        
+colnames(GMTED_HETE_1km)[13] =  "tcurv sd"        
+colnames(GMTED_HETE_1km)[14] =  "dx sd"           
+colnames(GMTED_HETE_1km)[15] =  "dxx sd"         
+colnames(GMTED_HETE_1km)[16] =  "dy sd"          
+colnames(GMTED_HETE_1km)[17] =  "dyy sd"         
+colnames(GMTED_HETE_1km)[18] =  "geom count"     
+colnames(GMTED_HETE_1km)[19] =  "geom maj"       
+colnames(GMTED_HETE_1km)[20] =  "geom sha"      
+colnames(GMTED_HETE_1km)[21] =  "geom uni"      
+colnames(GMTED_HETE_1km)[22] =  "geom ent"      
+colnames(GMTED_HETE_1km)[23] =  "geomflat perc"
+colnames(GMTED_HETE_1km)[24] =  "geompeak perc"
+colnames(GMTED_HETE_1km)[25] =  "geomridge perc" 
+colnames(GMTED_HETE_1km)[26] =  "geomshoulder perc"
+colnames(GMTED_HETE_1km)[27] =  "geomspur perc"    
+colnames(GMTED_HETE_1km)[28] =  "geomslope perc"   
+colnames(GMTED_HETE_1km)[29] =  "geomhollow perc"  
+colnames(GMTED_HETE_1km)[30] =  "geomfootslope perc"
+colnames(GMTED_HETE_1km)[31] =  "geomvalley perc"   
+colnames(GMTED_HETE_1km)[32] =  "geompit perc"      
+
 
 
 ## cluster                                                            ### tree brances 
 pcGMTED_HETE_1km = prcomp(t(scale(GMTED_HETE_1km)))
 fitGMTED_HETE_1km = hclust(distance(pcGMTED_HETE_1km$x), method="ward")
-postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps", width=8, height=8 , paper="special" ,  horizo=F)
-plot(fitGMTED_HETE_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
+postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps", width=3, height=8 , paper="special" ,  horizo=F)
+
+print (ggdendrogram( fitGMTED_HETE_1km, rotate = T  , labels=F  ) +  theme(axis.ticks = element_blank(), axis.text.x = element_blank() , axis.text.y = element_blank()) ,   vp=viewport(angle=-180)  )
+
+# plot(fitGMTED_HETE_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
 dev.off()
 
 pcGMTED_CURV_1km = prcomp(t(scale(GMTED_CURV_1km)))
 fitGMTED_CURV_1km = hclust(distance(pcGMTED_CURV_1km$x), method="ward")
 postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.ps", width=8, height=8 , paper="special" ,  horizo=F)
-plot(fitGMTED_CURV_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
+
+print (ggdendrogram( fitGMTED_CURV_1km, rotate = T  , labels=F  ) +  theme(axis.ticks = element_blank(), axis.text.x = element_blank() , axis.text.y = element_blank()) ,   vp=viewport(angle=-180)  )
+# plot(fitGMTED_CURV_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
 dev.off()
 
 
@@ -129,16 +138,17 @@ panel.hist <- function(x, ...)
 GMTED_CURV_1km_cor = cor (GMTED_CURV_1km)
 GMTED_HETE_1km_cor = cor (GMTED_HETE_1km)
 
-cols = c("red","red","red","blue","blue","blue","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red")
+cols = c("red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red")
+
+col2 <- colorRampPalette(c("#67001F", "#B2182B", "#D6604D", "#F4A582", "#FDDBC7",      "#FFFFFF", "#D1E5F0", "#92C5DE", "#4393C3", "#2166AC", "#053061"))
 
 postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
-corrplot( GMTED_CURV_1km_cor     , order="hclust", hclust.method="ward", tl.col=cols, addrect=6)
+corrplot( GMTED_CURV_1km_cor     , order="hclust", hclust.method="ward", tl.col=cols, addrect=6 , col=rev(col2(200)) )
 dev.off()
 
 postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
-corrplot(GMTED_HETE_1km_cor , order="hclust", hclust.method="ward", tl.col=cols, addrect=6)
+corrplot(GMTED_HETE_1km_cor , order="hclust", hclust.method="ward", tl.col=cols, addrect=6 , col=rev(col2(200)) )
 dev.off()
-
 
 system("convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.png" )
 system("convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.ps  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.png" )
@@ -146,5 +156,4 @@ system("convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dat
 system("ps2epsi   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.ps  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.eps" )
 system("ps2epsi   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.ps   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.eps" )
 
-
-
+# transfer to laptop and merge with inkscape. 
