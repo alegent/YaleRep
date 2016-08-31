@@ -14,17 +14,33 @@ cd $DIR
 
 rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/regression/*/*/*
 
-# make a  select only day 1960 2014 
+# make a  select only day 1960 2014 and resampling  
 
+# temperature  CRU
 cdo griddes  $DIR/HadISST/HadISST_sst.nc >  $DIR/HadISST/HadISST_sst_griddes.txt
 
-cdo remapbil,$DIR/HadISST/HadISST_sst_griddes.txt -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done)  $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat_1deg.nc
+cdo remapbil,$DIR/HadISST/HadISST_sst_griddes.txt -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done)  $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.tmp.dat_1deg_tmp.nc
 
-cdo -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2009); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/HadISST/HadISST_sst_1960_2009.nc 
+cdo yearmean    $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.tmp.dat_1deg_tmp.nc   $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.tmp.dat_1deg.nc
+rm   $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.tmp.dat_1deg_tmp.nc
+
+cdo yearmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done)  $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.tmp.dat_0.5deg.nc
+
+echo  precipitation CUR
+cdo remapbil,$DIR/HadISST/HadISST_sst_griddes.txt -selyear$(for year in $(seq 1960 2009) ; do echo -n ,$year ; done)  $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc   $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.pre.dat_1deg_tmp.nc
+
+cdo yearsum    $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.pre.dat_1deg_tmp.nc    $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.pre.dat_1deg.nc
+rm $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.pre.dat_1deg_tmp.nc
+
+cdo yearsum -selyear$(for year in $(seq 1960 2009); do echo -n ,$year ; done)   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc   $DIR/CRU_ts3.23/cru_ts3.23.1960.2009.pre.dat_0.5deg.nc
+
+cdo yearmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2009); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/HadISST/HadISST_sst_1960_2009.nc 
+
+exit 
+
 rm -f $DIR/mean_CRU_HadISST/CRU_HadISST.nc 
 cdo   ensmean  -setmissval,-9999    $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat_1deg.nc  $DIR/HadISST/HadISST_sst_1960_2009.nc  $DIR/mean_CRU_HadISST/CRU_HadISST.nc 
 
-cdo remapbil,$DIR/HadISST/HadISST_sst_griddes.txt -selyear$(for year in $(seq 1960 2009) ; do echo -n ,$year ; done)  $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat_1deg.nc
 
 # observation temporal monthly regression 
 cdo regres -selyear$(for year in $(seq 1960 2009 ) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc $DIR/mean_CRU/cru_ts3.23.1901.2014.pre.dat_reg_1960-2009.nc   
