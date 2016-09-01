@@ -44,7 +44,7 @@ echo  precipitation CUR
 
 cdo -P 2 remapcon2,$DIR/HadISST/HadISST_sst_griddes.txt -selyear$(for year in $(seq $SEQ) ; do echo -n ,$year ; done)  $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc   $DIR/CRU_ts3.23/cru_ts3.23.$YYYY.pre.dat_1.0deg_tmp.nc
 
-# year mean 
+# year sum for precipitation 
 
 cdo yearsum    $DIR/CRU_ts3.23/cru_ts3.23.$YYYY.pre.dat_1.0deg_tmp.nc    $DIR/CRU_ts3.23/cru_ts3.23.$YYYY.pre.dat_1.0deg.nc
 rm $DIR/CRU_ts3.23/cru_ts3.23.$YYYY.pre.dat_1.0deg_tmp.nc
@@ -75,7 +75,6 @@ gdal_translate -ot Float32  -co COMPRESS=DEFLATE  -co ZLEVEL=9 $DIR/reg_CRU/cru_
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  -co ZLEVEL=9 $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg.tif
 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  -co ZLEVEL=9 NETCDF:"$DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.nc":sst    $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.tif
-
 
 echo  observation temporal mean_CRU  mean_HadISST
 
@@ -174,7 +173,7 @@ gdal_calc.py --type=Float32 --NoDataValue=-9999 --outfile=$DIR/slope_HadISST/Had
 
 # the slope is not = to 0 in any place, due to + random 
 
-# single cell have slope value 0 o 
+# single cell have slope value 0 so mask out
 
 pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.slope10.tif  -msknodata 0 -p "=" -nodata -9999 -i $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.slope10.tif -o $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.slope10msk.tif 
 gdal_edit.py  -a_nodata -9999   $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.slope10msk.tif
@@ -205,7 +204,7 @@ echo  velocity temporal regression divided  spatial slope  HadISST data
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.tif  -A  $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.tif  -B  $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
 
-echo  calculate aspect 
+echo  calculate aspect so direction  based on the mean/sum annual temperature/precipitation 
 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.r.tif      $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.slope.tif 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.r.tif      $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.slope.tif 
@@ -222,13 +221,6 @@ exit
 
 
 
-
-
-gdaldem aspect  -compute_edges -zero_for_flat   -co COMPRESS=DEFLATE -co ZLEVEL=9   $DIR/mean_CRU/cru_ts3.23.1901.2014.pre.dat_velocity_1960-2009_msk.tif   $DIR/mean_CRU/cru_ts3.23.1901.2014.pre.dat_aspect_1960-2009_msk.tif 
-
-gdaldem aspect  -compute_edges -zero_for_flat   -co COMPRESS=DEFLATE -co ZLEVEL=9   $DIR/mean_CRU/cru_ts3.23.1901.2014.tmp.dat_velocity_1960-2009_msk.tif   $DIR/mean_CRU/cru_ts3.23.1901.2014.tmp.dat_aspect_1960-2009_msk.tif 
-
-gdaldem aspect  -compute_edges -zero_for_flat   -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_HadISST/HadISST_sst.tmp.dat_velocity_1960-2009_msk.tif $DIR/mean_HadISST/HadISST_sst.tmp.dat_aspect_1960-2009_msk.tif
 
 # mask out the sea final velocity  =  velocity*_msk.tif 
 
