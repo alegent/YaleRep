@@ -65,8 +65,8 @@ cdo regres  $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc      $DIR/reg_
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  -co ZLEVEL=9 $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.tif 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  -co ZLEVEL=9 $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.tif
 
-pkfilter -of GTiff -dx 4 -dy 4  -f mean -d 4  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.tif
-pkfilter -of GTiff -dx 4 -dy 4  -f mean -d 4  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.tif
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.reg.tif
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg.tif
 
 gdal_translate -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 NETCDF:"$DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.nc":sst $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.tif
 
@@ -75,8 +75,8 @@ echo observation temporal mean_CRU   transform to tif
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.tif 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.tif
 
-pkfilter -of GTiff -dx 4 -dy 4  -f mean -d 4  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean.tif
-pkfilter -of GTiff -dx 4 -dy 4  -f mean -d 4  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean.tif
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean.tif
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean.tif
 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  NETCDF:"$DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.nc":sst    $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.tif
 
