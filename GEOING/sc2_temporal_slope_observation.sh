@@ -65,8 +65,8 @@ cdo regres  $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc      $DIR/reg_
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  -co ZLEVEL=9 $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.tif 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  -co ZLEVEL=9 $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.nc  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.tif
 
-pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.nc -o $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.reg.tif
-pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.nc -o $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg.tif
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -nodata -9999  -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.nc -o $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.reg.tif 
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -nodata -9999 -ot Float32  -i  $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.nc -o $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg.tif
 
 gdal_translate -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 NETCDF:"$DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.nc":sst $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.tif
 
@@ -75,8 +75,8 @@ echo observation temporal mean_CRU   transform to tif
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.tif 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.tif
 
-pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc -o $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean.tif
-pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc -o $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean.tif
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -nodata -9999 -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc -o $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean.tif
+pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -nodata -9999 -i  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc -o $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean.tif
 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  NETCDF:"$DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.nc":sst    $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.tif
 
@@ -84,41 +84,41 @@ gdal_translate -ot Float32  -co COMPRESS=DEFLATE  NETCDF:"$DIR/mean_HadISST/HadI
 
 
 
-echo create random variable for temperature 0.5 deg mean_CRU
-R --vanilla -q <<EOF
-library(raster)
-raster=raster(matrix(runif(259200,max=0.05, min=-0.05),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-EOF
-echo create random variable for temperature 1 deg mean_CRU
-R --vanilla -q <<EOF
-library(raster)
-raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-EOF
+# echo create random variable for temperature 0.5 deg mean_CRU
+# R --vanilla -q <<EOF
+# library(raster)
+# raster=raster(matrix(runif(259200,max=0.05, min=-0.05),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+# EOF
+# echo create random variable for temperature 1 deg mean_CRU
+# R --vanilla -q <<EOF
+# library(raster)
+# raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+# EOF
 
-echo create random variable for precipiation  0.5 deg mean_CRU
-R --vanilla -q <<EOF
-library(raster)
-raster=raster(matrix(runif(259200,max=0.1, min=0.001),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-EOF
+# echo create random variable for precipiation  0.5 deg mean_CRU
+# R --vanilla -q <<EOF
+# library(raster)
+# raster=raster(matrix(runif(259200,max=0.1, min=0.001),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+# EOF
 
-echo create random variable for precipiatation 1 deg mean_CRU
+# echo create random variable for precipiatation 1 deg mean_CRU
 
-R --vanilla -q <<EOF
-library(raster)
-raster=raster(matrix(runif(64800,max=0.1, min=0.001),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-EOF
+# R --vanilla -q <<EOF
+# library(raster)
+# raster=raster(matrix(runif(64800,max=0.1, min=0.001),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+# EOF
 
-echo create random variable for temperature 1 deg mean_HadISST
+# echo create random variable for temperature 1 deg mean_HadISST
 
-R --vanilla -q <<EOF
-library(raster)
-raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_HadISST/HadISST_sst.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-EOF
+# R --vanilla -q <<EOF
+# library(raster)
+# raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_HadISST/HadISST_sst.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+# EOF
 
 
 
@@ -174,31 +174,47 @@ gdal_edit.py  -a_nodata -9999   $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.s
 pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.slope10.tif  -msknodata 0 -p "=" -nodata -9999 -i $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.slope10.tif -o $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.slope10msk.tif 
 gdal_edit.py  -a_nodata -9999   $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.slope10msk.tif
 
-
-pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10.tif -msknodata 0 -p "=" -nodata -9999 -i $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10.tif -o $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif 
+pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10.tif -msknodata -0 -p "=" -nodata -9999 -i $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10.tif -o $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif 
 gdal_edit.py -a_nodata -9999  $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif 
 
 echo velocity temporal regression divided  spatial slope  CRU data 
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.velocity.tif -A $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.reg.tif -B $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_1.00deg.velocity.nc 
+
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.velocity.tif -A $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg.tif -B $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_1.00deg.velocity.nc 
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity.tif -A $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.tif -B $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.pre.dat_0.50deg.velocity.nc 
+
+
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity.tif -A $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.tif -B $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_0.50deg.velocity.nc 
 
 echo  velocity temporal regression divided  spatial slope  HadISST data 
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.tif  -A  $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.tif  -B  $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+gdal_translate -of netCDF  $DIR/velocity_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.tif   $DIR/velocity_HadISST_nc/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.nc 
 
 echo  calculate aspect so direction  based on the mean/sum annual temperature/precipitation 
 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect.tif 
+gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_0.50deg.aspect.nc 
+
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect.tif 
+gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.pre.dat_0.50deg.aspect.nc 
 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect.tif 
+gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect.nc 
+
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect.tif 
+gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect.nc 
 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.r.tif $DIR/aspect_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect.tif 
+gdal_translate -of netCDF  $DIR/aspect_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect.tif   $DIR/aspect_HadISST_nc/HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect.nc 
+
+
 
 
 ' _ 
