@@ -37,9 +37,9 @@ echo  precipitation CUR
 
 # year sum for precipitation  CRU  ; then regression 
 
-cdo yearsum  -selyear$(for year in $(seq $SEQ); do echo -n ,$year ; done)   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc    $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.nc
+cdo yearsum    -setvrange,0,3000   -selyear$(for year in $(seq $SEQ); do echo -n ,$year ; done)   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc    $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.nc
 
-cdo regres  $DIR/CRU_ts3.23/cru_ts3.23.$YYYY.pre.dat_0.5deg.nc   $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.nc
+cdo regres  $DIR/mean_CRU_ts3.23/cru_ts3.23.$YYYY.pre.dat_0.5deg.nc   $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.nc
 
 # year mean 
 cdo timmean  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.nc   $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc
@@ -53,11 +53,11 @@ cdo timmean  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.nc   $DIR/mean_CRU/cr
 # cdo -P 2  remapcon2,$DIR/HadISST/HadISST_sst_griddes.txt $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc   $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean.nc
 # cdo -P 2  remapcon2,$DIR/HadISST/HadISST_sst_griddes.txt $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc   $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean.nc
 
-echo temperature HadISST
-cdo yearmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq $SEQ); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc  
+echo temperature HadISST  # setvals change the value of -1000 to -1.8 
+cdo yearmean   -setvals,-1000,-1.8     -setvrange,-50,50 -selyear$(for year in $(seq $SEQ); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc  
 
-cdo timmean  $DIR/HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc     $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.nc  
-cdo regres  $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc      $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.nc  
+cdo timmean  $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc           $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.nc  
+cdo regres   $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.nc           $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.nc  
 
 
 # transform to tif 
@@ -84,50 +84,50 @@ gdal_translate -ot Float32  -co COMPRESS=DEFLATE  NETCDF:"$DIR/mean_HadISST/HadI
 
 
 
-# echo create random variable for temperature 0.5 deg mean_CRU
-# R --vanilla -q <<EOF
-# library(raster)
-# raster=raster(matrix(runif(259200,max=0.05, min=-0.05),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-# EOF
-# echo create random variable for temperature 1 deg mean_CRU
-# R --vanilla -q <<EOF
-# library(raster)
-# raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-# EOF
+echo create random variable for temperature 0.5 deg mean_CRU
+R --vanilla -q <<EOF
+library(raster)
+raster=raster(matrix(runif(259200,max=0.05, min=-0.05),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+EOF
+echo create random variable for temperature 1 deg mean_CRU
+R --vanilla -q <<EOF
+library(raster)
+raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+EOF
 
-# echo create random variable for precipiation  0.5 deg mean_CRU
-# R --vanilla -q <<EOF
-# library(raster)
-# raster=raster(matrix(runif(259200,max=0.1, min=0.001),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-# EOF
+echo create random variable for precipiation  0.5 deg mean_CRU
+R --vanilla -q <<EOF
+library(raster)
+raster=raster(matrix(runif(259200,max=0.1, min=0.001),360,720) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+EOF
 
-# echo create random variable for precipiatation 1 deg mean_CRU
+echo create random variable for precipiatation 1 deg mean_CRU
 
-# R --vanilla -q <<EOF
-# library(raster)
-# raster=raster(matrix(runif(64800,max=0.1, min=0.001),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-# EOF
+R --vanilla -q <<EOF
+library(raster)
+raster=raster(matrix(runif(64800,max=0.1, min=0.001),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU/cru_ts3.23.pre.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+EOF
 
-# echo create random variable for temperature 1 deg mean_HadISST
+echo create random variable for temperature 1 deg mean_HadISST
 
-# R --vanilla -q <<EOF
-# library(raster)
-# raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-# writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_HadISST/HadISST_sst.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
-# EOF
+R --vanilla -q <<EOF
+library(raster)
+raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_HadISST/HadISST_sst.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+EOF
 
 
+echo  1960.2005  1960.2009  1960.2014 | xargs -n 1 -P 3 bash -c $'  
 
-echo  1960.2005  1960.2009  1960.2014 | xargs -n 1 -P 3 bash -c $' 
 
 YYYY=$1
 SEQ=$(echo $YYYY  | tr "." " ") 
 
-# add the random to temporal mean for precipitation and temperature 
+add the random to temporal mean for precipitation and temperature 
 
 gdal_calc.py --type=Float32 --NoDataValue=-9999 --outfile=$DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.r.tif -A $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.tif -B $DIR/mean_CRU/cru_ts3.23.tmp.dat_mean_random.0.5deg.tif --calc="( A.astype(float) +  B.astype(float) )"  --overwrite     --co=COMPRESS=DEFLATE --co=ZLEVEL=9
 gdal_calc.py --type=Float32 --NoDataValue=-9999 --outfile=$DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.r.tif -A $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.tif -B $DIR/mean_CRU/cru_ts3.23.pre.dat_mean_random.0.5deg.tif --calc="( A.astype(float) +  B.astype(float) )"  --overwrite    --co=COMPRESS=DEFLATE --co=ZLEVEL=9
@@ -186,42 +186,141 @@ gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_CRU/cru
 gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_1.00deg.velocity.nc 
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity.tif -A $DIR/reg_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg.tif -B $DIR/slope_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
-gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.pre.dat_0.50deg.velocity.nc 
+gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity.nc 
 
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity.tif -A $DIR/reg_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg.tif -B $DIR/slope_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
-gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_0.50deg.velocity.nc 
+gdal_translate  -of netCDF $DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity.tif   $DIR/velocity_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity.nc 
 
 echo  velocity temporal regression divided  spatial slope  HadISST data 
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$DIR/velocity_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.tif  -A  $DIR/reg_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg.tif  -B  $DIR/slope_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
 gdal_translate -of netCDF  $DIR/velocity_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.tif   $DIR/velocity_HadISST_nc/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.nc 
 
-echo  calculate aspect so direction  based on the mean/sum annual temperature/precipitation 
+# echo  calculate aspect so direction  based on the mean/sum annual temperature/precipitation 
 
+## aspect CRU tmp 0.5 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect.tif 
-gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_0.50deg.aspect.nc 
+
+cd  $DIR/direction_CRU
+rm -fr loc_$YYYY
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh      $DIR/direction_CRU/  loc_$YYYY                  $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect.tif  
+r.in.gdal in=$DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity.tif   out=cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity   --overwrite
+
+r.mask raster=cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect 
+# create an invers direction 
+r.mapcalc "cru_ts3.23.$YYYY.tmp.dat_0.5deg.directionNEG = if( cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect  <  180  ,  cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect + 180    ,   cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect - 180  ) " 
+# create a direction map if velocity > 0 , put aspect , esle put the invert direction
+r.mapcalc "cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction    = if( cru_ts3.23.$YYYY.tmp.dat_0.5deg.velocity >   0 ,  cru_ts3.23.$YYYY.tmp.dat_0.5deg.aspect    ,   cru_ts3.23.$YYYY.tmp.dat_0.5deg.directionNEG    ) " 
+r.mask -r  # remove the mask 
+# set null to 0 
+r.mapcalc "cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction0 = if(  isnull(cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction) , 0 ,  cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction       ) " 
+
+echo export direction 
+r.out.gdal -c     createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff  type=Float32 nodata=0   input=cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction0     output=$DIR/direction_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction.tif   --overwrite
+rm -fr loc_$YYYY
+gdal_translate  -of netCDF $DIR/direction_CRU/cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction.tif   $DIR/direction_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_0.5deg.direction.nc 
+
+## aspect CRU pre  0.5 
 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect.tif 
-gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.pre.dat_0.50deg.aspect.nc 
 
+cd  $DIR/direction_CRU
+rm -fr loc_$YYYY
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh      $DIR/direction_CRU/  loc_$YYYY                  $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect.tif  
+r.in.gdal in=$DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity.tif   out=cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity   --overwrite
+
+r.mask raster=cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect 
+# create an invers direction 
+r.mapcalc "cru_ts3.23.$YYYY.pre.dat_0.5deg.directionNEG = if( cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect  <  180  ,  cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect + 180    ,   cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect - 180  ) " 
+# create a direction map if velocity > 0 , put aspect , esle put the invert direction
+r.mapcalc "cru_ts3.23.$YYYY.pre.dat_0.5deg.direction    = if( cru_ts3.23.$YYYY.pre.dat_0.5deg.velocity >   0 ,  cru_ts3.23.$YYYY.pre.dat_0.5deg.aspect    ,   cru_ts3.23.$YYYY.pre.dat_0.5deg.directionNEG    ) " 
+r.mask -r  # remove the mask 
+# set null to 0 
+r.mapcalc "cru_ts3.23.$YYYY.pre.dat_0.5deg.direction0 = if(  isnull(cru_ts3.23.$YYYY.pre.dat_0.5deg.direction) , 0 ,  cru_ts3.23.$YYYY.pre.dat_0.5deg.direction       ) " 
+
+echo export direction 
+r.out.gdal -c     createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff  type=Float32 nodata=0   input=cru_ts3.23.$YYYY.pre.dat_0.5deg.direction0     output=$DIR/direction_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.direction.tif   --overwrite
+rm -fr loc_$YYYY
+gdal_translate  -of netCDF $DIR/direction_CRU/cru_ts3.23.$YYYY.pre.dat_0.5deg.direction.tif   $DIR/direction_CRU_nc/cru_ts3.23.$YYYY.pre.dat_0.5deg.direction.nc 
+
+
+## aspect CRU tmp 1.0
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect.tif 
-gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect.nc 
+
+cd  $DIR/direction_CRU
+rm -fr loc_$YYYY
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh      $DIR/direction_CRU/  loc_$YYYY                  $DIR/aspect_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect.tif  
+r.in.gdal in=$DIR/velocity_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.velocity.tif   out=cru_ts3.23.$YYYY.tmp.dat_1.0deg.velocity   --overwrite
+
+r.mask raster=cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect 
+# create an invers direction 
+r.mapcalc "cru_ts3.23.$YYYY.tmp.dat_1.0deg.directionNEG = if( cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect  <  180  ,  cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect + 180    ,   cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect - 180  ) " 
+# create a direction map if velocity > 0 , put aspect , esle put the invert direction
+r.mapcalc "cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction    = if( cru_ts3.23.$YYYY.tmp.dat_1.0deg.velocity >   0 ,  cru_ts3.23.$YYYY.tmp.dat_1.0deg.aspect    ,   cru_ts3.23.$YYYY.tmp.dat_1.0deg.directionNEG    ) " 
+r.mask -r  # remove the mask 
+# set null to 0 
+r.mapcalc "cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction0 = if(  isnull(cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction) , 0 ,  cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction       ) " 
+
+echo export direction 
+r.out.gdal -c     createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff  type=Float32 nodata=0   input=cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction0     output=$DIR/direction_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction.tif   --overwrite
+rm -fr loc_$YYYY
+gdal_translate  -of netCDF $DIR/direction_CRU/cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction.tif   $DIR/direction_CRU_nc/cru_ts3.23.$YYYY.tmp.dat_1.0deg.direction.nc 
+
+## aspect CRU pre  1.0 
 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean.r.tif      $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect.tif 
-gdal_translate  -of netCDF $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect.tif   $DIR/aspect_CRU_nc/cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect.nc 
+
+cd  $DIR/direction_CRU
+rm -fr loc_$YYYY
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh      $DIR/direction_CRU/  loc_$YYYY                  $DIR/aspect_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect.tif  
+r.in.gdal in=$DIR/velocity_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.velocity.tif   out=cru_ts3.23.$YYYY.pre.dat_1.0deg.velocity   --overwrite
+
+r.mask raster=cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect 
+# create an invers direction 
+r.mapcalc "cru_ts3.23.$YYYY.pre.dat_1.0deg.directionNEG = if( cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect  <  180  ,  cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect + 180    ,   cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect - 180  ) " 
+# create a direction map if velocity > 0 , put aspect , esle put the invert direction
+r.mapcalc "cru_ts3.23.$YYYY.pre.dat_1.0deg.direction    = if( cru_ts3.23.$YYYY.pre.dat_1.0deg.velocity >   0 ,  cru_ts3.23.$YYYY.pre.dat_1.0deg.aspect    ,   cru_ts3.23.$YYYY.pre.dat_1.0deg.directionNEG    ) " 
+r.mask -r  # remove the mask 
+# set null to 0 
+r.mapcalc "cru_ts3.23.$YYYY.pre.dat_1.0deg.direction0 = if(  isnull(cru_ts3.23.$YYYY.pre.dat_1.0deg.direction) , 0 ,  cru_ts3.23.$YYYY.pre.dat_1.0deg.direction       ) " 
+
+echo export direction 
+r.out.gdal -c     createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff  type=Float32 nodata=0   input=cru_ts3.23.$YYYY.pre.dat_1.0deg.direction0     output=$DIR/direction_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.direction.tif   --overwrite
+rm -fr loc_$YYYY
+gdal_translate  -of netCDF $DIR/direction_CRU/cru_ts3.23.$YYYY.pre.dat_1.0deg.direction.tif   $DIR/direction_CRU_nc/cru_ts3.23.$YYYY.pre.dat_1.0deg.direction.nc 
+
+
+echo  aspect HadISST  tmp  1.0  aspect HadISST  tmp  1.0  aspect HadISST  tmp  1.0   aspect HadISST  tmp  1.0   aspect HadISST  tmp  1.0  aspect HadISST  tmp  1.0  aspect HadISST  tmp  1.0 aspect HadISST  tmp  1.0 aspect HadISST  tmp  1.0 
 
 gdaldem aspect -zero_for_flat -compute_edges -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/mean_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean.r.tif $DIR/aspect_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect.tif 
-gdal_translate -of netCDF  $DIR/aspect_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect.tif   $DIR/aspect_HadISST_nc/HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect.nc 
 
+cd  $DIR/direction_HadISST
+rm -fr loc_$YYYY
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh      $DIR/direction_HadISST/  loc_$YYYY                  $DIR/aspect_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect.tif 
+r.in.gdal in=$DIR/velocity_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity.tif    out=HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity   --overwrite
 
+r.mask raster=HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect
+# create an invers direction 
+r.mapcalc "  HadISST_sst.$YYYY.tmp.dat_1.0deg.directionNEG  = if( HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect   <  180  ,  HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect  + 180    ,  HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect  - 180  ) " 
 
+echo  create a direction map if velocity > 0 , put aspect , esle put the invert direction
+
+r.mapcalc "HadISST_sst.$YYYY.tmp.dat_1.0deg.direction    = if( HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity >   0 ,  HadISST_sst.$YYYY.tmp.dat_1.0deg.aspect    ,  HadISST_sst.$YYYY.tmp.dat_1.0deg.directionNEG    ) " 
+r.mask -r  # remove the mask 
+
+# set null to 0 
+r.mapcalc " HadISST_sst.$YYYY.tmp.dat_1.0deg.direction0  = if(  isnull(HadISST_sst.$YYYY.tmp.dat_1.0deg.direction    ) , 0 ,  HadISST_sst.$YYYY.tmp.dat_1.0deg.direction     ) " 
+
+echo export direction 
+r.out.gdal -c     createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff  type=Float32 nodata=0   input=HadISST_sst.$YYYY.tmp.dat_1.0deg.direction0    output=$DIR/direction_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.direction.tif   --overwrite
+rm -fr loc_$YYYY
+
+gdal_translate -of netCDF  $DIR/direction_HadISST/HadISST_sst.$YYYY.tmp.dat_1.0deg.direction.tif   $DIR/direction_HadISST_nc/HadISST_sst.$YYYY.tmp.dat_1.0deg.direction.nc 
 
 ' _ 
 
 exit 
-
-
 
 
 # mask out the sea final velocity  =  velocity*_msk.tif 
