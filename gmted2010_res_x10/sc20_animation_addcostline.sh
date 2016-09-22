@@ -107,10 +107,10 @@ if ( filename == "elevation_10KMsd_GMTEDsd")  { max=25 ; min=min ; des="Elevatio
 
 if ( filename == "slope_10KMmd_GMTEDmd") { max=15 ; min=min ; des="Slope  - Median"  }        #6
 if ( filename == "slope_10KMsd_GMTEDmd") { max=15 ; min=min ; des="Slope - Standard deviation"  }     
-if ( filename == "aspect-cosine_10KMmd_GMTEDmd") { max=1 ; min=-1 ; des="Aspect Cosine - Median"  } #10
-if ( filename == "aspect-cosine_10KMsd_GMTEDmd") { max=0.8 ; min=min ; des="Aspect Cosine - Standard deviation"  }       # problem with the -nan
-if ( filename == "aspect-sine_10KMmd_GMTEDmd") { max=1 ; min=-1 ; des="Aspect Sine - Median"  }
-if ( filename == "aspect-sine_10KMsd_GMTEDmd") { max=0.8 ; min=min ; des="Aspect Sine - Standard deviation"  }         # problem with the -nan
+if ( filename == "aspectcosine_10KMmd_GMTEDmd") { max=1 ; min=-1 ; des="Aspect Cosine - Median"  } #10
+if ( filename == "aspectcosine_10KMsd_GMTEDmd") { max=0.8 ; min=min ; des="Aspect Cosine - Standard deviation"  }       # problem with the -nan
+if ( filename == "aspectsine_10KMmd_GMTEDmd") { max=1 ; min=-1 ; des="Aspect Sine - Median"  }
+if ( filename == "aspectsine_10KMsd_GMTEDmd") { max=0.8 ; min=min ; des="Aspect Sine - Standard deviation"  }         # problem with the -nan
 if ( filename == "eastness_10KMmd_GMTEDmd") { max=0.2 ; min=-0.2 ; des="Eastness - Median"  }   # 14 
 if ( filename == "eastness_10KMsd_GMTEDmd") { max=max ; min=min ; des="Eastness - Standard deviation"  }
 if ( filename == "northness_10KMmd_GMTEDmd") { max=0.2 ; min=-0.2 ; des="Northness - Median"  }   # 
@@ -158,6 +158,11 @@ at=seq(min,max,length=n)
 colR=colorRampPalette(c("blue","green","yellow", "orange" , "red", "brown", "black" ))
  
 cols=colR(n)
+
+#  "#0000FF" "#000FEF" "#001EE0" "#002ED0" "#003DC1" "#004DB1" "#005CA2" "#006C92" "#007B83" "#008B73" "#009A64" "#00AA54" "#00B945" "#00C836" "#00D826" "#00E717" "#00F707" "#07FF00" "#17FF00" "#26FF00" "#36FF00" "#45FF00" "#55FF00" "#64FF00" "#73FF00" "#83FF00" "#92FF00" "#A2FF00" "#B1FF00" "#C1FF00" "#D0FF00" "#E0FF00" "#EFFF00" "#FFFE00" "#FFF900" "#FFF400" "#FFEE00" "#FFE900" "#FFE300" "#FFDE00" "#FFD800" "#FFD300" "#FFCD00" "#FFC800" "#FFC300" "#FFBD00" "#FFB800" "#FFB200" "#FFAD00" "#FFA700" "#FF9F00" "#FF9500" "#FF8B00" "#FF8200" "#FF7700" "#FF6D00" "#FF6300" "#FF5900" "#FF4F00" "#FF4500" "#FF3B00" "#FF3100" "#FF2700" "#FF1D00" "#FF1300" "#FF0900" "#FE0000" "#F90202" "#F40505" "#EE0707" "#E90A0A" "#E30C0C" "#DE0F0F" "#D81111" "#D31414" "#CD1616" "#C81919"  "#C21C1C" "#BD1E1E" "#B82121" "#B22323" "#AD2626" "#A72828" "#9F2828" "#952626" "#8B2323" "#812121" "#771E1E" "#6D1B1B" "#631919" "#591616" "#4F1414" "#451111" "#3B0F0F" "#310C0C" "#270A0A" "#1D0707" "#130505" "#090202" "#000000"
+
+#   "0000FF,000FEF,001EE0,002ED0,003DC1,004DB1,005CA2,006C92,007B83,008B73,009A64,00AA54,00B945,00C836,00D826,00E717,00F707,07FF00,17FF00,26FF00,36FF00,45FF00,55FF00,64FF00,73FF00,83FF00,92FF00,A2FF00,B1FF00,C1FF00,D0FF00,E0FF00,EFFF00,FFFE00,FFF900,FFF400,FFEE00,FFE900,FFE300,FFDE00,FFD800,FFD300,FFCD00,FFC800,FFC300,FFBD00,FFB800,FFB200,FFAD00,FFA700,FF9F00,FF9500,FF8B00,FF8200,FF7700,FF6D00,FF6300,FF5900,FF4F00,FF4500,FF3B00,FF3100,FF2700,FF1D00,FF1300,FF0900,FE0000,F90202,F40505,EE0707,E90A0A,E30C0C,DE0F0F,D81111,D31414,CD1616,C81919,C21C1C,BD1E1E,B82121,B22323,AD2626,A72828,9F2828,952626,8B2323,812121,771E1E,6D1B1B,631919,591616,4F1414,451111,3B0F0F,310C0C,270A0A,1D0707,130505,090202,000000"
+
 res=1e6 # res=1e4 for testing and res=1e6 for the final product
 greg=list(ylim=c(-56,84),xlim=c(-180,180))
 

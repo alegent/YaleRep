@@ -4,6 +4,10 @@
 
 for km in 1 5 10 50 100 ; do 
 
-ls  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/final/*/*_${km}KM*_GMTED??.tif   | xargs -n 1  -P 8  bash -c  $' echo $( basename $1 )  $(gdalinfo -stats  $1 | grep   MIN | awk  -F "="  \' { gsub ("STATISTICS_","" )  ; print $2 }\'     )   $(gdalinfo -stats  $1 | grep   MAXIMUM  | awk  -F "="  \' { gsub ("STATISTICS_","" ) ; print $2  }\' )   ' _    2>  /dev/null  >  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/final/min_max_${km}KM.txt 
+ls  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/final/*/*_${km}KM*_GMTED??.tif   | xargs -n 1  -P 8  bash -c  $' 
+echo $( basename $1 )  $(gdalinfo -stats  $1 | grep   MIN | awk  -F "="  \' { gsub ("STATISTICS_","" )  ;  printf ( "%.16f " , $2 )  }\'     )   $(gdalinfo -stats  $1 | grep   MAXIMUM  | awk  -F "="  \' { gsub ("STATISTICS_","" ) ;  printf ( "%.16f" , $2 )   }\' )
+rm -f $1.aux.xml
+' _    2>  /dev/null  >  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/final/min_max_${km}KM.txt 
 
 done 
+
