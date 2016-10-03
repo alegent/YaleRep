@@ -166,7 +166,7 @@ for YYYY in 1960.2009 1960.2014 ; do
 
 # land 
 gdal_calc.py --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif --calc="( A.astype(float) /  B.astype(float) )"  --overwrite --type=Float32
-pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
+pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
 gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
 rm  $RAM/${filename}_velocity.tif  
 
@@ -189,7 +189,7 @@ for YYYY in 1960.2005 ; do
 
 # land 
 gdal_calc.py --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif --calc="( A.astype(float) /  B.astype(float) )"  --overwrite --type=Float32
-pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
+pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
 gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
 rm  $RAM/${filename}_velocity.tif  
 
