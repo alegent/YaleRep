@@ -1,4 +1,4 @@
-# for GROUP in BIRDS TERRESTRIAL_MAMMALS   REPTILES    AMPHIBIANS MANGROVES  MARINE_MAMMALS  CORALS MARINEFISH  ; do  qsub -v GROUP=$GROUP  /lustre/home/client/fas/sbsc/ga254/scripts/HOTSPOT/sc1_rasterize.sh  ; done 
+# for GROUP in BIRDS TERRESTRIAL_MAMMALS REPTILES AMPHIBIANS MANGROVES MARINE_MAMMALS CORALS MARINEFISH  ; do  qsub -v GROUP=$GROUP  /lustre/home/client/fas/sbsc/ga254/scripts/HOTSPOT/sc1_rasterize.sh  ; done 
 
 # for GROUP in AMPHIBIANS MANGROVES  MARINE_MAMMALS  TERRESTRIAL_MAMMALS REPTILES CORALS MARINEFISH  BIRDS ; do  bash   /lustre/home/client/fas/sbsc/ga254/scripts/HOTSPOT/sc1_rasterize.sh $GROUP  ; done 
 
@@ -37,7 +37,6 @@ ogr2ogr -fid $FID  $RAM/shp$FID.shp  $RAM/${GROUP}.shp
 # gdal_rasterize -of netCDF  -at -ot Byte -a_srs EPSG:4326 -l shp$FID  -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 0.008333333333333 0.008333333333333 $RAM/shp$FID.shp $DIR/tif_1km/$GROUP/shp$FID.nc 
 
 gdal_rasterize -of netCDF -at -ot Byte -a_srs EPSG:4326 -l shp$FID  -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 1 1 $RAM/shp$FID.shp $RAM/tif_1d_shp$FID.nc
-
 gdal_rasterize -of netCDF -at -ot Byte -a_srs EPSG:4326 -l shp$FID  -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 0.25 0.25  $RAM/shp$FID.shp $RAM/tif_0.25d_shp$FID.nc  
 
 rm -f  $RAM/shp$FID.*
@@ -123,8 +122,8 @@ filename=$(basename $FID  .shp )
 echo $file
 # gdal_rasterize -at -ot Byte -a_srs EPSG:4326 -l $filename -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 0.008333333333333 0.008333333333333  $DIR/hsp/$FID  $DIR/tif_1km/$GROUP/${filename}.nc
 
-gdal_rasterize  -of netCDF  -at -ot Byte -a_srs EPSG:4326 -l $filename -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 1 1          $DIR/shp/$GROUP/$file $RAM/${filename}_0.25d.nc
-gdal_rasterize  -of netCDF  -at -ot Byte -a_srs EPSG:4326 -l $filename -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 0.25 0.25    $DIR/shp/$GROUP/$file $RAM/${filename}_1d.nc
+gdal_rasterize  -of netCDF  -at -ot Byte -a_srs EPSG:4326 -l $filename -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 1 1          $DIR/shp/$GROUP/$file $RAM/${filename}_1d.nc
+gdal_rasterize  -of netCDF  -at -ot Byte -a_srs EPSG:4326 -l $filename -burn 1 -a_nodata 0 -tap -te -180 -90 180 +90 -tr 0.25 0.25    $DIR/shp/$GROUP/$file $RAM/${filename}_0.25d.nc
 
 done 
 
@@ -142,36 +141,4 @@ done
 
 ' _ 
 fi 
-
-cleanram 
-
-echo start the SUM   start the SUM   start the SUM start the SUM start the SUM start the SUM start the SUM start the SUM start the SUM start the SUM start the SUM start the SUM 
-
-
-
-for RES in 1d 0.25d  ; do
-
-echo start group sum 
-rm -f  $DIR/tif_${RES}_stack/species_sum_${RES}.nc 
-cdo -z zip_9 -f nc4   enssum   $(ls  $DIR/tif_${RES}/$GROUP/${GROUP}_sum*_${RES}.nc    )   $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.nc
-rm -f   $DIR/tif_${RES}/$GROUP/${GROUP}_sum*_${RES}.nc 
-gdal_translate  -ot UInt32  -co COMPRESS=DEFLATE -co ZLEVEL=9   $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.nc  $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.tif
-
-rm -f    $DIR/tif_${RES}_stack/$GROUP/360x114global_${GROUP}_sum_${RES}.*
-pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.tif   -o   $DIR/tif_${RES}_stack/$GROUP/360x114global_${GROUP}_sum_${RES}.shp
- 
-done 
- 
-
-# overall sum 
-
-# for RES in 1d 0.25d 1km ; do
-# cdo enssum  $(ls $DIR/tif_${RES}_stack/*/*_sum_${RES}.nc)  $DIR/tif_${RES}_stack/allgroup_sum_${RES}.nc 
-# gdal_translate  -ot UInt32  -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/tif_${RES}_stack/allgroup_sum_${RES}.nc  $DIR/tif_${RES}_stack/allgroup_sum_${RES}.tif 
-
-# rm -f   $DIR/tif_${RES}_stack/$GROUP/360x114global_allgroup_sum_${RES}.*
-# pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i  $DIR/tif_${RES}_stack/allgroup_sum_${RES}.tif  -o $DIR/tif_${RES}_stack/360x114global_allgroup_sum_${RES}.shp
-
-# done 
-
 

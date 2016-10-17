@@ -1,5 +1,5 @@
 
-# qsub   -W depend=afterany$(qstat -u $USER  | grep sc1_rasterize.sh   | awk -F . '{  printf (":%i" ,  $1 ) }' | awk '{   printf ("%s\n" , $1 ) }')  /lustre/home/client/fas/sbsc/ga254/scripts/HOTSPOT/sc2_2netcdfSUM.sh  
+# qsub  -W depend=afterany$(qstat -u $USER  | grep sc1_rasterize.sh   | awk -F . '{  printf (":%i" ,  $1 ) }' | awk '{   printf ("%s\n" , $1 ) }')  /lustre/home/client/fas/sbsc/ga254/scripts/HOTSPOT/sc2_2netcdfSUM.sh  
 
 #PBS -S /bin/bash 
 #PBS -q fas_normal
@@ -13,67 +13,89 @@ module load Tools/CDO/1.6.4
 
 export RAM=/dev/shm
 export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT
-export LIST=$1
 
+for GROUP in TERRESTRIAL_MAMMALS REPTILES AMPHIBIANS MANGROVES MARINE_MAMMALS CORALS MARINEFISH  ; do  
+for RES in 0.25d  1d ; do
+echo start group sum $GROUP 
 
-cd /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/geo_file/
-rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/*/*/shp.nc  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/geo_file/*
+export GROUP
+export RES
 
-for GROUP in AMPHIBIANS MANGROVES  MARINE_MAMMALS  TERRESTRIAL_MAMMALS REPTILES CORALS MARINEFISH  BIRDS ; do 
+echo $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP $GROUP 
 
-export GROUP=$GROUP 
+rm -f  $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum*_1stk_${RES}.nc   $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum*_2stk_${RES}.nc  $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum*_3stk_${RES}.nc 
 
-find  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_1km/$GROUP/   -name "*.nc"   > /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/geo_file/tiflist_1km.txt 
-awk 'NR%1000==1 {x="F"++i;}{ print >   "tiflist"x"_1km.txt" }'  tiflist_1km.txt 
+find   $DIR/tif_${RES}/$GROUP -name "*.nc"    | xargs -n 30 -P 8  bash -c $'
+                                                                                                                                                                                     
+FIDname=$(echo $(basename ${1} ${RES}.nc  ) | tr "${GROUP}_sum" " " | awk \'{print  $1 }\' )
 
-find  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_1d/$GROUP/  -name "*.nc"   > /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/geo_file/tiflist_1d.txt 
-awk 'NR%1000==1 {x="F"++i;}{ print >   "tiflist"x"_1d.txt" }'  tiflist_1d.txt 
+echo $FIDname   adsfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 
-find  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_0.25d/$GROUP/  -name "*.nc"   > /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/geo_file/tiflist_0.25d.txt 
-awk 'NR%1000==1 {x="F"++i;}{ print >   "tiflist"x"_0.25d.txt" }'  tiflist_0.25d.txt 
-
-
-cleanram 
-
-
-for RES in 1d 0.25d 1km ; do
-
-export RES=$RES
-
-rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_${RES}_stack/*
-
-ls $DIR/geo_file/tiflistF*_${RES}.txt   | xargs -n 1  -P 8 bash -c $' 
-LISTname=$(basename $1 .txt)
-
-# for NC in $(cat $1) ; do cdo infov $NC ; done 
-
-rm -f  $DIR/tif_${RES}_stack/${LISTname}_sum.nc 
-cdo enssum   $(cat $1  )   $DIR/tif_${RES}_stack/${LISTname}_sum.nc 
+cdo  -b I32 -z zip_9 -f nc4  enssum  ${1} ${2} ${3} ${4} ${5} ${6} ${7} ${8} ${9} ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20} ${21} ${22} ${23} ${24} ${25} ${26} ${27} ${28} ${29} ${30}  $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum${FIDname}_1stk_${RES}.nc 
 
 ' _ 
 
-rm -f  $DIR/tif_${RES}_stack/species_sum_${RES}.nc 
-cdo enssum   $(ls  $DIR/tif_${RES}_stack/tiflistF*_${RES}_sum.nc   )   $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.nc 
-rm -f  $DIR/tif_${RES}_stack/tiflistF*_${RES}_sum.nc
-gdal_translate  -ot UInt32  -co COMPRESS=DEFLATE -co ZLEVEL=9   $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.nc  $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.tif
+echo start second itereation  start second itereation start second itereation start second itereation start second itereation start second itereation start second itereation start second itereation start second itereation 
 
-rm -f    $DIR/tif_${RES}_stack/$GROUP/360x114global_${GROUP}_sum_${RES}.*
-pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/tif_${RES}_stack/$GROUP/${GROUP}_sum_${RES}.tif   -o   $DIR/tif_${RES}_stack/$GROUP/360x114global_${GROUP}_sum_${RES}.shp
- 
+find   $DIR/tif_${RES}_stack/$GROUP -name "*_1stk_*.nc"    | xargs -n 30 -P 8  bash -c $'
+                                                                                                                                                                                     
+FIDname=$(echo $(basename ${1} _1stk_${RES}.nc  ) | tr "${GROUP}_sum" " " | awk \'{print  $1 }\' )
+
+echo $FIDname   adsfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+cdo   -b I32 -z zip_9 -f nc4  enssum  ${1} ${2} ${3} ${4} ${5} ${6} ${7} ${8} ${9} ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20} ${21} ${22} ${23} ${24} ${25} ${26} ${27} ${28} ${29} ${30}  $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum${FIDname}_2stk_${RES}.nc 
+
+' _ 
+
+echo start therd itereation  start therd itereation start therd itereation start therd itereation start therd itereation start therd itereation start therd itereation start therd itereation start therd itereation start therd itereation 
+
+find   $DIR/tif_${RES}_stack/$GROUP -name "*_2stk_*.nc"    | xargs -n 30 -P 8  bash -c $'
+                                                                                                                                                                                     
+FIDname=$(echo $(basename ${1} _2stk_${RES}.nc  ) | tr "${GROUP}_sum" " " | awk \'{print  $1 }\' )
+
+echo $FIDname   adsfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+
+rm  -f $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum${FIDname}_3stk_${RES}.nc
+
+cdo  -b I32 -z zip_9 -f nc4  enssum  ${1} ${2} ${3} ${4} ${5} ${6} ${7} ${8} ${9} ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20} ${21} ${22} ${23} ${24} ${25} ${26} ${27} ${28} ${29} ${30} $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum${FIDname}_3stk_${RES}.nc 
+gdal_translate  -ot UInt32  -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum${FIDname}_3stk_${RES}.nc  $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum${FIDname}_3stk_${RES}.tif 
+
+rm -f $DIR/tif_${RES}_stack/$GROUP/360x114global_${GROUP}_sum_${RES}.shp  
+pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum${FIDname}_3stk_${RES}.tif   -o $DIR/tif_${RES}_stack/$GROUP/360x114global_${GROUP}_sum_${RES}.shp  
+
+
+' _ 
+
+rm -f  $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum*_1stk_${RES}.nc   $DIR/tif_${RES}_stack/${GROUP}/${GROUP}_sum*_2stk_${RES}.nc  
+
+done 
 done 
 
-rm -f  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/geo_file/*.txt 
+for RES in 1d 0.25d ; do
 
-done 
+rm -f   /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_${RES}_stack/BIRDS/BIRDS_sumALL_3stk_${RES}.nc 
+cdo  -b I32 -z zip_9 -f nc4 enssum /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_${RES}/BIRDS/BIRDS_sum*_${RES}.nc    /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_${RES}_stack/BIRDS/BIRDS_sumALL_3stk_${RES}.nc 
+gdal_translate  -ot UInt32  -co COMPRESS=DEFLATE -co ZLEVEL=9    /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_${RES}_stack/BIRDS/BIRDS_sumALL_3stk_${RES}.nc  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_${RES}_stack/BIRDS/BIRDS_sumALL_3stk_${RES}.tif 
 
-# overall sum 
 
-for RES in 1d 0.25d 1km ; do
-cdo enssum  $(ls $DIR/tif_${RES}_stack/*/*_sum_${RES}.nc)  $DIR/tif_${RES}_stack/allgroup_sum_${RES}.nc 
-gdal_translate  -ot UInt32  -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/tif_${RES}_stack/allgroup_sum_${RES}.nc  $DIR/tif_${RES}_stack/allgroup_sum_${RES}.tif 
+rm -f  $DIR/tif_${RES}_stack/BIRDS/360x114global_BIRDS_sum_${RES}.*
+pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i  /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/tif_${RES}_stack/BIRDS/BIRDS_sumALL_3stk_${RES}.tif -o $DIR/tif_${RES}_stack/BIRDS/360x114global_BIRDS_sum_${RES}.shp  
 
-rm -f   $DIR/tif_${RES}_stack/$GROUP/360x114global_allgroup_sum_${RES}.*
+
+
+done  
+
+echo  overall sum 
+
+for RES in 1d 0.25d ; do
+
+rm -f   /dev/shm/output$RES.vrt
+gdalbuildvrt  -overwrite  -separate -te -180 -90 +180 +90   /dev/shm/output$RES.vrt   $DIR/tif_${RES}_stack/*/*_sum*_3stk_${RES}.tif
+oft-calc -ot UInt32   /dev/shm/output$RES.vrt   $DIR/tif_${RES}_stack/allgroup_sum_${RES}.tif <<EOF
+1
+#1 #2 #3 #4 #5 #6 #7 #8 + + + + + + +
+EOF
+
+rm -f   $DIR/tif_${RES}_stack/360x114global_allgroup_sum_${RES}.*
 pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i  $DIR/tif_${RES}_stack/allgroup_sum_${RES}.tif  -o $DIR/tif_${RES}_stack/360x114global_allgroup_sum_${RES}.shp
 
 done 
-
