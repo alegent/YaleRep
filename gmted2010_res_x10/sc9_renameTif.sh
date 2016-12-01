@@ -103,7 +103,7 @@ echo "aspect  ###################################################"
 for dir1 in max mean  median min stdev ; do
 
 if [ $dir1 = min ]     ; then var="Minimum" ;  var1="mi" ; fi   
-if [ $dir1 = max ]     ; then var="Maximum" ;  var1="mx" ; fi   
+if [ $dir1 = max ]     ; then var="Maximum" ;  var1="ma" ; fi   
 if [ $dir1 = mean ]   ; then var="Mean"    ;  var1="mn" ; fi   
 if [ $dir1 = median ] ; then var="Median"  ;  var1="md" ;  fi   
 if [ $dir1 = stdev ] ;  then var="Standard Deviation"  ;  var1="sd" ;  fi   
@@ -143,7 +143,7 @@ if [ $dir1 = slope ]       ; then des="Slope" ;  fi
 for dir2 in max mean  median min stdev ; do
 
 if [ $dir2 = min ]     ; then var="Minimum" ;  var1="mi" ;  fi   
-if [ $dir2 = max ]     ; then var="Maximum" ;  var1="mx" ; fi   
+if [ $dir2 = max ]     ; then var="Maximum" ;  var1="ma" ; fi   
 if [ $dir2 = mean ]    ; then var="Mean"     ;  var1="mn" ; fi   
 if [ $dir2 = median ]  ; then var="Median"   ;  var1="md" ;  fi   
 if [ $dir2 = stdev ]   ; then var="Standard Deviation"  ;  var1="sd" ;  fi   
@@ -175,7 +175,7 @@ if [ $dir1 = tcurv ]   ;  then des="Tangential curvature" ;  fi
 for dir2 in max mean  median min stdev ; do
 
 if [ $dir2 = min ]     ; then var="Minimum" ;  var1="mi" ; fi   
-if [ $dir2 = max ]     ; then var="Maximum" ;  var1="mx" ; fi   
+if [ $dir2 = max ]     ; then var="Maximum" ;  var1="ma" ; fi   
 if [ $dir2 = mean ]   ; then var="Mean"     ;  var1="mn" ; fi   
 if [ $dir2 = median ] ; then var="Median"   ;  var1="md" ;  fi   
 if [ $dir2 = stdev ] ;  then var="Standard Deviation"  ;  var1="sd" ;  fi   

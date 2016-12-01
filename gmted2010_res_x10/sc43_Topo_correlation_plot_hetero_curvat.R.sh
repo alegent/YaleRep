@@ -33,8 +33,8 @@ GMTED_HETE_1km = GMTED_HETE_1km[sampleRow,]
 ## change colnames
 
 colnames(GMTED_CURV_1km)[1] =  "slope md"
-colnames(GMTED_CURV_1km)[2] =  "aspect-cosine md"
-colnames(GMTED_CURV_1km)[3] =  "aspect-sine md"  
+colnames(GMTED_CURV_1km)[2] =  "aspectcosine md"
+colnames(GMTED_CURV_1km)[3] =  "aspectsine md"  
 colnames(GMTED_CURV_1km)[4] =  "eastness md"     
 colnames(GMTED_CURV_1km)[5] =  "northness md"    
 colnames(GMTED_CURV_1km)[6] =  "pcurv md"        
@@ -54,8 +54,8 @@ colnames(GMTED_HETE_1km)[4] =  "tpi md"
 colnames(GMTED_HETE_1km)[5] =  "roughness md"   
 colnames(GMTED_HETE_1km)[6] =  "vrm md"         
 colnames(GMTED_HETE_1km)[7] =  "slope sd"       
-colnames(GMTED_HETE_1km)[8] =  "aspect-cosine sd"
-colnames(GMTED_HETE_1km)[9] =  "aspect-sine sd"  
+colnames(GMTED_HETE_1km)[8] =  "aspectcosine sd"
+colnames(GMTED_HETE_1km)[9] =  "aspectsine sd"  
 colnames(GMTED_HETE_1km)[10] =  "eastness sd"     
 colnames(GMTED_HETE_1km)[11] =  "northness sd"    
 colnames(GMTED_HETE_1km)[12] =  "pcurv sd"        
@@ -81,23 +81,24 @@ colnames(GMTED_HETE_1km)[31] =  "geomvalley perc"
 colnames(GMTED_HETE_1km)[32] =  "geompit perc"      
 
 
-
 ## cluster                                                            ### tree brances 
 pcGMTED_HETE_1km = prcomp(t(scale(GMTED_HETE_1km)))
-fitGMTED_HETE_1km = hclust(distance(pcGMTED_HETE_1km$x), method="ward")
-postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps", width=3, height=8 , paper="special" ,  horizo=F)
 
-print (ggdendrogram( fitGMTED_HETE_1km, rotate = T  , labels=F  ) +  theme(axis.ticks = element_blank(), axis.text.x = element_blank() , axis.text.y = element_blank()) ,   vp=viewport(angle=-180)  )
+fitGMTED_HETE_1km = hclust(distance(pcGMTED_HETE_1km$x), method="ward")
+
+postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps", width=3, height=8 , paper="special" ,  horizo=F)
+                                         #  rotate = T  , labels=F
+print (ggdendrogram( fitGMTED_HETE_1km, rotate = T  , labels=F  )   +  theme(axis.ticks = element_blank(), axis.text.x = element_blank() , axis.text.y = element_blank()) ,   vp=viewport(angle=-180)  )
 
 # plot(fitGMTED_HETE_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
 dev.off()
 
-pcGMTED_CURV_1km = prcomp(t(scale(GMTED_CURV_1km)))
+pcGMTED_CURV_1km  = prcomp(t(scale(GMTED_CURV_1km)))
 fitGMTED_CURV_1km = hclust(distance(pcGMTED_CURV_1km$x), method="ward")
-postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.ps", width=8, height=8 , paper="special" ,  horizo=F)
+postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.ps", width=3, height=8 , paper="special" ,  horizo=F)
+                                
+print (ggdendrogram( fitGMTED_CURV_1km, rotate = T  , labels=F  )   +  theme(axis.ticks = element_blank(), axis.text.x = element_blank() , axis.text.y = element_blank()) ,   vp=viewport(angle=-180)  )
 
-print (ggdendrogram( fitGMTED_CURV_1km, rotate = T  , labels=F  ) +  theme(axis.ticks = element_blank(), axis.text.x = element_blank() , axis.text.y = element_blank()) ,   vp=viewport(angle=-180)  )
-# plot(fitGMTED_CURV_1km, hang=-1, axes=F, main=NULL, ylab=NULL, ann=F)
 dev.off()
 
 
@@ -135,25 +136,25 @@ panel.hist <- function(x, ...)
   rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
 }
 
-GMTED_CURV_1km_cor = cor (GMTED_CURV_1km)
-GMTED_HETE_1km_cor = cor (GMTED_HETE_1km)
+GMTED_CURV_1km_cor = cor (GMTED_CURV_1km_ordered)
+GMTED_HETE_1km_cor = cor (GMTED_HETE_1km_ordered)
 
-cols = c("red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red")
+cols = c("red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue","red","blue")
 
 col2 <- colorRampPalette(c("#67001F", "#B2182B", "#D6604D", "#F4A582", "#FDDBC7",      "#FFFFFF", "#D1E5F0", "#92C5DE", "#4393C3", "#2166AC", "#053061"))
 
 postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
-corrplot( GMTED_CURV_1km_cor     , order="hclust", hclust.method="ward", tl.col=cols, addrect=6 , col=rev(col2(200)) )
+corrplot( GMTED_CURV_1km_cor, order="original" , tl.col=cols, addrect=6 , col=rev(col2(200)) )
 dev.off()
 
 postscript("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.ps", width = 8, height = 8 , paper="special" ,  horizo=F )
-corrplot(GMTED_HETE_1km_cor , order="hclust", hclust.method="ward", tl.col=cols, addrect=6 , col=rev(col2(200)) )
+corrplot(GMTED_HETE_1km_cor , order="original", tl.col=cols, addrect=6 , col=rev(col2(200)) )
 dev.off()
 
 system("convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.ps   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_cluster_GMTED_HETE_1km.png" )
 system("convert -flatten -density 300  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.ps  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_cluster_GMTED_CURV_1km.png" )
 
 system("ps2epsi   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.ps  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig6_corplot_GMTED_HETE_1km.eps" )
-system("ps2epsi   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.ps   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.eps" )
+system("ps2epsi   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.ps  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/correlation/SRTM_GMTED/figure/Fig7_corplot_GMTED_CURV_1km.eps" )
 
 # transfer to laptop and merge with inkscape. 

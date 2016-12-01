@@ -190,13 +190,16 @@ exit
 
 # forms animation 
 
-for file  in geomorphic_class*_GMTED2010_md_km10p.png   ; do composite -geometry +172+450 \(  class.png -resize 54% \) $file class_$file ; done
-convert   -delay 500   -loop 0 class_geomorphic_class*_GMTED2010_md_km10p.png class_geomorphic_class_GMTED2010_md_km10p.gif
+for file  in geo*_10KMperc_GMTEDmd_p.png   ; do composite -geometry +450+1120 \(  class.png -resize 142% \) $file class_$file ; done
+# portati in locale su ~/Documents/yale_projects/presentation_nov_2015/gif , messo il pallino su ogni classe e fatto il gif
+convert   -delay 500   -loop 0 class_geomflat_10KMperc_GMTEDmd_p.png  class_geompeak_10KMperc_GMTEDmd_p.png class_geomridge_10KMperc_GMTEDmd_p.png class_geomshoulder_10KMperc_GMTEDmd_p.png class_geomspur_10KMperc_GMTEDmd_p.png class_geomslope_10KMperc_GMTEDmd_p.png  class_geomhollow_10KMperc_GMTEDmd_p.png class_geomfootslope_10KMperc_GMTEDmd_p.png class_geomvalley_10KMperc_GMTEDmd_p.png class_geompit_10KMperc_GMTEDmd_p.png class_geom_10KMperc_GMTEDmd_p.gif
 
+convert -delay 300 -loop 0 roughness_10KM*.png  tpi_10KM*.png   tri_10KM*.png  vrm_10KM*.png roughness.gif
 
-convert -delay 500 -loop 0 roughness_md_GMTED2010_md_km10.png  roughness_sd_GMTED2010_md_km10.png tpi_md_GMTED2010_md_km10.png  tpi_sd_GMTED2010_md_km10.png tri_md_GMTED2010_md_km10.png tri_sd_GMTED2010_md_km10.png vrm_md_GMTED2010_md_km10.png vrm_sd_GMTED2010_md_km10.png roughness.gif
+convert   -delay 300   -loop 0   pcurv_10KM*.png tcurv_10KM*.png dx_10KM*.png dy_10KM*.png  curvature_300.gif 
 
-convert   -delay 500   -loop 0 pcurv_md_GMTED2010_md_km10p.png pcurv_sd_GMTED2010_md_km10p.png tcurv_md_GMTED2010_md_km10p.png  tcurv_sd_GMTED2010_md_km10p.png dx_md_GMTED2010_md_km10.png  dx_sd_GMTED2010_md_km10.png  dy_md_GMTED2010_md_km10.png  dy_sd_GMTED2010_md_km10.png curvature.gif 
+convert   -delay 300   -loop 0 geom_10KMcount_GMTEDmd.png  geom_10KMent_GMTEDmd.png  geom_10KMmaj_GMTEDmd.png  geom_10KMsha_GMTEDmd.png  geom_10KMuni_GMTEDmd.png  geomorphic_entropy.gif 
 
-convert   -delay 500   -loop 0 elevation_md_GMTED2010_md_km10.png elevation_range_GMTED2010_mxmi_km10.png  elevation_sd_GMTED2010_md_km10.png elevation_sd_GMTED2010_sd_km10.png elevation_psd_GMTED2010_sd_km10.png     elevation_cv_GMTED2010_mnsd_km10.png elevation_cv_GMTED2010_mnpsd_km10.png elevation.gif
+convert   -delay 300   -loop 0  elevation_md_GMTED2010_md_km10.png elevation_range_GMTED2010_mxmi_km10.png  elevation_sd_GMTED2010_md_km10.png elevation_sd_GMTED2010_sd_km10.png elevation_psd_GMTED2010_sd_km10.png     elevation_cv_GMTED2010_mnsd_km10.png elevation_cv_GMTED2010_mnpsd_km10.png elevation_300.png
+
 
