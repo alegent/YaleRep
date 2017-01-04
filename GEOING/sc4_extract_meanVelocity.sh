@@ -14,7 +14,7 @@
 export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING
 export RAM=/dev/shm
 
-ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/velocity_CRU/*.tif   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/velocity_HadISST/*.tif   | xargs -n 1 -P 8 bash -c $'  
+ls /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/velocity_CRU/*.tif   /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/velocity_HadISST/*.tif  | xargs -n 1 -P 8 bash -c $'
 
 file=$1 
 filename=$(basename $file .tif) 
@@ -44,4 +44,8 @@ pkextract -polygon  -r $PAR   -f  "ESRI Shapefile" -srcnodata -9999    -s   /lus
 done 
 
 ' _ 
+
+
+
+
 

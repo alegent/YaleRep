@@ -1,4 +1,4 @@
-# bash /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models.sh 
+# bash  /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models.sh 
 # qsub  /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models.sh 
 # start branching
 # modify file
@@ -30,7 +30,7 @@ cd $DIR
 
 # rm -f $DIR/mean_models/*/*/*
 
-# awk 'NR>1'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4model.txt     | xargs -n 7 -P 8 bash -c $'
+# awk 'NR>1'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt     | xargs -n 7 -P 8 bash -c $'
 # file=$1
 # filename=$(basename $file .nc) 
 # dirinput=$(dirname $file)
@@ -45,7 +45,7 @@ cd $DIR
 
 # # y = a * X +  
 # # change the temperature to  celsius and calculate the year mean 
-# if [ ${filename:0:3} = "tas"   ] ; then 
+# if [ ${filename:0:3} = "tas"   ]  || [ ${filename:0:3} = "tos"   ]    ; then 
 # cdo   addc,-273.15 -selyear$(for year in $(seq $(  echo "$YEARS" | tr -  " "  )  ) ; do echo -n ,$year ; done)     $DIR/$file   $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
 # cdo  yearmean    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc       $DIR/mean_models/$dir/${filename}_mean_$YEARS.nc  
 # rm -f    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
@@ -80,7 +80,7 @@ cd $DIR
 
 # ensamble=$(basename $filename .nc ) 
 
-# if [ ${ensamble:0:3} = "tas"   ] ; then par=${ensamble:0:3} ; fi 
+# if [ ${ensamble:0:3} = "tas"   ] ||  [ ${ensamble:0:3} = "tos"   ]   ; then par=${ensamble:0:3} ; fi 
 # if [ ${ensamble:0:3} = "pr_"   ] ; then par=${ensamble:0:2} ; fi 
 
 # # ensamble model
@@ -95,7 +95,7 @@ cd $DIR
 
 # rm -f $DIR/reg_models/*/*/*
 
-# awk '{ if(NR>1) {gsub("r1i1p1","ensamble"); gsub("r2i1p1","ensamble"); gsub("r3i1p1","ensamble"); gsub("r1i2p1","ensamble"); gsub("r2i2p1","ensamble"); gsub("r3i2p1","ensamble"); gsub("input","mean_models"); print}}' /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4model.txt | uniq | xargs -n 7 -P 8  bash -c $'
+# awk '{ if(NR>1) {gsub("r1i1p1","ensamble"); gsub("r2i1p1","ensamble"); gsub("r3i1p1","ensamble"); gsub("r1i2p1","ensamble"); gsub("r2i2p1","ensamble"); gsub("r3i2p1","ensamble"); gsub("input","mean_models"); print}}' /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt  | uniq | xargs -n 7 -P 8  bash -c $'
 
 # file=$1
 # filename=$(basename $file .nc) 
@@ -133,6 +133,7 @@ cd $DIR
 # ' _
 
 
+
 # echo "########################################################################################"
 # echo "################# Calculate velocity ###################################################"
 # echo "########################################################################################"
@@ -156,7 +157,7 @@ cd $DIR
 # if [ -z  $dimension ] ; then res=0.5 ; fi   # dimension for 0.5 degree   # Size is 720, 360  
 
 # if [ $par = "pr"   ]  ; then parCRU=pre ; fi   
-# if [ $par = "tas"   ] ; then parCRU=tmp ; fi   
+# if [ $par = "tas"   ] ||  [ $par = "tos"   ]  ; then parCRU=tmp ; fi   
 
 # historical=$(echo $filename | grep historical )
 
@@ -207,7 +208,6 @@ cd $DIR
 
 # ' _ 
 
- 
 
 
 # all the different time period but not the historical
@@ -218,13 +218,13 @@ cd $DIR
 
 # echo   2020-2029  | xargs -n 2 -P 8  bash -c $' 
 
-echo   2020-2029 2021-2030 2020-2089 2021-2090 2030-2069 2031-2070 2070-2079 2071-2080 2080-2089 2081-2090 | xargs -n 2 -P 8  bash -c $' 
+echo 2020-2079 2020-2029 2021-2030 2020-2089 2021-2090 2030-2069 2031-2070 2070-2079 2071-2080 2080-2089 2081-2090 | xargs -n 2 -P 8  bash -c $' 
 
 year1=$1 
 year2=$2 
 
 for MOD in G4  rcp45 ; do 
-for PAR in tas pr ; do 
+for PAR in tos tas pr ; do 
 for RES in _oned_ _ ; do 
 for BASE in  1960.2005  1960.2009 1960.2014 ; do 
 for RULES in mean stdev ; do 
@@ -241,14 +241,14 @@ echo output $DIR/velocity_models/ensamble/$PAR/${PAR}${RES}Amon_${MOD}_${RULES}_
 sleep 3 
 
 echo""
-# pkcomposite -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -cr ${RULES}   $( ls $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year1}_velocityBased${BASE}${LS}.tif  $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year2}_velocityBased${BASE}${LS}.tif  | xargs -n 1  echo  -i  ) -o  $DIR/velocity_models/ensamble/$PAR/${PAR}${RES}Amon_${MOD}_${RULES}_${output: -40} 
+pkcomposite -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -cr ${RULES}   $( ls $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year1}_velocityBased${BASE}${LS}.tif  $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year2}_velocityBased${BASE}${LS}.tif  | xargs -n 1  echo  -i  ) -o  $DIR/velocity_models/ensamble/$PAR/${PAR}${RES}Amon_${MOD}_${RULES}_${output: -40} 
 
 if [ $RULES = mean ]  ; then 
 
 echo "calculate direction" using CRU data 
 
 cd  $DIR/direction_models/ensamble/
-rm -fr loc_$BASE
+rm -fr loc_${BASE}_${year1}
 
 ## aspect CRU tmp 0.5 
 
@@ -258,7 +258,7 @@ if [ $RES = _  ]      ; then RESOBS=0.5 ; fi
 if [ $LS = land ] ; then ASPECT=aspect_CRU/cru_ts3.23.$BASE.tmp.dat_${RESOBS}deg.aspect.tif      ; fi 
 if [ $LS = ocea ] ; then ASPECT=aspect_HadISST/HadISST_sst.$BASE.tmp.dat_${RESOBS}deg.aspect.tif ; fi 
 
-source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh   $DIR/direction_models/ensamble   loc_$BASE      $DIR/$ASPECT 
+source /lustre/home/client/fas/sbsc/ga254/scripts/general/create_location.sh   $DIR/direction_models/ensamble   loc_${BASE}_${year1}     $DIR/$ASPECT 
 
 ASPECT=$( basename $ASPECT .tif )
 
@@ -281,7 +281,7 @@ r.mapcalc "direction0 = if(  isnull(direction) , 0 ,  direction       ) "
 
 echo export direction 
 r.out.gdal -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff  type=Float32 nodata=0   input=direction0  output=$DIR/direction_models/ensamble/$PAR/$( echo ${PAR}${RES}Amon_${MOD}_${RULES}_${output: -40} | sed  's/velocity/direction/' )  --overwrite
-rm -fr $DIR/direction_models/ensamble/loc_$BASE
+rm -fr $DIR/direction_models/ensamble/loc_${BASE}_${year1}
 
 fi 
 
