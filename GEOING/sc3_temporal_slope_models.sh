@@ -22,7 +22,7 @@ cd $DIR
 #  mv  input/HadGEM2-ES/tas/tas_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-210011.nc  input/HadGEM2-ES/tas/tas_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-210012.nc
 #  mv  input/HadGEM2-ES/tas/tas_oned_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-210011.nc   input/HadGEM2-ES/tas/tas_oned_Amon_HadGEM2-ES_rcp45_r1i1p1_200512-210012.nc
 
-# rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/reg_models/*/*/*
+rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/reg_models/*/*/*
 # rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_models/*/*/*
 
 # echo "########################################################################################"
@@ -65,6 +65,7 @@ cd $DIR
 # ' _ 
 
 
+
 # # make the ensamble mean for the full period 
 # rm -f  $DIR/mean_models/*/*/*ensamble*.nc  
  
@@ -95,7 +96,7 @@ cd $DIR
 
 rm -f $DIR/reg_models/*/*/*
 
-awk '{ if(NR>1) {gsub("r1i1p1","ensamble"); gsub("r2i1p1","ensamble"); gsub("r3i1p1","ensamble"); gsub("r1i2p1","ensamble"); gsub("r2i2p1","ensamble"); gsub("r3i2p1","ensamble"); gsub("input","mean_models"); print}}' /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt  | uniq | xargs -n 7 -P 8  bash -c $'
+awk '{ if(NR>1) {gsub("r1i1p1","ensamble"); gsub("r2i1p1","ensamble"); gsub("r3i1p1","ensamble"); gsub("r1i2p1","ensamble"); gsub("r2i2p1","ensamble"); gsub("r3i2p1","ensamble"); gsub("input","mean_models"); print}}' /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt  | uniq | grep "/tas/"   |  xargs -n 7 -P 1  bash -c $'
 
 file=$1
 filename=$(basename $file .nc) 
@@ -123,7 +124,7 @@ if [ -z  $dimension ] ; then dimXY=360 ; res=0.5 ; fi   # dimension for 0.5 degr
 gdal_translate -srcwin 0 0 $dimXY $dimXY -a_ullr 0 +90 180 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc $RAM/${filename}_reg_${YEARS}_right.tif
 gdal_translate -srcwin $dimXY 0 $dimXY $dimXY -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc $RAM/${filename}_reg_${YEARS}_left.tif
 
-gdalbuildvrt  -a_srs EPSG:4326 -te -180 -90 180 +90 -tr $res $res   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
+gdalbuildvrt  -vrtnodata -9999   -a_srs EPSG:4326 -te -180 -90 180 +90 -tr $res $res   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
 gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co COMPRESS=DEFLATE  -co ZLEVEL=9  $RAM/${filename}_reg_${YEARS}.vrt   $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.tif   
 rm -f   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
 
@@ -243,7 +244,7 @@ else
 
 ls $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year1}_velocityBased${BASE}${LS}.tif  $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year2}_velocityBased${BASE}${LS}.tif   >   $DIR/velocity_models/ensamble/$PAR/${PAR}${RES}Amon_${MOD}_${RULES}_${output: -40}.txt 
 
-pkcomposite $( ls $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year1}_velocityBased${BASE}${LS}.tif  $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year2}_velocityBased${BASE}${LS}.tif  | xargs -n 1  echo  -m  )     -msknodata -9999  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -cr ${RULES}   $( ls $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year1}_velocityBased${BASE}${LS}.tif  $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year2}_velocityBased${BASE}${LS}.tif  | xargs -n 1  echo  -i  ) -o  $DIR/velocity_models/ensamble/$PAR/${PAR}${RES}Amon_${MOD}_${RULES}_${output: -40} 
+pkcomposite     -msknodata -9999  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -cr ${RULES}   $( ls $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year1}_velocityBased${BASE}${LS}.tif  $DIR/velocity_models/*/*/${PAR}${RES}Amon_*_${MOD}_ensamble_*-*_reg_${year2}_velocityBased${BASE}${LS}.tif  | xargs -n 1  echo  -i  ) -o  $DIR/velocity_models/ensamble/$PAR/${PAR}${RES}Amon_${MOD}_${RULES}_${output: -40} 
 gdal_edit.py -a_nodata -9999  $DIR/velocity_models/ensamble/$PAR/${PAR}${RES}Amon_${MOD}_${RULES}_${output: -40} 
 
 if [ $RULES = mean ]  ; then 
