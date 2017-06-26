@@ -97,6 +97,8 @@ gdaldem  roughness   -co COMPRESS=DEFLATE -co ZLEVEL=9  -co INTERLEAVE=BAND   $I
 
 ' _ 
 
+
+
 checkjob -v $PBS_JOBID 
 
 rm -f /dev/shm/* 
