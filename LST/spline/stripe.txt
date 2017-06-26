@@ -1,0 +1,4 @@
+stripe in grenland in this dataset 
+ls   /nobackupp6/aguzman4/climateLayers/MOD11A2.005/MOD11A2/*/MOD11A2.A20??089_Day.tif
+MOD11A2.A2015089_Day.tif
+MOD11A2.A2013089_Day.tif

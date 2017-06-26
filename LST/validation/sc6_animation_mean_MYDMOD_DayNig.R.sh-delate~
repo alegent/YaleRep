@@ -1,0 +1,20 @@
+# for  SENS in MYD MOD ; do for DN in Day Nig ; do qsub -v SENS=$SENS,DN=$DN   /u/gamatull/scripts/LST/validation/sc6_animation_mean_MYDMOD_DayNig.R.sh ; done ; done 
+
+#PBS -S /bin/bash
+#PBS -q debug
+#PBS -l select=1:ncpus=4
+#PBS -l walltime=0:10:00
+#PBS -V
+#PBS -o /nobackup/gamatull/stdout
+#PBS -e /nobackup/gamatull/stderr
+
+module load R/3.1.1_rgal_nex 
+
+export SENS=$SENS
+export DN=$DN
+
+cd /nobackupp8/gamatull/dataproces/LST/${SENS}11A2_mean/wgs84
+
+convert -delay 200 -loop 0 LST_${SENS}_QC_day???_wgs84k10_${DN}.png LST_${SENS}_QC_day_wgs84k10_${DN}.gif 
+
+
