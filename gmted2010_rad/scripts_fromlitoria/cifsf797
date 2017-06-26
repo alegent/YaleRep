@@ -1,0 +1,121 @@
+# cd  /media/data/grassdb1/ 
+# ls  /mnt/data2/scratch/GMTED2010/tiles/mn75_grd_tif/?_?.tif  | xargs -n 1  -P 10  bash /mnt/data2/scratch/GMTED2010/scripts/sc2_solar_radiation.sh
+
+time (
+
+export file=`basename $1`
+export filename=`basename $file .tif`
+export INDIR=/media/data/grassdb1
+
+rm -rf  $INDIR/loc_$filename
+echo clip the data 
+
+cd $INDIR
+
+# clip the 1km dem, use the be75_grd_tif to ensure larger overlap
+gdal_translate -projwin  $(getCorners4Gtranslate  /mnt/data2/scratch/GMTED2010/tiles/be75_grd_tif/$file) /media/data/grassdb1/mn30_grd_tif/mn30_grd.tif $file
+
+echo  clip albedo by $file 
+
+/mnt/data2/scratch/GMTED2010/scripts/create_location_gr.sh   $file   loc_$filename  $INDIR
+
+
+
+# echo enter in grass 
+
+echo "LOCATION_NAME: loc_$filename"              >  $HOME/.grassrc6$$
+echo "MAPSET: PERMANENT"                         >> $HOME/.grassrc6$$
+echo "DIGITIZER: none"                           >> $HOME/.grassrc6$$
+echo "GRASS_GUI: text"                           >> $HOME/.grassrc6$$
+echo "GISDBASE: /media/data/grassdb1"            >> $HOME/.grassrc6$$
+
+# path to GRASS binaries and libraries:
+
+export GISBASE=/usr/lib/grass64
+export PATH=$PATH:$GISBASE/bin:$GISBASE/scripts
+export LD_LIBRARY_PATH="$GISBASE/lib"
+export GISRC=~/.grassrc6$$
+
+g.gisenv
+
+g.list rast | head 
+
+echo calculate r.slope.aspect  
+r.slope.aspect elevation=$file   aspect=aspect_$filename  slope=slope_$filename  
+
+# produce 12 maps 
+# r.horizon elevin=$filename  horizonstep=30 horizon=horangle dist=1 maxdistance=1000
+
+
+for day in   001 017 033 049 065 081 097 113 129 145 161 177 193 209 225 241 257 273 289 305 321 337 353 ; do 
+# for day in    177  ; do 
+
+# import albedo 
+gdal_translate  -a_nodata 32767   -projwin  $(getCorners4Gtranslate  /mnt/data2/scratch/GMTED2010/tiles/be75_grd_tif/$file)  /mnt/data2/scratch/GMTED2010/MODALB/0.3_5.0.um.00-04.WS.c004.v2.0/AlbMap.WS.c004.v2.0.00-04.${day}.0.3_5.0.tif   $INDIR/alb_WS/${filename}_albWS_day${day}.tif  
+
+r.in.gdal -o input=$INDIR/alb_WS/${filename}_albWS_day${day}.tif    output=${filename}_albWS_day${day}  --overwrite 
+r.mapcalc  ${filename}_albWS_day${day}_coef = " ${filename}_albWS_day${day}  * 0.001" 
+
+# import Linke turbidity
+
+if [ $day == "001" ] ; then LT=January ; fi 
+if [ $day == "017" ] ; then LT=January ; fi 
+if [ $day == "033" ] ; then LT=February ; fi  
+if [ $day == "049" ] ; then LT=February ; fi  
+if [ $day == "065" ] ; then LT=March; fi 
+if [ $day == "081" ] ; then LT=March ; fi  
+if [ $day == "097" ] ; then LT=April ; fi  
+if [ $day == "113" ] ; then LT=April ; fi  
+if [ $day == "129" ] ; then LT=May ; fi  
+if [ $day == "145" ] ; then LT=May ; fi  
+if [ $day == "161" ] ; then LT=June ; fi  
+if [ $day == "177" ] ; then LT=June ; fi 
+if [ $day == "193" ] ; then LT=July ; fi  
+if [ $day == "209" ] ; then LT=July ; fi  
+if [ $day == "225" ] ; then LT=August ; fi  
+if [ $day == "241" ] ; then LT=August ; fi  
+if [ $day == "257" ] ; then LT=September ; fi  
+if [ $day == "273" ] ; then LT=September ; fi  
+if [ $day == "289" ] ; then LT=October ; fi  
+if [ $day == "305" ] ; then LT=November ; fi  
+if [ $day == "321" ] ; then LT=November ; fi  
+if [ $day == "337" ] ; then LT=December ; fi  
+if [ $day == "353" ] ; then LT=December ; fi 
+
+gdal_translate   -projwin  $(getCorners4Gtranslate  /mnt/data2/scratch/GMTED2010/tiles/be75_grd_tif/$file) /mnt/data2/scratch/GMTED2010/linke_turbidity/${LT}.tif /mnt/data2/scratch/GMTED2010/grassdb/linke_turbidity_clip/${LT}_${filename}_day${day}.tif  
+
+r.in.gdal -o input=/mnt/data2/scratch/GMTED2010/grassdb/linke_turbidity_clip/${LT}_${filename}_day${day}.tif  output=${LT}_${filename}_day${day}  --overwrite 
+rm /mnt/data2/scratch/GMTED2010/grassdb/linke_turbidity_clip/${LT}_${filename}_day${day}.tif 
+
+r.mapcalc  ${LT}_${filename}_day${day}_coef = "${LT}_${filename}_day${day}  * 0.05 " 
+
+echo run r.sun 
+
+r.sun -s  elevin=$file aspin=aspect_$filename  slopein=slope_$filename   linkein=${LT}_${filename}_day${day}_coef   albedo=${filename}_albWS_day${day}_coef    glob_rad=glob_rad_day$day"_"$filename  day=$day step=1 
+r.out.gdal type=Float32  nodata=-1  createopt="COMPRESS=LZW,ZLEVEL=9"  input=glob_rad_day$day"_"$filename    output=/media/data/grassdb1/glob_rad_${day}/glob_rad_day$day"_"$file
+
+if [ ${filename:0:1} -eq 0 ] ; then 
+# this was inserted becouse the r.out.gdal of the 0_? was overpassing the -180 border 
+gdal_translate  -a_ullr   $(getCorners4Gtranslate $file)  /media/data/grassdb1/glob_rad_${day}/glob_rad_day$day"_"$file /media/data/grassdb1/glob_rad_${day}/glob_rad_day$day"_"$file"_tmp"
+mv /media/data/grassdb1/glob_rad_${day}/glob_rad_day$day"_"$file"_tmp" /media/data/grassdb1/glob_rad_${day}/glob_rad_day$day"_"$file
+fi
+done 
+
+rm $file
+
+)
+
+exit 
+
+
+# To compute the 
+
+# actual surface albedo, MODIS-estimated black sky albedo (reflectance of direct beam radiation at solar noon) 
+#                                    and white sky albedo (reflectance of isotropic diffuse radiation)
+
+
+# coefbh=string
+#     Name of real-sky beam radiation coefficient (thick cloud) input raster map [0-1]
+# coefdh=string
+#     Name of real-sky diffuse radiation coefficient (haze) input raster map [0-1]
+#     κL is the extinction coefficient for diffuse radiation 
