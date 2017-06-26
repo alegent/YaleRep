@@ -28,177 +28,180 @@ echo "##########################################################################
 echo "#################MODEL START ###########################################################"
 echo "########################################################################################"
 
-# rm -f $DIR/mean_models/*/*/*
+rm -f $DIR/mean_models/*/*/*
 
-# awk 'NR>1'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt   | xargs -n 7 -P 8 bash -c $'
-# file=$1
-# filename=$(basename $file .nc) 
-# dirinput=$(dirname $file)
+awk 'NR>1'  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt   | xargs -n 7 -P 8 bash -c $'
+file=$1
+filename=$(basename $file .nc) 
+dirinput=$(dirname $file)
 
-# dir=$(echo ${dirinput:6:20})
+dir=$(echo ${dirinput:6:20})
 
-# echo  $2 $3 $4 $5 $6 
+echo  $2 $3 $4 $5 $6 $7
 
-# for YEARS in $2 $3; do # temporal mean for the full period 
+for YEARS in $2 $3 $4 $5 $6 $7  ; do # temporal mean for the full period 
 
-# if [ $YEARS != "NA" ]  ; then  
+if [ $YEARS != "NA" ]  ; then  
 
-# # y = a * X +  addc,-273.15 
-# # change the temperature to  celsius and calculate the year mean 
-# if [ ${filename:0:3} = "tas"   ]  || [ ${filename:0:3} = "tos"   ]    ; then 
-# cdo   setmissval,-9999  -addc,-273.15    -selyear$(for year in $(seq $(  echo "$YEARS" | tr -  " "  )  ) ; do echo -n ,$year ; done)     $DIR/$file   $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
-# cdo    yearmean    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc       $DIR/mean_models/$dir/${filename}_mean_$YEARS.nc  
-# rm -f    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
-# fi 
+# y = a * X +  addc,-273.15 
+# change the temperature to  celsius and calculate the year mean 
+if [ ${filename:0:3} = "tas"   ]  || [ ${filename:0:3} = "tos"   ]    ; then 
+cdo   -setmissval,-9999  -addc,-273.15    -selyear$(for year in $(seq $(  echo "$YEARS" | tr -  " "  )  ) ; do echo -n ,$year ; done)     $DIR/$file   $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
+cdo    -yearmean    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc       $DIR/mean_models/$dir/${filename}_mean_$YEARS.nc  
+rm -f    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
+fi 
 
-# # change precipitation to mm/year and calculate the sum year 
-# if [ ${filename:0:3} = "pr_"   ] ; then 
-# cdo    setmissval,-9999   -mulc,2592000  -selyear$(for year in $(seq $(  echo "$YEARS" | tr -  " "  )  ) ; do echo -n ,$year ; done)   $DIR/$file   $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
-# cdo   yearsum    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc       $DIR/mean_models/$dir/${filename}_mean_$YEARS.nc  
-# rm -f    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
-# fi 
-# fi 
+# change precipitation to mm/year and calculate the sum year 
+if [ ${filename:0:3} = "pr_"   ] ; then 
+cdo    -setmissval,-9999   -mulc,2592000  -selyear$(for year in $(seq $(  echo "$YEARS" | tr -  " "  )  ) ; do echo -n ,$year ; done)   $DIR/$file   $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
+cdo   yearsum    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc       $DIR/mean_models/$dir/${filename}_mean_$YEARS.nc  
+rm -f    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
+fi 
+fi 
 
-# done 
+done 
 
-# ' _ 
+' _ 
 
+# make the ensamble mean for the full period 
+# rm -f  $DIR/mean_models/*/*/*ensamble*.nc          
 
-# # make the ensamble mean for the full period 
-# rm -f  $DIR/mean_models/*/*/*ensamble*.nc  
+for YYYY in 2020-2029 2021-2030 2020-2089 2021-2090 2030-2069 2031-2070 2070-2079 2071-2080 2080-2089 2081-2090 2020-2079 2021-2080  ; do 
  
-# ls     $DIR/mean_models/*/*/*r?i?p1*.nc |  xargs -n 3 -P 8  bash -c $' 
+ls     $DIR/mean_models/*/*/*r?i?p1*$YYYY.nc |  xargs -n 3 -P 8  bash -c $' 
 
-# r1=$(basename $1 .nc )
-# r2=$(basename $2 .nc )
-# r3=$(basename $3 .nc )
+r1=$(basename $1 .nc )
+r2=$(basename $2 .nc )
+r3=$(basename $3 .nc )
 
-# dir=$(dirname  $1 )
-# mod=$( basename $( dirname   $dir) )
+dir=$(dirname  $1 )
+mod=$( basename $( dirname   $dir) )
 
-# filename=$(echo $r1 | awk \'{ gsub ("r1i1p1" ,  "ensamble" ) ; gsub ("r1i2p1" ,  "ensamble" ) ;  print $0  }\') 
+filename=$(echo $r1 | awk \'{ gsub ("r1i1p1" ,  "ensamble" ) ; gsub ("r1i2p1" ,  "ensamble" ) ;  print $0  }\') 
 
-# ensamble=$(basename $filename .nc ) 
+ensamble=$(basename $filename .nc ) 
 
-# if [ ${ensamble:0:3} = "tas"   ] ||  [ ${ensamble:0:3} = "tos"   ]   ; then par=${ensamble:0:3} ; fi 
-# if [ ${ensamble:0:3} = "pr_"   ] ; then par=${ensamble:0:2} ; fi 
+if [ ${ensamble:0:3} = "tas"   ] ||  [ ${ensamble:0:3} = "tos"   ]   ; then par=${ensamble:0:3} ; fi 
+if [ ${ensamble:0:3} = "pr_"   ] ; then par=${ensamble:0:2} ; fi 
 
-# # ensamble model
-# rm -f $dir/${ensamble}.nc
-# echo cdo ensmean   $dir/$r1.nc $dir/$r2.nc  $dir/$r3.nc $dir/${ensamble}.nc
-# cdo   ensmean   $dir/$r1.nc $dir/$r2.nc  $dir/$r3.nc $dir/${ensamble}.nc
+# ensamble model
+rm -f $dir/${ensamble}.nc
+echo cdo ensmean   $dir/$r1.nc $dir/$r2.nc  $dir/$r3.nc $dir/${ensamble}.nc
+cdo   ensmean   $dir/$r1.nc $dir/$r2.nc  $dir/$r3.nc $dir/${ensamble}.nc
 
-# ' _ 
+' _ 
 
-
-# # calculate teporal regression using the ensamble model. One regression line for each period, for each model,  
-
-# rm -f $DIR/reg_models/*/*/*
-
-# ls   mean_models/*/*/*ensamble*.nc    |  xargs -n 1 -P 8  bash -c $'
-
-# file=$1
-# filename=$(basename $file .nc) 
-# dirinput=$(dirname $file)
-
-# dirmod=$(basename $(dirname $(dirname $file)))
-# par=$(basename $(dirname $file))
-
-# YEARS=$(echo ${filename: -9})
-
-# echo input   ${file}  output  $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc   
-# cdo  regres  -setmissval,-9999  -selyear$(for year in $(seq $(  echo "$YEARS" | tr -  " "  )  ) ; do echo -n ,$year ; done)  $file   $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc   
-
-# dimension=$(echo $filename | grep oned)
-
-# if [ -n  $dimension ] ; then dimXY=180 ; res=1.0 ; fi   # dimension for 1 degree     # Size is 360, 180 
-# if [ -z  $dimension ] ; then dimXY=360 ; res=0.5 ; fi   # dimension for 0.5 degree   # Size is 720, 360  
-# # invert left to right 
-
-# gdal_translate -srcwin 0 0 $dimXY $dimXY -a_ullr 0 +90 180 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc $RAM/${filename}_reg_${YEARS}_right.tif
-# gdal_translate -srcwin $dimXY 0 $dimXY $dimXY -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc $RAM/${filename}_reg_${YEARS}_left.tif
-
-# gdalbuildvrt  -overwrite   -a_srs EPSG:4326 -te -180 -90 180 +90 -tr $res $res   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
-# gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co COMPRESS=DEFLATE  -co ZLEVEL=9  $RAM/${filename}_reg_${YEARS}.vrt   $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.tif   
-# rm -f   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
-
-# ' _
+done 
 
 
+# calculate teporal regression using the ensamble model. One regression line for each period, for each model,  
 
-# # echo "########################################################################################"
-# # echo "################# Calculate velocity ###################################################"
-# # echo "########################################################################################"
+rm -f $DIR/reg_models/*/*/*
 
-# # calculate velocity for the precipitation model using temporal regression mean and  spatial slope from observation    
+ls   mean_models/*/*/*ensamble*.nc    |  xargs -n 1 -P 8  bash -c $'
 
-# cleanram
-# rm -f  $DIR/velocity_models/*/*/*.tif
-# ls  reg_models/*/*/*.tif   | xargs -n 1  -P 8 bash -c  $' 
+file=$1
+filename=$(basename $file .nc) 
+dirinput=$(dirname $file)
 
-# file=$1
-# filename=$(basename $file .tif) 
-# dirinput=$(dirname $file)
+dirmod=$(basename $(dirname $(dirname $file)))
+par=$(basename $(dirname $file))
 
-# dirmod=$(basename $(dirname $(dirname $file)))
-# par=$(basename $(dirname $file))
+YEARS=$(echo ${filename: -9})
 
-# dimension=$(echo $filename | grep oned)
+echo input   ${file}  output  $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc   
+cdo  regres  -setmissval,-9999  -selyear$(for year in $(seq $(  echo "$YEARS" | tr -  " "  )  ) ; do echo -n ,$year ; done)  $file   $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc   
 
-# if [ -n  $dimension ] ; then res=1.0 ; fi   # dimension for 1 degree     # Size is 360, 180 
-# if [ -z  $dimension ] ; then res=0.5 ; fi   # dimension for 0.5 degree   # Size is 720, 360  
+dimension=$(echo $filename | grep oned)
 
-# if [ $par = "pr"   ]  ; then parCRU=pre ; fi   
-# if [ $par = "tas"   ] ||  [ $par = "tos"   ]  ; then parCRU=tmp ; fi   
+if [ -n  $dimension ] ; then dimXY=180 ; res=1.0 ; fi   # dimension for 1 degree     # Size is 360, 180 
+if [ -z  $dimension ] ; then dimXY=360 ; res=0.5 ; fi   # dimension for 0.5 degree   # Size is 720, 360  
+# invert left to right 
 
-# historical=$(echo $filename | grep historical )
+gdal_translate -srcwin 0 0 $dimXY $dimXY -a_ullr 0 +90 180 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc $RAM/${filename}_reg_${YEARS}_right.tif
+gdal_translate -srcwin $dimXY 0 $dimXY $dimXY -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.nc $RAM/${filename}_reg_${YEARS}_left.tif
 
-# if [ -z  $historical  ] ; then 
+gdalbuildvrt  -overwrite   -a_srs EPSG:4326 -te -180 -90 180 +90 -tr $res $res   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
+gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co COMPRESS=DEFLATE  -co ZLEVEL=9  $RAM/${filename}_reg_${YEARS}.vrt   $DIR/reg_models/$dirmod/$par/${filename}_reg_$YEARS.tif   
+rm -f   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
 
-# for YYYY in 1960.2009 1960.2014 ; do 
+' _
 
-# # land 
-# gdal_calc.py --NoDataValue=-9999   --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif --calc="(A/B)*logical_and(A>-9998,B>-9998)"  --overwrite --type=Float32
-# pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
-# gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
-# rm  $RAM/${filename}_velocity.tif  
 
-# # ocean
 
-# if [ $res = "1.0"   ] ; then 
-# gdal_calc.py  --NoDataValue=-9999  --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)"   --overwrite  --type=Float32
-# pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999 -p "=" -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
-# gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
-# rm  $RAM/${filename}_velocity.tif  
-# fi 
-# done 
-# fi 
+# echo "########################################################################################"
+# echo "################# Calculate velocity ###################################################"
+# echo "########################################################################################"
 
-# # valid only for the historical file using slope 1960.2005
+# calculate velocity for the precipitation model using temporal regression mean and  spatial slope from observation    
 
-# if [ -n  $historical  ] ; then 
+cleanram
+rm -f  $DIR/velocity_models/*/*/*.tif
+ls  reg_models/*/*/*.tif   | xargs -n 1  -P 8 bash -c  $' 
 
-# for YYYY in 1960.2005 ; do 
+file=$1
+filename=$(basename $file .tif) 
+dirinput=$(dirname $file)
 
-# # land 
-# gdal_calc.py  --NoDataValue=-9999   --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)"   --overwrite --type=Float32
-# pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
-# gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
-# rm  $RAM/${filename}_velocity.tif  
+dirmod=$(basename $(dirname $(dirname $file)))
+par=$(basename $(dirname $file))
 
-# # ocean
+dimension=$(echo $filename | grep oned)
 
-# if [ $res = "1.0"   ] ; then 
-# gdal_calc.py  --NoDataValue=-9999    --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif --calc="(A/B)*logical_and(A>-9998,B>-9998)"   --overwrite  --type=Float32
-# pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9 -m  $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999 -p "=" -nodata -9999 -m  $file  -msknodata -9999 -p "=" -nodata -9999  -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
-# gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
-# rm  $RAM/${filename}_velocity.tif  
-# fi 
-# done 
+if [ -n  $dimension ] ; then res=1.0 ; fi   # dimension for 1 degree     # Size is 360, 180 
+if [ -z  $dimension ] ; then res=0.5 ; fi   # dimension for 0.5 degree   # Size is 720, 360  
 
-# fi 
+if [ $par = "pr"   ]  ; then parCRU=pre ; fi   
+if [ $par = "tas"   ] ||  [ $par = "tos"   ]  ; then parCRU=tmp ; fi   
 
-# ' _ 
+historical=$(echo $filename | grep historical )
+
+if [ -z  $historical  ] ; then 
+
+for YYYY in 1960.2009 1960.2014 ; do 
+
+# land 
+gdal_calc.py --NoDataValue=-9999   --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif --calc="(A/B)*logical_and(A>-9998,B>-9998)"  --overwrite --type=Float32
+pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
+gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
+rm  $RAM/${filename}_velocity.tif  
+
+# ocean
+
+if [ $res = "1.0"   ] ; then 
+gdal_calc.py  --NoDataValue=-9999  --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)"   --overwrite  --type=Float32
+pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999 -p "=" -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
+gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
+rm  $RAM/${filename}_velocity.tif  
+fi 
+done 
+fi 
+
+# valid only for the historical file using slope 1960.2005
+
+if [ -n  $historical  ] ; then 
+
+for YYYY in 1960.2005 ; do 
+
+# land 
+gdal_calc.py  --NoDataValue=-9999   --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)"   --overwrite --type=Float32
+pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m  $DIR/slope_CRU/cru_ts3.23.${YYYY}.${parCRU}.dat_${res}deg.slope10msk.tif -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
+gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}land.tif
+rm  $RAM/${filename}_velocity.tif  
+
+# ocean
+
+if [ $res = "1.0"   ] ; then 
+gdal_calc.py  --NoDataValue=-9999    --outfile=$RAM/${filename}_velocity.tif -A $file -B $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif --calc="(A/B)*logical_and(A>-9998,B>-9998)"   --overwrite  --type=Float32
+pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9 -m  $DIR/slope_HadISST/HadISST_sst.${YYYY}.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999 -p "=" -nodata -9999 -m  $file  -msknodata -9999 -p "=" -nodata -9999  -i $RAM/${filename}_velocity.tif  -o $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
+gdal_edit.py  -a_nodata -9999 $DIR/velocity_models/$dirmod/$par/${filename}_velocityBased${YYYY}ocea.tif
+rm  $RAM/${filename}_velocity.tif  
+fi 
+done 
+
+fi 
+
+' _ 
 
 
 
