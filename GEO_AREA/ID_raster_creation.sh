@@ -36,3 +36,13 @@ gdalbuildvrt      -te -180  -90  180 90       -overwrite  glob_ID_rast.vrt    ra
 gdal_translate  -co  COMPRESS=LZW -co ZLEVEL=9   glob_ID_rast.vrt   glob_ID_rast.tif 
 
 gdal_translate        -co PREDICTOR=2  -co  COMPRESS=LZW -co ZLEVEL=9     glob_ID_rast.tif      glob_ID_rast_super_compres.tif
+
+# create 50x50 constant 1km  and so on for 100 and 10 
+
+echo  10 50 100  |  xargs -n 1 -P 3 bash -c $' 
+SIZE=$1
+# pkfilter -ot UInt32 -co COMPRESS=DEFLATE  -co ZLEVEL=9 -dx ${SIZE} -dy ${SIZE} -f min -d ${SIZE} -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/tif_ID/glob_ID_rast_super_compres.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/tif_ID/glob_ID${SIZE}x_rast.tif
+gdalwarp -tr 0.00833333333333333 0.00833333333333333 -r near -co COMPRESS=DEFLATE -co ZLEVEL=9 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/tif_ID/glob_ID${SIZE}x_rast.tif /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/tif_ID/glob_ID${SIZE}x_rast_1km.tif
+
+' _ 
+
