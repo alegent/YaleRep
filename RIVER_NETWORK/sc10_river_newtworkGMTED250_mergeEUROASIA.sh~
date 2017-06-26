@@ -1,3 +1,4 @@
+
 # bsub   -W 12:00  -R "span[hosts=1]" -n 3   -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc10_river_newtworkGMTED250_mergeEUROASIA.sh.%J.out  -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc10_river_newtworkGMTED250_mergeEUROASIA.sh.%J.err   bash  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc10_river_newtworkGMTED250_mergeEUROASIA.sh
 
 # bsub  /lustre/home/client/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc10_river_newtworkGMTED250_mergeEUROASIA.sh

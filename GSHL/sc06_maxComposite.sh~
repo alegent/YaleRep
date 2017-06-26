@@ -45,13 +45,13 @@ tile=$5
 
 for file in $DIR/LST_MOYDmax_Day_spline_month{1,2,3,4,5,6,7,8,9,10,11,12}.tif  ; do 
 filename=$(basename $file .tif)
-gdal_translate -ot Float32   -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin  $xoff $yoff $xsize $ysize   $file   $OUT/tmp/${filename}_${tile}.tif
+gdal_translate    -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin  $xoff $yoff $xsize $ysize   $file   $OUT/tmp/${filename}_${tile}.tif
 done 
 
 echo start the pkcomposite Day
 
-pkcomposite -ot Float32 -msknodata -9999   -srcnodata -9999  -dstnodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -cr maxband -file 2  $(ls $OUT/tmp/LST_MOYDmax_Day_spline_month{1,2,3,4,5,6,7,8,9,10,11,12}_${tile}.tif  | xargs -n 1 echo -i )  -o $OUT/tmp/LST_MOYDmax_Day_${tile}.tif
-gdal_translate -ot Float32   -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin 0 0  5400 10800  $OUT/tmp/LST_MOYDmax_Day_${tile}.tif  $OUT/tmp/LST_MOYDmax_Day_${tile}_tmp.tif ; 
+pkcomposite -msknodata -9999   -srcnodata -9999  -dstnodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -cr maxband -file 2  $(ls $OUT/tmp/LST_MOYDmax_Day_spline_month{1,2,3,4,5,6,7,8,9,10,11,12}_${tile}.tif  | xargs -n 1 echo -i )  -o $OUT/tmp/LST_MOYDmax_Day_${tile}.tif
+gdal_translate    -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin 0 0  5400 10800  $OUT/tmp/LST_MOYDmax_Day_${tile}.tif  $OUT/tmp/LST_MOYDmax_Day_${tile}_tmp.tif ; 
 mv $OUT/tmp/LST_MOYDmax_Day_${tile}_tmp.tif $OUT/tmp/LST_MOYDmax_Day_${tile}.tif
 
 rm  -f   $OUT/tmp/LST_MOYDmax_Day_spline_month{1,2,3,4,5,6,7,8,9,10,11,12}_${tile}.tif 
@@ -62,8 +62,8 @@ echo start the merging operation DAY
 
 gdalbuildvrt   $OUT/tmp/LST_MOYDmax_Day.vrt    $OUT/tmp/LST_MOYDmax_Day_*.tif 
 
-gdal_translate       -ot Float32     -a_nodata -9999  -b 1 -co  COMPRESS=DEFLATE   -co ZLEVEL=9     $OUT/tmp/LST_MOYDmax_Day.vrt  $OUT/LST_MOYDmax_Day_value_tmp.tif
-pksetmask -ot Float32  -m  $DIR/LST_MOYDmax_Day_spline_month1.tif  -msknodata -9999 -nodata -9999 -co  COMPRESS=DEFLATE   -co ZLEVEL=9  -i    $OUT/LST_MOYDmax_Day_value_tmp.tif  -o  $OUT/LST_MOYDmax_Day_value.tif
+gdal_translate            -a_nodata -9999  -b 1 -co  COMPRESS=DEFLATE   -co ZLEVEL=9     $OUT/tmp/LST_MOYDmax_Day.vrt  $OUT/LST_MOYDmax_Day_value_tmp.tif
+pksetmask -m  $DIR/LST_MOYDmax_Day_spline_month1.tif  -msknodata -9999 -nodata -9999 -co  COMPRESS=DEFLATE   -co ZLEVEL=9  -i    $OUT/LST_MOYDmax_Day_value_tmp.tif  -o  $OUT/LST_MOYDmax_Day_value.tif
 rm  $OUT/LST_MOYDmax_Day_value_tmp.tif 
 
 gdal_translate -ot Byte   -a_nodata   255  -b 2 -co  COMPRESS=DEFLATE   -co ZLEVEL=9     $OUT/tmp/LST_MOYDmax_Day.vrt  $OUT/LST_MOYDmax_Day_month_tmp.tif
@@ -90,15 +90,15 @@ tile=$5
 
 for file in $DIR/LST_MOYDmax_Nig_spline_month{1,2,3,4,5,6,7,8,9,10,11,12}.tif  ; do 
 filename=$(basename $file .tif)
-gdal_translate  -ot Float32   -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin  $xoff $yoff $xsize $ysize   $file   $OUT/tmp/${filename}_${tile}.tif
+gdal_translate    -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin  $xoff $yoff $xsize $ysize   $file   $OUT/tmp/${filename}_${tile}.tif
 done 
 
 echo start the pkcomposite Nig
 
-pkcomposite -ot Float32   -msknodata -9999  -srcnodata -9999  -dstnodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -cr maxband -file 2 $(ls $OUT/tmp/LST_MOYDmax_Nig_spline_month{1,2,3,4,5,6,7,8,9,10,11,12}_${tile}.tif | xargs -n 1 echo -i )  -o $OUT/tmp/LST_MOYDmax_Nig_${tile}.tif 
+pkcomposite -msknodata -9999  -srcnodata -9999  -dstnodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -cr maxband -file 2 $(ls $OUT/tmp/LST_MOYDmax_Nig_spline_month{1,2,3,4,5,6,7,8,9,10,11,12}_${tile}.tif | xargs -n 1 echo -i )  -o $OUT/tmp/LST_MOYDmax_Nig_${tile}.tif 
 
 
-gdal_translate  -ot Float32  -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin 0 0  5400 10800  $OUT/tmp/LST_MOYDmax_Nig_${tile}.tif  $OUT/tmp/LST_MOYDmax_Nig_${tile}_tmp.tif ; 
+gdal_translate    -co  COMPRESS=DEFLATE  -co ZLEVEL=9   -srcwin 0 0  5400 10800  $OUT/tmp/LST_MOYDmax_Nig_${tile}.tif  $OUT/tmp/LST_MOYDmax_Nig_${tile}_tmp.tif ; 
 mv $OUT/tmp/LST_MOYDmax_Nig_${tile}_tmp.tif $OUT/tmp/LST_MOYDmax_Nig_${tile}.tif
 
 
@@ -110,11 +110,11 @@ echo start the merging operation NIG
 
 gdalbuildvrt   $OUT/tmp/LST_MOYDmax_Nig.vrt    $OUT/tmp/LST_MOYDmax_Nig_*.tif 
 
-gdal_translate -ot Float32       -a_nodata -9999  -b 1 -co  COMPRESS=DEFLATE   -co ZLEVEL=9     $OUT/tmp/LST_MOYDmax_Nig.vrt  $OUT/LST_MOYDmax_Nig_value_tmp.tif
-pksetmask -ot Float32 -m  $DIR/LST_MOYDmax_Nig_spline_month1.tif  -msknodata -9999 -nodata -9999 -co  COMPRESS=DEFLATE   -co ZLEVEL=9  -i    $OUT/LST_MOYDmax_Nig_value_tmp.tif  -o  $OUT/LST_MOYDmax_Nig_value.tif
+gdal_translate            -a_nodata -9999  -b 1 -co  COMPRESS=DEFLATE   -co ZLEVEL=9     $OUT/tmp/LST_MOYDmax_Nig.vrt  $OUT/LST_MOYDmax_Nig_value_tmp.tif
+pksetmask -m  $DIR/LST_MOYDmax_Nig_spline_month1.tif  -msknodata -9999 -nodata -9999 -co  COMPRESS=DEFLATE   -co ZLEVEL=9  -i    $OUT/LST_MOYDmax_Nig_value_tmp.tif  -o  $OUT/LST_MOYDmax_Nig_value.tif
 rm  $OUT/LST_MOYDmax_Nig_value_tmp.tif 
 
-gdal_translate  -ot Byte   -a_nodata   255  -b 2 -co  COMPRESS=DEFLATE   -co ZLEVEL=9     $OUT/tmp/LST_MOYDmax_Nig.vrt  $OUT/LST_MOYDmax_Nig_month_tmp.tif
+gdal_translate -ot Byte   -a_nodata   255  -b 2 -co  COMPRESS=DEFLATE   -co ZLEVEL=9     $OUT/tmp/LST_MOYDmax_Nig.vrt  $OUT/LST_MOYDmax_Nig_month_tmp.tif
 
 oft-calc  $OUT/LST_MOYDmax_Nig_month_tmp.tif $OUT/LST_MOYDmax_Nig_month_tmp2.tif <<EOF
 1

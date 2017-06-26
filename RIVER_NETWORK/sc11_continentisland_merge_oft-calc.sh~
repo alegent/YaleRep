@@ -41,60 +41,59 @@ echo 108000    34560  21600 34560 14 >> $RAM/tiles_xoff_yoff.txt
 echo 129600    34560  21600 34560 15 >> $RAM/tiles_xoff_yoff.txt
 echo 151200    34560  21600 34560 16 >> $RAM/tiles_xoff_yoff.txt
 
-gdalbuildvrt -separate    -te -180 -60 180 84   -overwrite   $RAM/stream01_globe_trh${TRH}.vrt   $DIR/stream/stream01_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,90420,10328,80691,84397,2285,26487,33778,92404,11000,11001,98343}_trh${TRH}.tif  $DIR/stream/stream01_91518_MERGEleft_clip_trh${TRH}_ct.tif    $DIR/stream/stream01_91518_MERGEright_clip_trh${TRH}_ct.tif 
+# gdalbuildvrt -separate    -te -180 -60 180 84   -overwrite   $RAM/stream01_globe_trh${TRH}.vrt   $DIR/stream/stream01_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,90420,10328,80691,84397,2285,26487,33778,92404,11000,11001,98343}_trh${TRH}.tif  $DIR/stream/stream01_91518_MERGEleft_clip_trh${TRH}_ct.tif    $DIR/stream/stream01_91518_MERGEright_clip_trh${TRH}_ct.tif 
 
-export BANDN=$(gdalinfo $RAM/stream01_globe_trh${TRH}.vrt  | grep Band  | tail -1 | awk '{  print $2  }' )
+# export BANDN=$(gdalinfo $RAM/stream01_globe_trh${TRH}.vrt  | grep Band  | tail -1 | awk '{  print $2  }' )
 
-pkcreatect -min 0 -max 1 > /tmp/color.txt 
+# pkcreatect -min 0 -max 1 > /tmp/color.txt 
 
-cat  $RAM/tiles_xoff_yoff.txt | xargs -n 5 -P 16 bash -c $' 
+# cat  $RAM/tiles_xoff_yoff.txt | xargs -n 5 -P 16 bash -c $' 
 
-gdal_translate -ot Byte  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co BIGTIFF=YES   -srcwin $1 $2 $3 $4  $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_${5}_trh${TRH}.tif 
+# gdal_translate -ot Byte  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co BIGTIFF=YES   -srcwin $1 $2 $3 $4  $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_${5}_trh${TRH}.tif 
 
-echo calculate min and max for each band  $BANDN  $RAM/stream01_globe_${5}_trh${TRH}.tif
+# echo calculate min and max for each band  $BANDN  $RAM/stream01_globe_${5}_trh${TRH}.tif
 
-for B in $(seq 0  $(expr $BANDN  \-  1 )) ; do echo  $(expr $B + 1 )  $( pkstat -max -b $B -i  $RAM/stream01_globe_${5}_trh${TRH}.tif | awk \'{ print $2  }\' ) ; done >  /tmp/stream01_globe_${5}_trh${TRH}.txt
+# for B in $(seq 0  $(expr $BANDN  \-  1 )) ; do echo  $(expr $B + 1 )  $( pkstat -max -b $B -i  $RAM/stream01_globe_${5}_trh${TRH}.tif | awk \'{ print $2  }\' ) ; done >  /tmp/stream01_globe_${5}_trh${TRH}.txt
 
-echo  select only bands that have max = 1 
-gdal_translate -ot Byte  -co COMPRESS=DEFLATE -co ZLEVEL=9  $(grep -v " 0" /tmp/stream01_globe_${5}_trh${TRH}.txt | awk \'{  printf("-b %s "  , $1 )  }\' )  $RAM/stream01_globe_${5}_trh${TRH}.tif  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif 
+# echo  select only bands that have max = 1 
+# gdal_translate -ot Byte  -co COMPRESS=DEFLATE -co ZLEVEL=9  $(grep -v " 0" /tmp/stream01_globe_${5}_trh${TRH}.txt | awk \'{  printf("-b %s "  , $1 )  }\' )  $RAM/stream01_globe_${5}_trh${TRH}.tif  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif 
 
-rm -f   $RAM/stream01_globe_${5}_trh${TRH}.tif  /tmp/stream01_globe_${5}_trh${TRH}.txt
+# rm -f   $RAM/stream01_globe_${5}_trh${TRH}.tif  /tmp/stream01_globe_${5}_trh${TRH}.txt
 
-BANDN=$( gdalinfo  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif  | grep Band  | tail -1 | awk \'{ print $2 }\' )
+# BANDN=$( gdalinfo  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif  | grep Band  | tail -1 | awk \'{ print $2 }\' )
 
-echo fot-calc on $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif that has $BANDN band
+# echo fot-calc on $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif that has $BANDN band
 
-EQUATION=$(for band in $(seq 1 $BANDN); do echo -ne "#$band " ; done ; for band in $(seq 1 $(expr $BANDN  \-  1 )) ; do echo -ne   " +"  ; done )
+# EQUATION=$(for band in $(seq 1 $BANDN); do echo -ne "#$band " ; done ; for band in $(seq 1 $(expr $BANDN  \-  1 )) ; do echo -ne   " +"  ; done )
 
-echo $EQUATION 
+# echo $EQUATION 
 
-oft-calc -ot Byte  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif     $DIR/stream/tmp/stream01_globe_${5}_trh${TRH}-oft.tif <<EOF
-1
-$EQUATION
-EOF
+# oft-calc -ot Byte  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif     $DIR/stream/tmp/stream01_globe_${5}_trh${TRH}-oft.tif <<EOF
+# 1
+# $EQUATION
+# EOF
 
-rm -f  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif /tmp/stream01_globe_${5}_trh${TRH}.txt 
+# rm -f  $RAM/stream01_globe_${5}_trh${TRH}_lessb.tif /tmp/stream01_globe_${5}_trh${TRH}.txt 
 
-pkgetmask -ot Byte  -co COMPRESS=DEFLATE -co ZLEVEL=9 -ct /tmp/color.txt -min 0.5 -max 9999 -data 1 -nodata 0 -i  $DIR/stream/tmp/stream01_globe_${5}_trh${TRH}-oft.tif -o $RAM/stream01_globe_${5}_trh${TRH}-oft_ct.tif
-rm  $DIR/stream/tmp/stream01_globe_${5}_trh${TRH}-oft.tif
+# pkgetmask -ot Byte  -co COMPRESS=DEFLATE -co ZLEVEL=9 -ct /tmp/color.txt -min 0.5 -max 9999 -data 1 -nodata 0 -i  $DIR/stream/tmp/stream01_globe_${5}_trh${TRH}-oft.tif -o $RAM/stream01_globe_${5}_trh${TRH}-oft_ct.tif
 
-gdalwarp -overwrite   -co COMPRESS=DEFLATE -co ZLEVEL=9   -of GTiff -srcnodata 0 -dstalpha  $RAM/stream01_globe_${5}_trh${TRH}-oft_ct.tif  $RAM/stream01_globe_${5}_trh${TRH}_tr.tif 
+# gdalwarp -overwrite   -co COMPRESS=DEFLATE -co ZLEVEL=9   -of GTiff -srcnodata 0 -dstalpha  $RAM/stream01_globe_${5}_trh${TRH}-oft_ct.tif  $RAM/stream01_globe_${5}_trh${TRH}_tr.tif 
 
-' _ 
+# rm  $DIR/stream/tmp/stream01_globe_${5}_trh${TRH}-oft.tif
 
-gdalbuildvrt  -te -180 -60 180 84   -overwrite     $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_?_trh${TRH}-oft_ct.tif $RAM/stream01_globe_??_trh${TRH}-oft_ct.tif
-pkcreatect -ot Byte   -co COMPRESS=DEFLATE -co ZLEVEL=9 -ct  /tmp/color.txt    -i  $RAM/stream01_globe_trh${TRH}.vrt   -o   $DIR/stream/stream01_globe01_trh${TRH}_ct.tif 
-rm -f   $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_?_trh${TRH}-oft_ct.tif $RAM/stream01_globe_??_trh${TRH}-oft_ct.tif
+# ' _ 
 
-gdalbuildvrt  -te -180 -60 180 84   -overwrite     $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_?_trh${TRH}_tr.tif    $RAM/stream01_globe_??_trh${TRH}_tr.tif 
-gdal_translate -ot Byte  -ot Byte   -co COMPRESS=DEFLATE -co ZLEVEL=9    $RAM/stream01_globe_trh${TRH}.vrt $DIR/stream/stream01_globe01_trh${TRH}_tr.tif 
+# gdalbuildvrt  -te -180 -60 180 84   -overwrite     $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_?_trh${TRH}-oft_ct.tif $RAM/stream01_globe_??_trh${TRH}-oft_ct.tif
+# pkcreatect -ot Byte   -co COMPRESS=DEFLATE -co ZLEVEL=9 -ct  /tmp/color.txt    -i  $RAM/stream01_globe_trh${TRH}.vrt   -o   $DIR/stream/stream01_globe01_trh${TRH}_ct.tif 
+# rm -f   $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_?_trh${TRH}-oft_ct.tif $RAM/stream01_globe_??_trh${TRH}-oft_ct.tif
 
-cleanram 
-rm -f rm  /tmp/color.txt 
+# gdalbuildvrt  -te -180 -60 180 84   -overwrite     $RAM/stream01_globe_trh${TRH}.vrt  $RAM/stream01_globe_?_trh${TRH}_tr.tif    $RAM/stream01_globe_??_trh${TRH}_tr.tif 
+# gdal_translate -ot Byte  -ot Byte   -co COMPRESS=DEFLATE -co ZLEVEL=9    $RAM/stream01_globe_trh${TRH}.vrt $DIR/stream/stream01_globe01_trh${TRH}_tr.tif 
 
-exit 
+# cleanram 
+# rm -f rm  /tmp/color.txt 
 
-# controllare il sottostante 
+
 cat  $RAM/tiles_xoff_yoff.txt | xargs -n 5 -P 16 bash -c $'
 
 gdal_translate -ot Byte  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co BIGTIFF=YES   -srcwin $1 $2 $3 $4  $DIR/stream/stream01_globe01_trh${TRH}_ct.tif $RAM/stream01_globe_${5}_trh${TRH}-oft_ct.tif

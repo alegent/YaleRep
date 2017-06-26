@@ -24,9 +24,9 @@ export GRASS_PAGER=cat
 export GRASS_WISH=wish
 export GRASS_ADDON_BASE=$HOME/.grass7/addons
 export GRASS_VERSION=7.0.2
-export GISBASE=/gpfs/apps/hpc/Apps/GRASS/7.0.2/grass-7.0.2
-export GRASS_PROJSHARE=/gpfs/apps/hpc/Libs/PROJ/4.8.0/share/proj
-export PROJ_DIR=/gpfs/apps/hpc/Libs/PROJ/4.8.0
+export GISBASE=/gpfs/apps/hpc.rhel7/Apps/GRASS/7.0.2/grass-7.0.2
+export GRASS_PROJSHARE=/gpfs/apps/hpc.rhel7/Libs/PROJ/4.9.3/share/proj
+export PROJ_DIR=/gpfs/apps/hpc.rhel7/Libs/PROJ/4.9.3
 
 export PATH="$GISBASE/bin:$GISBASE/scripts:$PATH"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$GISBASE/lib"
