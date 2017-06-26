@@ -1,0 +1,2 @@
+run with 
+jupyter notebook  WebScrapingPython.ipynb
