@@ -1,0 +1,1 @@
+for file in   /lustre/scratch/client/fas/sbsc/ga254/dataproces/SRTM/final/*/*.tif  ; do  ./bin/google-cloud-sdk/bin/gsutil cp  $file gs://data.earthenv.org/topography/   ; done
