@@ -1,4 +1,4 @@
-
+ 
 # qsub  -W depend=afterany$(qstat -u $USER  | grep sc1_rasterize.sh   | awk -F . '{  printf (":%i" ,  $1 ) }' | awk '{   printf ("%s\n" , $1 ) }')  /lustre/home/client/fas/sbsc/ga254/scripts/HOTSPOT/sc2_2netcdfSUM.sh  
 
 #PBS -S /bin/bash 
@@ -14,7 +14,7 @@ module load Tools/CDO/1.6.4
 export RAM=/dev/shm
 export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT
 
-for GROUP in TERRESTRIAL_MAMMALS REPTILES AMPHIBIANS MANGROVES MARINE_MAMMALS CORALS MARINEFISH  ; do  
+for GROUP in  TERRESTRIAL_MAMMALS TERRESTRIAL_REPTILES  MARINE_REPTILES  AMPHIBIANS MANGROVES MARINE_MAMMALS CORALS MARINEFISH  ; do  
 for RES in 0.25d  1d ; do
 echo start group sum $GROUP 
 
@@ -83,6 +83,40 @@ pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_M
 
 
 done  
+
+
+
+echo  TERRESTRIAL
+
+for RES in 1d 0.25d ; do
+
+rm -f   /dev/shm/output$RES.vrt
+gdalbuildvrt  -overwrite  -separate -te -180 -90 +180 +90   /dev/shm/output$RES.vrt   $DIR/tif_${RES}_stack/{AMPHIBIANS,TERRESTRIAL_REPTILES,BIRDS,TERRESTRIAL_MAMMALS}/*_sum*_3stk_${RES}.tif
+oft-calc -ot UInt32   /dev/shm/output$RES.vrt   $DIR/tif_${RES}_stack/terrestrialgroup_sum_${RES}.tif <<EOF
+1
+#1 #2 #3 #4 + + +
+EOF
+
+rm -f   $DIR/tif_${RES}_stack/360x114global_terrestrialgroup_sum_${RES}.*
+pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i  $DIR/tif_${RES}_stack/terrestrialgroup_sum_${RES}.tif   -o $DIR/tif_${RES}_stack/360x114global_terrestrialgroup_sum_${RES}.shp
+
+done 
+
+echo  MARINE
+
+for RES in 1d 0.25d ; do
+
+rm -f   /dev/shm/output$RES.vrt
+gdalbuildvrt  -overwrite  -separate -te -180 -90 +180 +90   /dev/shm/output$RES.vrt   $DIR/tif_${RES}_stack/{CORALS,MARINEFISH,MARINE_REPTILES,MANGROVES,MARINE_MAMMALS}/*_sum*_3stk_${RES}.tif
+oft-calc -ot UInt32   /dev/shm/output$RES.vrt   $DIR/tif_${RES}_stack/marinegroup_sum_${RES}.tif <<EOF
+1
+#1 #2 #3 #4 #5 + + + + +
+EOF
+
+rm -f   $DIR/tif_${RES}_stack/360x114global_marinegroup_sum_${RES}.* 
+pkextract -r mean  -f  "ESRI Shapefile" -srcnodata -9999 -polygon  --bname Nsp_Mean  -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i  $DIR/tif_${RES}_stack/marinegroup_sum_${RES}.tif   -o $DIR/tif_${RES}_stack/360x114global_marinegroup_sum_${RES}.shp
+
+done 
 
 echo  overall sum 
 

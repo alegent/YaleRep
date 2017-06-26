@@ -10,6 +10,6 @@
 
 rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/Predicts/360x114global_*.*
 for PAR in mean median ; do 
-pkextract -polygon -r $PAR  -f  "ESRI Shapefile" -srcnodata -9999  -s   /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/Pre
-dicts/lbii.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/Predicts/360x114global_$PAR.shp 
+pkextract -polygon -r $PAR  -f  "ESRI Shapefile" -srcnodata -9999  -s   /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/Predicts/lbii.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/HOTSPOT/Predicts/360x114global_$PAR.shp 
+
 done 
