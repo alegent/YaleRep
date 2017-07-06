@@ -1,5 +1,0 @@
-# cd 
-#  scp    giuseppea@litoria.eeb.yale.edu:/mnt/data2/scratch/Clustering_ga_mt/*.tif .
-
-# /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/median/eastness_md_GMTED2010_md.tif . 
-# /lustre/scratch/client/fas/sbsc/ga254/dataproces/GMTED2010/aspect/median/northness_md_GMTED2010_md.tif . 
