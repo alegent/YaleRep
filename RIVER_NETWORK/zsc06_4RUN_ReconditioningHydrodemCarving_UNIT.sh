@@ -34,7 +34,7 @@ for file in $( ls /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK
          DIM=$( echo $LINE | tr "_" " "  | awk '{  print $2  }' ) ; 
          RAM=$(grep $UNIT  /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/UNIT_RAM.txt | awk -F "_" '{print $2}' )
          echo lunch the start scritp N $N DIM $DIM  UNIT  $UNIT   RAM $RAM  PREV_JOB  $PREV_JOB 
-	 NEXT_JOB=$(  sbatch  --export=N=$N,DIM=$DIM,UNIT=$UNIT,GEO=GLOBE,RADIUS=$RADIUS,TRH=8 -J sc06_ReconditioningHydrodemCarving_UNIT${UNIT}_N${N}_DIM${DIM}_STDEV${RADIUS}_TRH${TRH}.sh   --mem-per-cpu=$RAM  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc06_ReconditioningHydrodemCarving_UNIT.sh | awk '{ print $4  }'  )  
+	 NEXT_JOB=$(  sbatch    -d afterany:$PREV_JOB    --export=N=$N,DIM=$DIM,UNIT=$UNIT,GEO=GLOBE,RADIUS=$RADIUS,TRH=8 -J sc06_ReconditioningHydrodemCarving_UNIT${UNIT}_N${N}_DIM${DIM}_STDEV${RADIUS}_TRH${TRH}.sh   --mem-per-cpu=$RAM  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc06_ReconditioningHydrodemCarving_UNIT.sh | awk '{ print $4  }'  )  
  	 PREV_JOB=$NEXT_JOB 
      done 
 done
@@ -42,7 +42,7 @@ done
 done 
 
 
-#  -d afterany:$PREV_JOB  
+#
 
 
 
