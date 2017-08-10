@@ -35,6 +35,7 @@ YEND=$(expr $YSTART + 9)
 
 cdo yearmonmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc
 cdo regres  $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc   -msknodata 100000 -p ">" -nodata -9999 -i $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc -o  $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.tif
 rm $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc
 echo  precipitation CUR 
 
@@ -42,18 +43,77 @@ echo  precipitation CUR
 
 cdo yearsum -setvrange,0,3000 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year ; done)   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc    $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
 cdo regres $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc -msknodata 100000 -p ">" -nodata -9999 -i $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc -o  $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.tif
 rm $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
 
 # year mean for precipitation  HadISST_sst  ; then regression 
 
 cdo yearmonmean   -setvals,-1000,-1.8     -setvrange,-50,50 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  
-
 cdo regres $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc  
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc   -msknodata 100000 -p ">" -nodata -9999 -i $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc -o $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif
+rm -f $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc
 
+# calculate the weighted median and weighted mean (with real values and absolute values) 
+# wighted mean ; sum (area * value ) /  sum area 
+
+# ### run only ones manualy to compute area statistic 
+# ### mask the ARA raster with cru and HadISST dataset 
+# pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.1960.2014.pre.dat_0.5deg.reg1960.1969.nc   -msknodata 100000 -p ">" -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/0.50deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRU.tif
+# pkgetmask -ot Byte -co COMPRESS=DEFLATE -co ZLEVEL=9 -min 0 -max 100000 -data 1 -nodata 0 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRU.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRUmsk.tif
+
+# pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.reg1960.1969.nc   -msknodata -100000 -p "<" -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif
+# pkgetmask -ot Byte -co COMPRESS=DEFLATE -co ZLEVEL=9 -min 0 -max 100000 -data 1 -nodata 0 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTmsk.tif
+
+# # get the sum of the area 
+# # oft-stat-sum 
+
+# oft-stat-sum -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRU.tif  -um  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRUmsk.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRUmsk_sum.txt 
+
+# oft-stat-sum -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif  -um  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTmsk.tif  -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTmsk_sum.txt
+# # head  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/*.txt 
+# # 1 67420 146382903.728638 751.131514 
+
+# # head /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTmsk_sum.txt
+# # 1 43425 368654892.352112 3524.549964 
+# ##########
+# ##########
+
+# cru * AREA
+
+gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.regAREA${YSTART}.${YEND}.tif  -A $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.tif -B /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRU.tif   --calc="( A.astype(float) +  B.astype(float) )" --overwrite   --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+
+gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.regAREA${YSTART}.${YEND}.tif  -A $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.tif -B /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRU.tif   --calc="( A.astype(float) +  B.astype(float) )" --overwrite   --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+
+oft-stat-sum -i $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.regAREA${YSTART}.${YEND}.tif  -um /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRUmsk.tif   -o $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.regAREA${YSTART}.${YEND}.txt
+
+oft-stat-sum -i $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.regAREA${YSTART}.${YEND}.tif  -um /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/0.50deg-Area_prj6965_CRUmsk.tif   -o $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.regAREA${YSTART}.${YEND}.txt 
+
+# calculate wighted mean 
+paste  $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.regAREA${YSTART}.${YEND}.txt $DIR/GEO_AREA/0.50deg-Area_prj6965_CRUmsk_sum.txt | awk \'{ printf ("%.12f\n", $3 / $7 )  }\' > $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.regAREA${YSTART}.${YEND}wightedmean.txt
+rm $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.regAREA${YSTART}.${YEND}.txt
+
+paste  $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.regAREA${YSTART}.${YEND}.txt $DIR/GEO_AREA/0.50deg-Area_prj6965_CRUmsk_sum.txt | awk \'{  printf ("%.12f\n", $3 / $7 ) }\' > $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.regAREA${YSTART}.${YEND}wightedmean.txt
+rm $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.regAREA${YSTART}.${YEND}.txt
+
+# HadISST * AREA
+
+gdal_calc.py --type=Float32  --NoDataValue=-9999  --outfile=$DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.regAREA${YSTART}.${YEND}.tif  -A $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif -B /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif   --calc="( A.astype(float) +  B.astype(float) )" --overwrite   --co=COMPRESS=DEFLATE --co=ZLEVEL=9
+
+oft-stat-sum -i $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.regAREA${YSTART}.${YEND}.tif  -um /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTmsk.tif   -o $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.regAREA${YSTART}.${YEND}.txt
+
+# calculate wighted mean 
+
+paste  $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.regAREA${YSTART}.${YEND}.txt $DIR/GEO_AREA/1.00deg-Area_prj6965_HadISSTmsk_sum.txt | awk \'{  printf ("%.12f\n", $3 / $7 ) }\' > $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.regAREA${YSTART}.${YEND}wightedmean.txt
+# rm $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.regAREA${YSTART}.${YEND}.txt
 
 ' _ 
 
+exit 
+
 ##### select the highst regression #######
+
+###### 
+pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9 -m  $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}_tmp.tif -msknodata 10000 -p ">" -nodata -9999 -i
 
 
 cdo yearmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2014 ) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.nc
@@ -98,6 +158,10 @@ pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 
 pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  -ot Float32  -nodata -9999 -i  $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean${YSTART}.${YEND}.tif -o $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean${YSTART}.${YEND}.tif
 
 gdal_translate -ot Float32  -co COMPRESS=DEFLATE  NETCDF:"$DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean${YSTART}.${YEND}.nc":sst    $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean${YSTART}.${YEND}.tif
+
+
+
+
 
 ' _ 
 
