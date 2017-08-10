@@ -24,35 +24,50 @@ echo temperature CUR
  
 # dataset from 1960 to 2014
 # seq 1960 2005 | xargs -n 1 -P 8 bash -c $' 
-seq 1960 1960 | xargs -n 1 -P 8 bash -c $' 
+seq 1960 1961 | xargs -n 1 -P 8 bash -c $' 
 
 YYYY=1960.2014
 YSTART=$1
 YEND=$(expr $YSTART + 9)
 
+# year mean for temperature CRU  ; then regression 
+
+
 cdo yearmonmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc
 cdo regres  $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc
-
+rm $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc
 echo  precipitation CUR 
 
 # year sum for precipitation  CRU  ; then regression 
 
 cdo yearsum -setvrange,0,3000 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year ; done)   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc    $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
 cdo regres $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc
+rm $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
+
+# year mean for precipitation  HadISST_sst  ; then regression 
+
+cdo yearmonmean   -setvals,-1000,-1.8     -setvrange,-50,50 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  
+
+cdo regres $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc  
+
+
+' _ 
+
+##### select the highst regression #######
+
+
+cdo yearmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2014 ) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.nc
+
 
 # year mean 
-cdo timmean  $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean${YSTART}.${YEND}.nc
-cdo timmean  $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean${YSTART}.${YEND}.nc
+cdo timmean  $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean.nc
+cdo timmean  $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean.nc
 
-
-# resampling the regression and the mean tmp and mean prep  # not implementet...implemented with pkfilter
-
-# cdo -P 2  remapcon2,$DIR/HadISST/HadISST_sst_griddes.txt $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_1.0deg.reg${YSTART}.${YEND}.nc
-# cdo -P 2  remapcon2,$DIR/HadISST/HadISST_sst_griddes.txt $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc
-# cdo -P 2  remapcon2,$DIR/HadISST/HadISST_sst_griddes.txt $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.mean${YSTART}.${YEND}.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.pre.dat_1.0deg.mean${YSTART}.${YEND}.nc
-# cdo -P 2  remapcon2,$DIR/HadISST/HadISST_sst_griddes.txt $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.mean${YSTART}.${YEND}.nc   $DIR/mean_CRU10/cru_ts3.23.$YYYY.tmp.dat_1.0deg.mean${YSTART}.${YEND}.nc
 
 echo temperature HadISST  # setvals change the value of -1000 to -1.8 
+
+
+
 cdo yearmonmean   -setvals,-1000,-1.8     -setvrange,-50,50 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  
 
 cdo timmean  $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc           $DIR/mean_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.mean${YSTART}.${YEND}.nc  
