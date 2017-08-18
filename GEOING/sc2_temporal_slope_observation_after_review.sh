@@ -29,7 +29,7 @@ seq 1960 1960 | xargs -n 1 -P 8 bash -c $'
 YYYY=1960.2014
 YSTART=$1
 YEND=$(expr $YSTART + 9)
-
+RAM=/dev/shm
 ###################################################
 ### Calculate the temporal slope using 0.5 degree resolution data. This is what you have done
 ##################################################
@@ -180,15 +180,11 @@ pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 
 
 echo temperature HadISST  # setvals change the value of -1000 to -1.8 
 
-cdo yearmonmean  -setvals,-1000,-1.8 -setvrange,-50,50 -selyear$(for year in $(seq 1960 2014  ); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_0.5deg.nc  
+cdo yearmonmean  -setvals,-1000,-1.8 -setvrange,-50,50 -selyear$(for year in $(seq 1960 2014  ); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.nc  
 
-cdo timmean  $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_0.5deg.nc  $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_0.5deg.mean.nc
+cdo timmean  $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.nc  $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.mean.nc
 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_0.5deg.mean.nc   -msknodata -100000 -p "<" -nodata -9999 -i $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_0.5deg.mean.nc  -o $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_0.5deg.mean.tif
-
-pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -nodata -9999 -ot Float32  -i $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_0.5deg.mean.tif -o $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.mean.tif
-
- 
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.mean.nc   -msknodata -100000 -p "<" -nodata -9999 -i $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.mean.nc  -o $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.mean.tif
 
 echo create random variable for temperature 1 deg mean_CRU
 
@@ -196,7 +192,7 @@ R --vanilla -q <<EOF
 library(raster , lib.loc = "/usr/local/cluster/hpc/Rpkgs/RASTER/2.5.2/3.0/" ) 
 library(rgdal , lib.loc = "/usr/local/cluster/hpc/Rpkgs/RGDAL/0.9-3/3.0" )
 raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU10/cru_ts3.23.tmp.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU10/cru_ts3.23.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
 EOF
 
 echo create random variable for precipiatation 1 deg mean_CRU
@@ -205,7 +201,7 @@ R --vanilla -q <<EOF
 library(raster , lib.loc = "/usr/local/cluster/hpc/Rpkgs/RASTER/2.5.2/3.0/" ) 
 library(rgdal , lib.loc = "/usr/local/cluster/hpc/Rpkgs/RGDAL/0.9-3/3.0" )
 raster=raster(matrix(runif(64800,max=0.1, min=0.001),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU10/cru_ts3.23.pre.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_CRU10/cru_ts3.23.pre.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
 EOF
 
 echo create random variable for temperature 1 deg mean_HadISST
@@ -214,7 +210,7 @@ R --vanilla -q <<EOF
 library(raster , lib.loc = "/usr/local/cluster/hpc/Rpkgs/RASTER/2.5.2/3.0/" ) 
 library(rgdal , lib.loc = "/usr/local/cluster/hpc/Rpkgs/RGDAL/0.9-3/3.0" )
 raster=raster(matrix(runif(64800,max=0.05, min=-0.05),180,360) , xmn=-180, xmx=180, ymn=-90, ymx=190 , crs="+proj=longlat +datum=WGS84 +no_defs")
-writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_HadISST/HadISST_sst.tmp.dat_mean_random.0.5deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
+writeRaster(raster,filename="/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_HadISST10/HadISST_sst.tmp.dat_mean_random.1.0deg.tif",options=c("COMPRESS=DEFLATE "),formats=GTiff,overwrite=TRUE)
 EOF
 
 
@@ -257,8 +253,6 @@ pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_HadISST10/HadISST_sst.
 gdal_edit.py -a_nodata -9999  $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif 
 
 exit
-
- 
 
 echo  start to calculate the velocity for the 10-year period 
 
