@@ -71,28 +71,41 @@ cdo regres -setmissval,-9999  -selyear$(for year in $(seq $YSTART $YEND) ; do ec
 gdal_translate -srcwin 0 0 180 180  -a_ullr 0 +90 180 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_right.tif 
 gdal_translate -srcwin 180 0 180 180  -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_left.tif
 
-gdalbuildvrt -overwrite -a_srs EPSG:4326 -te -180 -90 180 +90 -tr 1 1 $RAM/${filename}_reg_${YSTART}.${YEND}.vrt  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_right.tif  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_left.tif
+gdalbuildvrt -overwrite -a_srs EPSG:4326 -te -180 -90 180 +90 -tr 1 1 $RAM/${filename}_reg_${YSTART}.${YEND}.vrt $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_right.tif $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_left.tif
 gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co COMPRESS=DEFLATE  -co ZLEVEL=9  $RAM/${filename}_reg_${YSTART}.${YEND}.vrt   $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
 rm -f $RAM/${filename}_reg_${YSTART}.${YEND}.vrt  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_right.tif  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_left.tif
-
 res=1.0
-if [ $par = "pr"   ]  ; then parCRU=pre ; fi
-if [ $par = "tas"   ] ||  [ $par = "tos"   ]  ; then parCRU=tmp ; fi
 
-echo  land  
+
+if [ $par = "pr"   ]  || [ $par = "tas"   ]  ; then 
+
+if [ $par = "tas"   ] ; then parCRU=tmp ; fi
+if [ $par = "pr"   ]  ; then parCRU=pre ; fi
+
+echo land  
 gdal_calc.py --NoDataValue=-9999 --outfile=$RAM/${filename}_velocity${YSTART}.${YEND}land.tif -A $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif -B $DIR/slope_CRU10/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)"  --overwrite --type=Float32
 pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/slope_CRU10/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif  -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity${YSTART}.${YEND}land.tif  -o $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}land.tif
 gdal_edit.py  -a_nodata -9999 $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}land.tif
 rm  $RAM/${filename}_velocity${YSTART}.${YEND}land.tif 
+fi 
 
-echo  ocean
+if [ $par = "tos"   ] ; then 
 
+echo ocean
 gdal_calc.py --NoDataValue=-9999 --outfile=$RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif -A $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif -B $DIR/slope_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)" --overwrite --type=Float32
 pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/slope_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999 -p "=" -nodata -9999   -i $RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif  -o $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}ocea.tif
 gdal_edit.py  -a_nodata -9999 $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}ocea.tif
 rm  $RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif 
 
-echo mean and median for regression and velocity 
+fi 
+
+' _ 
+
+
+echo mean and median for regression
+
+ls $DIR/velocity_models10/*/*/*.tif | xargs -n 1 -P 8  bash -c $'
+export file=$1
 
 R --vanilla -q <<EOF
 
@@ -123,16 +136,24 @@ ABSmean=weighted.mean(abs(value),weight)
 write.table(mean, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_reg",YSTART,".",YEND,"_weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 write.table(ABSmean, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_reg",YSTART,".",YEND,"_ABSweightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
+EOF
+
+done 
+
+' _ 
+
+
+ls $DIR/velocity_models10/*/*/*.tif | xargs -n 1 -P 8  bash -c $'
+
+
 # velocity 
 
 for (var  in c("ocea" , "land")){
 
-if ( par == "pr"  & var  == "ocea" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif"}
-if ( par == "pr"  & var  == "land" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopepre.tif"}
-if ( par == "tas" & var ==  "ocea" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif"}
-if ( par == "tas" & var ==  "land" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopetmp.tif"}
-if ( par == "tos" & var ==  "ocea" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif"}
-if ( par == "tos" & var ==  "land" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopetmp.tif"}
+if ( par == "pr"  & var == "land" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopepre.tif"}
+if ( par == "tas" & var == "land" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopetmp.tif"}
+if ( par == "tos" & var == "ocea" ) { weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif"}
+
 
 value=na.omit(as.vector(raster(paste0(DIR ,"/velocity_models10/",dirmod,"/",par,"/",filename,"_velocity",YSTART,".",YEND,var,".tif"))),mode = "numeric")
 weight=na.omit(as.vector(raster( weightraster  )) , mode = "numeric")
@@ -151,11 +172,13 @@ write.table(ABSmean, paste0(DIR,"/velocity_models10txt/",dirmod,"/",par,"/",file
 
 }
 
+
 EOF
 
 done 
 
 ' _ 
+
 
 
 exit 
