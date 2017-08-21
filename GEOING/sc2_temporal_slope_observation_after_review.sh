@@ -37,7 +37,7 @@ RAM=/dev/shm
 # year mean for temperature CRU  ; then regression 
 
 
-cdo yearmonmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $RAM/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc
+cdo yearmonmean  -setmissval,-9999 -setvrange,-100,100 -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $RAM/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc
 cdo regres  $RAM/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc
 pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc   -msknodata 100000 -p ">" -nodata -9999 -i $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.nc -o  $DIR/reg_CRU10/cru_ts3.23.$YYYY.tmp.dat_0.5deg.reg${YSTART}.${YEND}.tif
 rm $RAM/cru_ts3.23.$YYYY.tmp${YSTART}.${YEND}.dat_0.5deg.nc
@@ -45,7 +45,7 @@ echo  precipitation CRU
 
 # year sum for precipitation  CRU  ; then regression 
 
-cdo yearsum -setvrange,0,3000 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year ; done)   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc  $RAM/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
+cdo yearsum -setvrange,0,4000 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year ; done)   $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc  $RAM/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
 cdo regres $RAM/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc   $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc
 pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc -msknodata 100000 -p ">" -nodata -9999 -i $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.nc -o  $DIR/reg_CRU10/cru_ts3.23.$YYYY.pre.dat_0.5deg.reg${YSTART}.${YEND}.tif
 rm $RAM/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
@@ -69,9 +69,8 @@ pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 
 
 
 #### calculate the weighted median and weighted mean (with real values and absolute values) 
-#### Weighted  mean ; sum (area * value ) /  sum area 
 
-#### run it using one 10-year period to compute area statistic 
+#### run it using one 10-years period
 #### mask the AERA raster with cru and HadISST dataset 
 
 pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.1960.2014.pre.dat_1.0deg.reg1960.1969.tif -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRU.tif
@@ -98,39 +97,19 @@ YSTART = as.numeric(Sys.getenv(c(\'YSTART\')))
 YEND = as.numeric(Sys.getenv(c(\'YEND\')))
 DIR = Sys.getenv(c(\'DIR\'))
 
-# CRU tmp data 
+# CRU tmp data # CRU pre  data 
 
-value=na.omit(as.vector(raster(paste0(DIR ,"/reg_CRU10/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.reg",YSTART,".",YEND,".tif"))),mode = "numeric")
+for (var  in c("tmp" , "pre")){ 
+
+value=na.omit(as.vector(raster(paste0(DIR ,"/reg_CRU10/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.reg",YSTART,".",YEND,".tif"))),mode = "numeric")
 weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRU.tif")) , mode = "numeric")
 
 median=bigvis::weighted.median(value,weight)
-ABSmedian=bigvis::weighted.median(abs(value),weight)
+write.table(median, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-write.table(median, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmedian, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.regABSOAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
+mean=stats::weighted.mean(value,weight)
+write.table(mean, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=weighted.mean(value,weight)
-ABSmean=weighted.mean(abs(value),weight)
-
-write.table(mean, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmean, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.regABSOAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
-
-# CRU pre  data 
-
-value=na.omit(as.vector(raster(paste0(DIR ,"/reg_CRU10/cru_ts3.23.",YYYY,".pre.dat_1.0deg.reg",YSTART,".",YEND,".tif"))),mode = "numeric")
-weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRU.tif")) , mode = "numeric")
-
-median=bigvis::weighted.median(value,weight)
-ABSmedian=bigvis::weighted.median(abs(value),weight)
-
-write.table(median, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmedian.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmedian, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.regABSOAREA",YSTART,".",YEND,"weightedmedian.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-
-mean=weighted.mean(value,weight)
-ABSmean=weighted.mean(abs(value),weight)
-
-write.table(mean, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmean.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmean, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.regABSOAREA",YSTART,".",YEND,"weightedmean.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 # HadISSST_sst
 
@@ -138,16 +117,11 @@ value=na.omit(as.vector(raster( paste0(DIR ,"/reg_HadISST10/HadISST_sst." , YYYY
 weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif")) , mode = "numeric")
 
 median=bigvis::weighted.median(value,weight )
-ABSmedian=bigvis::weighted.median(abs(value),weight)
-
 write.table(median, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightededmedian.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmedian, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regABSOAREA",YSTART,".",YEND,"weightededmedian.txt" ), sep = " ", col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=weighted.mean(value,weight )
-ABSmean=weighted.mean(abs(value),weight)
-
+mean=stats::weighted.mean(value,weight )
 write.table(mean, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightededmean.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmean, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regABSOAREA",YSTART,".",YEND,"weightededmean.txt" ), sep = " ", col.names = FALSE , quote = FALSE , row.names=FALSE  )
+}
 
 EOF
 
@@ -296,37 +270,17 @@ DIR = Sys.getenv(c(\'DIR\'))
 
 # CRU tmp data 
 
-value=na.omit(as.vector(raster(paste0(DIR ,"/velocity_CRU10/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.velocity",YSTART,".",YEND,".tif"))),mode = "numeric")
-weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopetmp.tif")) , mode = "numeric")
+for (var  in c("tmp" , "pre")){ 
+
+value=na.omit(as.vector(raster(paste0(DIR ,"/velocity_CRU10/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.velocity",YSTART,".",YEND,".tif"))),mode = "numeric")
+weight=na.omit(as.vector(raster(paste0("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslope",var,".tif"))) , mode = "numeric")
 
 median=bigvis::weighted.median(value,weight)
-ABSmedian=bigvis::weighted.median(abs(value),weight)
+write.table(median, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-write.table(median, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmedian, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.velocityABSOAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
-
-mean=weighted.mean(value,weight)
-ABSmean=weighted.mean(abs(value),weight)
-
-write.table(mean, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmean, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".tmp.dat_1.0deg.velocityABSOAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
-
-# CRU pre  data 
-
-value=na.omit(as.vector(raster(paste0(DIR ,"/velocity_CRU10/cru_ts3.23.",YYYY,".pre.dat_1.0deg.velocity",YSTART,".",YEND,".tif"))),mode = "numeric")
-weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopepre.tif")) , mode = "numeric")
-
-median=bigvis::weighted.median(value,weight)
-ABSmedian=bigvis::weighted.median(abs(value),weight)
-
-write.table(median, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmedian.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmedian, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.velocityABSOAREA",YSTART,".",YEND,"weightedmedian.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-
-mean=weighted.mean(value,weight)
-ABSmean=weighted.mean(abs(value),weight)
-
-write.table(mean, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmean.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmean, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".pre.dat_1.0deg.velocityABSOAREA",YSTART,".",YEND,"weightedmean.txt"), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
+mean=stats::weighted.mean(value,weight)
+write.table(mean, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
+}
 
 # HadISSST_sst
 
@@ -334,20 +288,15 @@ value=na.omit(as.vector(raster( paste0(DIR ,"/velocity_HadISST10/HadISST_sst." ,
 weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif")) , mode = "numeric")
 
 median=bigvis::weighted.median(value,weight )
-ABSmedian=bigvis::weighted.median(abs(value),weight)
-
 write.table(median, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightededmedian.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmedian, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityABSOAREA",YSTART,".",YEND,"weightededmedian.txt" ), sep = " ", col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=weighted.mean(value,weight )
-ABSmean=weighted.mean(abs(value),weight)
-
+mean=stats::weighted.mean(value,weight )
 write.table(mean, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightededmean.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
-write.table(ABSmean, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityABSOAREA",YSTART,".",YEND,"weightededmean.txt" ), sep = " ", col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 EOF
 
 ' _ 
+
 
 exit
 
