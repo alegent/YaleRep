@@ -18,6 +18,8 @@ cdo griddes  $DIR/HadISST/HadISST_sst.nc >  $DIR/HadISST/HadISST_sst_griddes.txt
 
 # time frame  1960 - 2005 and  1960 - 2014 
 
+rm -f $DIR/reg_CRU10/*  $DIR/reg_CRU10txt/*  $DIR/mean_CRU10/*  $DIR/velocity_CRU10/*  $DIR/velocity_CRU10txt/* 
+
 echo temperature CUR 
 
 # year mean for temperature CRU 0.5 ; then regression
@@ -117,15 +119,28 @@ value=na.omit(as.vector(raster( paste0(DIR ,"/reg_HadISST10/HadISST_sst." , YYYY
 weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif")) , mode = "numeric")
 
 median=bigvis::weighted.median(value,weight )
-write.table(median, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightededmedian.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
+write.table(median, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmedian.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 mean=stats::weighted.mean(value,weight )
-write.table(mean, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightededmean.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
+write.table(mean, paste0(DIR,"/reg_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmean.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
 }
 
 EOF
 
 ' _ 
+
+# merge statistical the results 
+
+for stat in median mean ; do 
+
+cat  $DIR/reg_CRU10txt/cru_ts3.23.1960.2014.tmp.dat_1.0deg.regAREA????.????weighted$stat.txt | sort -g >   $DIR/reg_CRU10txt/cru_ts3.23.1960.2014.tmp.dat_1.0deg.regAREA_allyear_weighted$stat.txt
+cat  $DIR/reg_CRU10txt/cru_ts3.23.1960.2014.pre.dat_1.0deg.regAREA????.????weighted$stat.txt | sort -g >   $DIR/reg_CRU10txt/cru_ts3.23.1960.2014.pre.dat_1.0deg.regAREA_allyear_weighted$stat.txt
+
+cat $DIR/reg_HadISST10txt/HadISST_sst.1960.2014.tmp.dat_1.0deg.regAREA????.????weighted$stat.txt | sort -g > $DIR/reg_HadISST10txt/HadISST_sst.1960.2014.tmp.dat_1.0deg.regAREA_allyear_weighted$stat.txt
+
+done 
+
+
 
 # long term mean to calculate spatial slope 
 
@@ -288,14 +303,26 @@ value=na.omit(as.vector(raster( paste0(DIR ,"/velocity_HadISST10/HadISST_sst." ,
 weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif")) , mode = "numeric")
 
 median=bigvis::weighted.median(value,weight )
-write.table(median, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightededmedian.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
+write.table(median, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmedian.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 mean=stats::weighted.mean(value,weight )
-write.table(mean, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightededmean.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
+write.table(mean, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmean.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 EOF
 
 ' _ 
+
+
+# merge statistical the results  
+
+for stat in median mean ; do 
+
+cat  $DIR/velocity_CRU10txt/cru_ts3.23.1960.2014.tmp.dat_1.0deg.velocityAREA????.????weighted$stat.txt | sort -g >   $DIR/velocity_CRU10txt/cru_ts3.23.1960.2014.tmp.dat_1.0deg.velocityAREA_allyear_weighted$stat.txt
+cat  $DIR/velocity_CRU10txt/cru_ts3.23.1960.2014.pre.dat_1.0deg.velocityAREA????.????weighted$stat.txt | sort -g >   $DIR/velocity_CRU10txt/cru_ts3.23.1960.2014.pre.dat_1.0deg.velocityAREA_allyear_weighted$stat.txt
+
+cat $DIR/velocity_HadISST10txt/HadISST_sst.1960.2014.tmp.dat_1.0deg.velocityAREA????.????weighted$stat.txt | sort -g > $DIR/velocity_HadISST10txt/HadISST_sst.1960.2014.tmp.dat_1.0deg.velocityAREA_allyear_weighted$stat.txt
+
+done 
 
 
 exit
