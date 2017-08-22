@@ -27,14 +27,13 @@ cd $DIR
 
 echo remove  files 
 
-find $DIR/mean_models10/*/*/* $DIR/reg_models10/*/*/*  $DIR/velocity_models10/*/*/* $DIR/reg_models10txt/*/*/* $DIR/velocity_models10txt/*/*/* -name "*.*" | xargs -n 1 -P 8 rm
+find $DIR/mean_models10/ $DIR/reg_models10/  $DIR/velocity_models10/ $DIR/reg_models10txt/ $DIR/velocity_models10txt/ -name "*.*" | xargs -n 1 -P 8 rm
 
 echo "########################################################################################"
 echo "#################MODEL START ###########################################################"
 echo "########################################################################################"
 
-
-grep rcp45 /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt | grep oned  | awk '{  print $1  }'  | xargs -n 1 -P 8  bash -c $'
+grep -e  rcp45 -e G4  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt | grep oned  | awk '{  print $1  }'   | xargs -n 1 -P 8  bash -c $'
 export file=$1
 export filename=$(basename $file .nc) 
 export dirinput=$(dirname $file)
@@ -43,7 +42,7 @@ export dirmod=$(basename $(dirname $(dirname $file)))
 export par=$(basename $(dirname $file))
 
 # for YSTART in $(seq 2020 2070) ; do  
-for YSTART in $(seq 2020 2070) ; do  
+for YSTART in $(seq 2070 2070) ; do  
 
 export YSTART
 export YEND=$(expr $YSTART + 9)
@@ -72,13 +71,12 @@ cdo regres -setmissval,-9999  -selyear$(for year in $(seq $YSTART $YEND) ; do ec
 # invert left to right 
 
 gdal_translate -srcwin 0 0 180 180  -a_ullr 0 +90 180 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif 
-gdal_translate -srcwin 180 0 180 180  -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc $RAM/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}_left.tif
+gdal_translate -srcwin 180 0 180 180  -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
 
 gdalbuildvrt -overwrite -a_srs EPSG:4326 -te -180 -90 180 +90 -tr 1 1 $RAM/${filename}_reg_${YSTART}.${YEND}.vrt $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
 gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co COMPRESS=DEFLATE  -co ZLEVEL=9  $RAM/${filename}_reg_${YSTART}.${YEND}.vrt   $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
 rm -f $RAM/${filename}_reg_${YSTART}.${YEND}.vrt  $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif  $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
 res=1.0
-
 
 if [ $par = "pr"   ]  || [ $par = "tas"   ]  ; then 
 
@@ -107,12 +105,10 @@ done
 
 ' _ 
 
-
 echo mean and median for regression
 
-
-find $DIR/reg_models10txt/*/*/*  -name "*.*" | xargs -n 1 -P 8 rm
-ls $DIR/reg_models10/*/*/*.tif  | grep tas  | xargs -n 1 -P 8  bash -c $'
+find $DIR/reg_models10txt  -name "*.*" | xargs -n 1 -P 8 rm
+ls $DIR/reg_models10/*/*/*.tif  | xargs -n 1 -P 8  bash -c $'
 export file=$1
 export filename=$(basename $file .tif) 
 export dirinput=$(dirname $file)
@@ -165,7 +161,7 @@ write.table(mean, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_r
 
 EOF
 done 
-rm -f /dev/shm/${filename}_land.tif  /dev/shm/${filename}_ocea.tif 
+# rm -f /dev/shm/${filename}_land.tif  /dev/shm/${filename}_ocea.tif 
 fi 
 
 #############################################
@@ -174,9 +170,9 @@ fi
 
 if [ $par = "tos"   ] || [ $par = "pr"   ]   ; then
 if [ $par = "tos"   ]   ; then export var=ocea ; fi 
-if [ $par = "pr"   ]   ; then export var=land ; fi 
+if [ $par = "pr"    ]   ; then export var=land ; fi 
 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $file  -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif  -o /dev/shm/${filename}_maskAREA.tif 
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $file -msknodata -9999 -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /dev/shm/${filename}_maskAREA.tif 
 
 R --vanilla -q <<EOF
 
@@ -191,7 +187,6 @@ var = Sys.getenv(c(\'var\'))
 file = Sys.getenv(c(\'file\'))
 # regression 
 
-
 value=na.omit(as.vector (raster( file  )), mode = "numeric")
 weight=na.omit(as.vector(raster(paste0("/dev/shm/",filename,"_maskAREA.tif"))), mode = "numeric")
 
@@ -202,7 +197,7 @@ mean=stats::weighted.mean(value,weight)
 write.table(mean, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_reg_",var,"_weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 EOF
-rm  -f /dev/shm/${filename}_maskAREA.tif
+# rm  -f /dev/shm/${filename}_maskAREA.tif
 
 fi 
 
@@ -210,11 +205,10 @@ fi
 
 
 
-
 # merge the results 
 
 find $DIR/reg_models10txt/*_stat   -name "*.*" | xargs -n 1 -P 8 rm
-seq 2020 2070 | xargs -n 1 -P 8 bash -c $'
+seq 2070 2070 | xargs -n 1 -P 8 bash -c $'
 #  tas 
 
 YSTART=$1 
@@ -275,8 +269,8 @@ EOF
 
 
 # merge the txt file 
-find $DIR/velocity_models10txt/*_stat   -name "*.*" | xargs -n 1 -P 8 rm
-seq 2020 2070 | xargs -n 1 -P 8 bash -c $'
+find $DIR/velocity_models10txt/*_stat/   -name "*.txt" | xargs -n 1 -P 8 rm
+seq 2070 2070 | xargs -n 1 -P 8 bash -c $'
 #  tas 
 
 YSTART=$1 
@@ -300,16 +294,11 @@ done
 
 ' _ 
 
+
 exit 
+exit
 
 # old script 
-
-
-
-
-
-
-
 
 
 
@@ -344,14 +333,6 @@ cdo   yearsum    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc       $DIR/
 rm -f    $DIR/mean_models/$dir/${filename}_meanTMP_$YEARS.nc  
 fi 
 fi 
-
-
-
-
-
-
-
-
 
 
 done 
@@ -421,7 +402,6 @@ gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co C
 rm -f   $RAM/${filename}_reg_${YEARS}.vrt  $RAM/${filename}_reg_${YEARS}_right.tif $RAM/${filename}_reg_${YEARS}_left.tif 
 
 ' _
-
 
 
 # echo "########################################################################################"
