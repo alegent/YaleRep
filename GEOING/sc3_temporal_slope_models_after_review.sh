@@ -33,25 +33,41 @@ echo "##########################################################################
 echo "#################MODEL START ###########################################################"
 echo "########################################################################################"
 
+# calculate velocity for the 10-year-period and long term (see if condition)
+
 grep -e  rcp45 -e G4  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt | grep oned  | awk '{  print $1  }'   | xargs -n 1 -P 8  bash -c $'
-export file=$1
-export filename=$(basename $file .nc) 
-export dirinput=$(dirname $file)
-export dir=$(echo ${dirinput:6:20})
-export dirmod=$(basename $(dirname $(dirname $file)))
-export par=$(basename $(dirname $file))
-
-# for YSTART in $(seq 2020 2070) ; do  
-for YSTART in $(seq 2070 2070) ; do  
-
-export YSTART
-export YEND=$(expr $YSTART + 9)
+file=$1
+filename=$(basename $file .nc) 
+dirinput=$(dirname $file)
+dir=$(echo ${dirinput:6:20})
+dirmod=$(basename $(dirname $(dirname $file)))
+par=$(basename $(dirname $file))
 RAM=/dev/shm
+
+
+for YSTART in $(echo $(seq 2020 2070) 202000 203000 ) ; do  
+# for YSTART in $(echo 2020 2070 202000 203000 ) ; do  
+
+# 10-year period
+if [ $YSTART  -lt 3000  ] ; then YEND=$(expr $YSTART + 9)   ; YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 9 )  
+if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 9 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 9) ;  fi
+fi 
+
+
+# long term 2020-2079 # (CSIRO model 2021-2080)
+if [ $YSTART -eq 202000  ]; then YSTART=2020 ;  YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 59)  ;  YEND=$(expr $YSTART + 59) 
+if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 59 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 59) ;  YEND=$(expr $YSTART + 59)  ; fi 
+fi 
+
+# long term G4 2030-2069 #  (CSIRO model 2031-2070)
+if [ $YSTART -eq 203000 ] ; then YSTART=2030 ;  YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 39)  ;  YEND=$(expr $YSTART + 39)  
+if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 39 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 39) ; YEND=$(expr $YSTART + 39)   ; fi 
+fi 
 
 # y = a * X +  addc,-273.15 
 # change the temperature to  celsius and calculate the year mean 
 if [ ${filename:0:3} = "tas"   ]  || [ ${filename:0:3} = "tos"   ]    ; then 
-cdo   -setmissval,-9999  -addc,-273.15    -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done)     $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
+cdo   -setmissval,-9999  -addc,-273.15    -selyear$(for year in $(seq $YSTARTIN $YENDIN) ; do echo -n ,$year ; done)     $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
 cdo    -yearmean    $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc   $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
 # gdal_translate  $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc    $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
 rm -r $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
@@ -59,7 +75,7 @@ fi
 
 # change precipitation to mm/year and calculate the sum year 
 if [ ${filename:0:3} = "pr_"   ] ; then 
-cdo -setmissval,-9999   -mulc,2592000  -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done)   $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
+cdo -setmissval,-9999   -mulc,2592000  -selyear$(for year in $(seq $YSTARTIN $YENDIN) ; do echo -n ,$year ; done)   $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
 cdo yearsum $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
 # gdal_translate  $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc    $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
 rm $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc   
@@ -104,6 +120,7 @@ fi
 done
 
 ' _ 
+
 
 echo mean and median for regression
 
@@ -203,11 +220,12 @@ fi
 
 ' _ 
 
-
-
 # merge the results 
 
 find $DIR/reg_models10txt/*_stat   -name "*.*" | xargs -n 1 -P 8 rm
+
+for MOD in G4 rcp45 ; do 
+export MOD
 seq 2070 2070 | xargs -n 1 -P 8 bash -c $'
 #  tas 
 
@@ -216,19 +234,47 @@ YEND=$(expr $YSTART + 9)
 
 for landocean in land ocea ; do 
 for stat in median mean ; do
-cat $DIR/reg_models10txt/*/tas/tas_oned_Amon_*_mean_${YSTART}.${YEND}_reg_${landocean}_weighted$stat.txt | sort -g > $DIR/reg_models10txt/tas_stat/tas_oned_Amon_mean_${YSTART}.${YEND}_reg_${landocean}_weighted$stat.txt 
+cat $DIR/reg_models10txt/*/tas/tas_oned_Amon_*_${MOD}_*_mean_${YSTART}.${YEND}_reg_${landocean}_weighted$stat.txt | sort -g > $DIR/reg_models10txt/tas_stat/tas_oned_Amon_${MOD}_mean_${YSTART}.${YEND}_reg_${landocean}_weighted$stat.txt 
 done 
 done 
 # tos 
 for stat in median mean ; do
-cat $DIR/reg_models10txt/*/tos/tos_oned_Amon_*_mean_${YSTART}.${YEND}_reg_ocea_weighted$stat.txt | sort -g > $DIR/reg_models10txt/tos_stat/tos_oned_Amon_mean_${YSTART}.${YEND}_reg_ocea_weighted$stat.txt 
+cat $DIR/reg_models10txt/*/tos/tos_oned_Amon_*_${MOD}_*_mean_${YSTART}.${YEND}_reg_ocea_weighted$stat.txt | sort -g > $DIR/reg_models10txt/tos_stat/tos_oned_Amon_${MOD}_mean_${YSTART}.${YEND}_reg_ocea_weighted$stat.txt 
 done 
 # pr
 for stat in median mean ; do
-cat $DIR/reg_models10txt/*/pr/pr_oned_Amon_*_mean_${YSTART}.${YEND}_reg_land_weighted$stat.txt | sort -g > $DIR/reg_models10txt/pr_stat/pr_oned_Amon_mean_${YSTART}.${YEND}_reg_land_weighted$stat.txt 
+cat $DIR/reg_models10txt/*/pr/pr_oned_Amon_*_${MOD}_*_mean_${YSTART}.${YEND}_reg_land_weighted$stat.txt | sort -g > $DIR/reg_models10txt/pr_stat/pr_oned_Amon_${MOD}_mean_${YSTART}.${YEND}_reg_land_weighted$stat.txt 
 done 
 
 ' _ 
+
+# merge long period 
+
+for YSTART in 2020 2030 ; do 
+
+if [ $YSTART = 2030 ] ; then YEND=$(expr $YSTART + 39) ; fi 
+if [ $YSTART = 2020 ] ; then YEND=$(expr $YSTART + 59) ; fi 
+
+for landocean in land ocea ; do 
+for stat in median mean ; do
+cat $DIR/reg_models10txt/*/tas/tas_oned_Amon_*_${MOD}_*_mean_${YSTART}.${YEND}_reg_${landocean}_weighted$stat.txt | sort -g > $DIR/reg_models10txt/tas_stat/tas_oned_Amon_${MOD}_mean_${YSTART}.${YEND}_reg_${landocean}_weighted$stat.txt 
+done 
+done 
+# tos 
+for stat in median mean ; do
+cat $DIR/reg_models10txt/*/tos/tos_oned_Amon_*_${MOD}_*_mean_${YSTART}.${YEND}_reg_ocea_weighted$stat.txt | sort -g > $DIR/reg_models10txt/tos_stat/tos_oned_Amon_${MOD}_mean_${YSTART}.${YEND}_reg_ocea_weighted$stat.txt 
+done 
+# pr
+for stat in median mean ; do
+cat $DIR/reg_models10txt/*/pr/pr_oned_Amon_*_${MOD}_*_mean_${YSTART}.${YEND}_reg_land_weighted$stat.txt | sort -g > $DIR/reg_models10txt/pr_stat/pr_oned_Amon_${MOD}_mean_${YSTART}.${YEND}_reg_land_weighted$stat.txt 
+done 
+
+done 
+done 
+
+
+# statistic of the velocity 
+
 
 
 find $DIR/velocity_models10txt   -name "*.txt" | xargs -n 1 -P 8 rm
@@ -270,6 +316,9 @@ EOF
 
 # merge the txt file 
 find $DIR/velocity_models10txt/*_stat/   -name "*.txt" | xargs -n 1 -P 8 rm
+
+for MOD in G4 rcp45 ; do 
+export MOD 
 seq 2070 2070 | xargs -n 1 -P 8 bash -c $'
 #  tas 
 
@@ -279,24 +328,106 @@ YEND=$(expr $YSTART + 9)
 for landocean in land ocea ; do 
 for stat in median mean ; do
 # echo $DIR/velocity_models10txt/*/tas/tas_oned_Amon_*_velocity${YSTART}.${YEND}${landocean}_weighted$stat.txt 
-cat $DIR/velocity_models10txt/*/tas/tas_oned_Amon_*_velocity${YSTART}.${YEND}${landocean}_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/tas_stat/tas_oned_Amon_velocity_${YSTART}.${YEND}_${landocean}_weighted$stat.txt 
+cat $DIR/velocity_models10txt/*/tas/tas_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}${landocean}_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/tas_stat/tas_oned_Amon_${MOD}_velocity_${YSTART}.${YEND}_${landocean}_weighted$stat.txt 
 done
 done 
 # tos 
 for stat in median mean ; do
-cat $DIR/velocity_models10txt/*/tos/tos_oned_Amon_*_velocity${YSTART}.${YEND}ocea_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/tos_stat/tos_oned_Amon_velocity_${YSTART}.${YEND}_ocea_weighted$stat.txt 
+cat $DIR/velocity_models10txt/*/tos/tos_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}ocea_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/tos_stat/tos_oned_Amon_${MOD}_velocity_${YSTART}.${YEND}_ocea_weighted$stat.txt 
                                     
 done 
 # pr
 for stat in median mean ; do
-cat $DIR/velocity_models10txt/*/pr/pr_oned_Amon_*_velocity${YSTART}.${YEND}land_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/pr_stat/pr_oned_Amon_velocity_${YSTART}.${YEND}_land_weighted$stat.txt 
+cat $DIR/velocity_models10txt/*/pr/pr_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}land_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/pr_stat/pr_oned_Amon_${MOD}_velocity_${YSTART}.${YEND}_land_weighted$stat.txt 
 done 
 
 ' _ 
 
 
+for YSTART in 2020 2030 ; do 
+
+if [ $YSTART = 2030 ] ; then YEND=$(expr $YSTART + 39) ; fi 
+if [ $YSTART = 2020 ] ; then YEND=$(expr $YSTART + 59) ; fi 
+
+#  tas 
+
+for landocean in land ocea ; do 
+for stat in median mean ; do
+# echo $DIR/velocity_models10txt/*/tas/tas_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}${landocean}_weighted$stat.txt 
+cat $DIR/velocity_models10txt/*/tas/tas_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}${landocean}_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/tas_stat/tas_oned_Amon_${MOD}_velocity_${YSTART}.${YEND}_${landocean}_weighted$stat.txt 
+done
+done 
+# tos 
+for stat in median mean ; do
+cat $DIR/velocity_models10txt/*/tos/tos_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}ocea_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/tos_stat/tos_oned_Amon_${MOD}_velocity_${YSTART}.${YEND}_ocea_weighted$stat.txt 
+done 
+# pr
+for stat in median mean ; do
+cat $DIR/velocity_models10txt/*/pr/pr_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}land_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/pr_stat/pr_oned_Amon_${MOD}_velocity_${YSTART}.${YEND}_land_weighted$stat.txt 
+done 
+
+done 
+
+done 
+
+
+
+#  start to aggregate the tif 
+
+# G4 mean tif of the 12 tif files for G4 velocity 2020-2029 and 2070-2079 2030-2069 
+
+echo 2020 2029  2030 2069 2070 2079 | xargs -n 2 -P 1 bash -c $' 
+YSTART=$1
+YEND=$2
+
+export DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING
+for landocean in land ocea ; do 
+rm -f $DIR/velocity_models10/tas_stat/tas_oned_Amon_G4_velocity${YSTART}.${YEND}${landocean}.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -cr mean   $( ls $DIR/velocity_models10/*/tas/tas_oned_Amon_*_G4_*_velocity${YSTART}.${YEND}${landocean}.tif  | xargs -n 1  echo  -i  ) -o $DIR/velocity_models10/tas_stat/tas_oned_Amon_G4_velocity${YSTART}.${YEND}${landocean}.tif 
+
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/tas_stat/tas_oned_Amon_G4_velocity${YSTART}.${YEND}${landocean}.tif  -o $DIR/velocity_models10/tas_stat/tas_oned_Amon_G4_velocity${YSTART}.${YEND}${landocean}.shp
+done 
+
+rm $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean $( ls $DIR/velocity_models10/*/tos/tos_oned_Amon_*_G4_*_velocity${YSTART}.${YEND}${landocean}.tif  | xargs -n 1 echo -i ) -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif
+
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.shp
+
+rm $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean  $( ls $DIR/velocity_models10/*/pr/pr_oned_Amon_*_G4_*_velocity${YSTART}.${YEND}${landocean}.tif | xargs -n 1 echo -i ) -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif 
+
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.shp
+
+' _
+
+# RCP45 mean tif of the 12 tif files for rcp45 for the period 2020-2079
+
+echo 2020 2079 | xargs -n 2 -P 1 bash -c $' 
+YSTART=$1
+YEND=$2
+
+DIR=/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING
+for landocean in land ocea ; do 
+rm -f $DIR/velocity_models10/tas_stat/tas_oned_Amon_rcp45_velocity${YSTART}.${YEND}${landocean}.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9  -cr mean   $( ls $DIR/velocity_models10/*/tas/tas_oned_Amon_*_rcp45_*_velocity${YSTART}.${YEND}${landocean}.tif  | xargs -n 1  echo  -i  ) -o $DIR/velocity_models10/tas_stat/tas_oned_Amon_rcp45_velocity${YSTART}.${YEND}${landocean}.tif 
+
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/tas_stat/tas_oned_Amon_rcp45_velocity${YSTART}.${YEND}${landocean}.tif  -o $DIR/velocity_models10/tas_stat/tas_oned_Amon_rcp45_velocity${YSTART}.${YEND}${landocean}.shp
+done 
+rm $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean $( ls $DIR/velocity_models10/*/tos/tos_oned_Amon_*_rcp45_*_velocity${YSTART}.${YEND}${landocean}.tif  | xargs -n 1 echo -i ) -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.tif
+
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.tif -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.shp
+
+rm $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean  $( ls $DIR/velocity_models10/*/pr/pr_oned_Amon_*_rcp45_*_velocity${YSTART}.${YEND}${landocean}.tif | xargs -n 1 echo -i ) -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.tif 
+
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}land.tif -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.shp
+
+' _
+
 exit 
-exit
+
+exit 
 
 # old script 
 
