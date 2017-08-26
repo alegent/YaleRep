@@ -20,6 +20,21 @@ cdo griddes  $DIR/HadISST/HadISST_sst.nc >  $DIR/HadISST/HadISST_sst_griddes.txt
 
 rm -f $DIR/reg_CRU10/*  $DIR/reg_CRU10txt/*  $DIR/mean_CRU10/*  $DIR/velocity_CRU10/*  $DIR/velocity_CRU10txt/* 
 
+# create a matix with first row 0 rest 1
+echo "ncols        360"       >  /dev/shm/1rowmask.asc
+echo "nrows        180"       >> /dev/shm/1rowmask.asc 
+echo "xllcorner    -180"         >> /dev/shm/1rowmask.asc 
+echo "yllcorner    -90"         >> /dev/shm/1rowmask.asc 
+echo "cellsize     1"      >> /dev/shm/1rowmask.asc 
+awk ' BEGIN {  
+             for (col=1 ; col<=360 ; col++) { 
+                 printf ("%i " , 0 ) } ; printf ("\n") 
+             for (row=1 ; row<=179 ; row++)  { 
+                 for (col=1 ; col<=360 ; col++) { 
+                     printf ("%i " ,  1  ) } ; printf ("\n")  }}' >> /dev/shm/1rowmask.asc  
+gdal_translate  -ot Byte -a_srs EPSG:4326  -co "COMPRESS=LZW"  /dev/shm/1rowmask.asc  /dev/shm/1rowmask.tif 
+
+
 echo temperature CUR 
 
 # year mean for temperature CRU 0.5 ; then regression
@@ -54,9 +69,11 @@ rm $RAM/cru_ts3.23.$YYYY.pre${YSTART}.${YEND}.dat_0.5deg.nc
 
 # year mean for precipitation  HadISST_sst  ; then regression 
 
-cdo yearmonmean   -setvals,-1000,-1.8     -setvrange,-50,50 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $RAM/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  
+cdo yearmonmean   -setvals,-1000,-1.8     -setvrange,-100,100 -selyear$(for year in $(seq $YSTART $YEND); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $RAM/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  
 cdo regres $RAM/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc  
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc   -msknodata -100000 -p "<" -nodata -9999 -i $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc -o $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif
+
+# insert also the mask for label to -9999 the firs row 
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m /dev/shm/1rowmask.tif -msknodata 0 -nodata -9999 -m $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc   -msknodata -100000 -p "<" -nodata -9999 -i $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc -o $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif
 rm -f $RAM/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc
 
 ##################################################################
@@ -77,7 +94,7 @@ pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 
 
 pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.1960.2014.pre.dat_1.0deg.reg1960.1969.tif -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRU.tif
 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.reg1960.1969.tif   -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9  -m /dev/shm/1rowmask.tif -msknodata 0  -nodata -9999  -m $DIR/reg_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.reg1960.1969.tif   -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif
 
 seq 1960 2005 | xargs -n 1 -P 8 bash -c $' 
 
@@ -146,9 +163,9 @@ done
 
 YYYY=1960.2014
 
-cdo yearmonmean  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2014 ) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/mean_CRU10/cru_ts3.23.${YYYY}.tmp.dat_0.5deg.nc
+cdo yearmonmean  -setmissval,-9999 -setvrange,-100,100 -selyear$(for year in $(seq 1960 2014 ) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.tmp.dat.nc   $DIR/mean_CRU10/cru_ts3.23.${YYYY}.tmp.dat_0.5deg.nc
 
-cdo yearsum  -setmissval,-9999 -setvrange,-100,50 -selyear$(for year in $(seq 1960 2014 ) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc    $DIR/mean_CRU10/cru_ts3.23.${YYYY}.pre.dat_0.5deg.nc
+cdo yearsum  -setmissval,-9999 -setvrange,0,4000 -selyear$(for year in $(seq 1960 2014 ) ; do echo -n ,$year ; done) $DIR/CRU_ts3.23/cru_ts3.23.1901.2014.pre.dat.nc    $DIR/mean_CRU10/cru_ts3.23.${YYYY}.pre.dat_0.5deg.nc
 
 # year mean 
 cdo timmean  $DIR/mean_CRU10/cru_ts3.23.${YYYY}.pre.dat_0.5deg.nc   $DIR/mean_CRU10/cru_ts3.23.${YYYY}.pre.dat_0.5deg.mean.nc
@@ -162,7 +179,7 @@ pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 
 
 echo temperature HadISST  # setvals change the value of -1000 to -1.8 
 
-cdo yearmonmean  -setvals,-1000,-1.8 -setvrange,-50,50 -selyear$(for year in $(seq 1960 2014  ); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.nc  
+cdo yearmonmean  -setvals,-1000,-1.8 -setvrange,-100,100 -selyear$(for year in $(seq 1960 2014  ); do echo -n ,$year; done) -select,param=-2 $DIR/HadISST/HadISST_sst.nc $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.nc  
 
 cdo timmean  $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.nc  $DIR/mean_HadISST10/HadISST_sst.${YYYY}.tmp.dat_1.0deg.mean.nc
 
@@ -266,7 +283,7 @@ echo velocity temporal regression divided spatial slope HadISST data   $DIR/reg_
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif  -A $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif  -B  $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  -msknodata -9999  -nodata -9999 -i $RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif   -o $DIR/velocity_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif 
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m /dev/shm/1rowmask.tif -msknodata 0  -nodata -9999   -m $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  -msknodata -9999  -nodata -9999 -i $RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif   -o $DIR/velocity_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif 
 rm   $RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif
 
 ######################
