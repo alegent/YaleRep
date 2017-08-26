@@ -2,8 +2,8 @@
 # qsub    /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models_after_review.sh
 
 #PBS -S /bin/bash 
-#PBS -q fas_devel
-#PBS -l walltime=4:00:00
+#PBS -q fas_normal
+#PBS -l walltime=10:00:00
 #PBS -l nodes=1:ppn=8
 #PBS -V
 #PBS -o /scratch/fas/sbsc/ga254/stdout
@@ -25,7 +25,7 @@ cd $DIR
 # rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/reg_models/*/*/*
 # rm -f /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/mean_models/*/*/*
 
-echo remove  files 
+# echo remove  files 
 
 find $DIR/mean_models10/ $DIR/reg_models10/  $DIR/velocity_models10/ $DIR/reg_models10txt/ $DIR/velocity_models10txt/ -name "*.*" | xargs -n 1 -P 8 rm
 
@@ -52,7 +52,6 @@ for YSTART in $(echo $(seq 2020 2070) 202000 203000 ) ; do
 if [ $YSTART  -lt 3000  ] ; then YEND=$(expr $YSTART + 9)   ; YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 9 )  
 if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 9 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 9) ;  fi
 fi 
-
 
 # long term 2020-2079 # (CSIRO model 2021-2080)
 if [ $YSTART -eq 202000  ]; then YSTART=2020 ;  YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 59)  ;  YEND=$(expr $YSTART + 59) 
@@ -178,7 +177,7 @@ write.table(mean, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_r
 
 EOF
 done 
-# rm -f /dev/shm/${filename}_land.tif  /dev/shm/${filename}_ocea.tif 
+rm -f /dev/shm/${filename}_land.tif  /dev/shm/${filename}_ocea.tif 
 fi 
 
 #############################################
@@ -273,8 +272,7 @@ done
 done 
 
 
-# statistic of the velocity 
-
+####  statistic of the velocity 
 
 
 find $DIR/velocity_models10txt   -name "*.txt" | xargs -n 1 -P 8 rm
@@ -365,10 +363,9 @@ done
 for stat in median mean ; do
 cat $DIR/velocity_models10txt/*/pr/pr_oned_Amon_*_${MOD}_*_velocity${YSTART}.${YEND}land_weighted$stat.txt | sort -g > $DIR/velocity_models10txt/pr_stat/pr_oned_Amon_${MOD}_velocity_${YSTART}.${YEND}_land_weighted$stat.txt 
 done 
-
+done 
 done 
 
-done 
 
 
 
@@ -389,14 +386,14 @@ pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scra
 done 
 
 rm $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.*
-~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean $( ls $DIR/velocity_models10/*/tos/tos_oned_Amon_*_G4_*_velocity${YSTART}.${YEND}${landocean}.tif  | xargs -n 1 echo -i ) -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean $( ls $DIR/velocity_models10/*/tos/tos_oned_Amon_*_G4_*_velocity${YSTART}.${YEND}ocea.tif  | xargs -n 1 echo -i ) -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif
 
 pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.shp
 
-rm $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.*
-~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean  $( ls $DIR/velocity_models10/*/pr/pr_oned_Amon_*_G4_*_velocity${YSTART}.${YEND}${landocean}.tif | xargs -n 1 echo -i ) -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif 
+rm $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}land.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean  $( ls $DIR/velocity_models10/*/pr/pr_oned_Amon_*_G4_*_velocity${YSTART}.${YEND}land.tif | xargs -n 1 echo -i ) -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}land.tif 
 
-pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.tif -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}ocea.shp
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}land.tif -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_G4_velocity${YSTART}.${YEND}land.shp
 
 ' _
 
@@ -414,14 +411,14 @@ rm -f $DIR/velocity_models10/tas_stat/tas_oned_Amon_rcp45_velocity${YSTART}.${YE
 pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/tas_stat/tas_oned_Amon_rcp45_velocity${YSTART}.${YEND}${landocean}.tif  -o $DIR/velocity_models10/tas_stat/tas_oned_Amon_rcp45_velocity${YSTART}.${YEND}${landocean}.shp
 done 
 rm $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.*
-~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean $( ls $DIR/velocity_models10/*/tos/tos_oned_Amon_*_rcp45_*_velocity${YSTART}.${YEND}${landocean}.tif  | xargs -n 1 echo -i ) -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.tif
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean $( ls $DIR/velocity_models10/*/tos/tos_oned_Amon_*_rcp45_*_velocity${YSTART}.${YEND}ocea.tif  | xargs -n 1 echo -i ) -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.tif
 
 pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.tif -o $DIR/velocity_models10/tos_stat/tos_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.shp
 
-rm $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.*
-~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean  $( ls $DIR/velocity_models10/*/pr/pr_oned_Amon_*_rcp45_*_velocity${YSTART}.${YEND}${landocean}.tif | xargs -n 1 echo -i ) -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.tif 
+rm $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}landx.*
+~/bin/pkcomposite  -srcnodata -9999 -dstnodata -9999  -co COMPRESS=LZW -co ZLEVEL=9 -cr mean  $( ls $DIR/velocity_models10/*/pr/pr_oned_Amon_*_rcp45_*_velocity${YSTART}.${YEND}land.tif | xargs -n 1 echo -i ) -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}land.tif 
 
-pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}land.tif -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}ocea.shp
+pkextract -polygon -r mean -f  "ESRI Shapefile" -srcnodata -9999 -s /lustre/scratch/client/fas/sbsc/ga254/dataproces/SHAPE_NET/360x114global.shp  -i $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}land.tif -o $DIR/velocity_models10/pr_stat/pr_oned_Amon_rcp45_velocity${YSTART}.${YEND}land.shp
 
 ' _
 
