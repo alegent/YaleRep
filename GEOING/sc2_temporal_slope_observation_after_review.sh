@@ -18,7 +18,7 @@ cdo griddes  $DIR/HadISST/HadISST_sst.nc >  $DIR/HadISST/HadISST_sst_griddes.txt
 
 # time frame  1960 - 2005 and  1960 - 2014 
 
-rm -f $DIR/reg_CRU10/*  $DIR/reg_CRU10txt/*  $DIR/mean_CRU10/*  $DIR/velocity_CRU10/*  $DIR/velocity_CRU10txt/* 
+rm -f $DIR/reg_HadISST10txt/*  $DIR/reg_HadISST10/*   $DIR/reg_CRU10/*  $DIR/reg_CRU10txt/*  $DIR/mean_CRU10/*  $DIR/velocity_CRU10/*  $DIR/velocity_CRU10txt/* $DIR/velocity_HadISST10txt/* 
 
 # create a matix with first row 0 rest 1
 echo "ncols        360"       >  /dev/shm/1rowmask.asc
@@ -39,9 +39,9 @@ echo temperature CUR
 
 # year mean for temperature CRU 0.5 ; then regression
  
-# dataset from 1960 to 2014
-# seq 1960 2005 | xargs -n 1 -P 8 bash -c $' 
-seq 1960 2005  | xargs -n 1 -P 8 bash -c $' 
+# dataset from 1960 to 2014 
+# seq 1977 1978  | xargs -n 1 -P 8 bash -c $' 
+seq 1960 2005 | xargs -n 1 -P 8 bash -c $' 
 
 YYYY=1960.2014
 YSTART=$1
@@ -73,7 +73,7 @@ cdo yearmonmean   -setvals,-1000,-1.8     -setvrange,-100,100 -selyear$(for year
 cdo regres $RAM/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc  $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc  
 
 # insert also the mask for label to -9999 the firs row 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m /dev/shm/1rowmask.tif -msknodata 0 -nodata -9999 -m $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc   -msknodata -100000 -p "<" -nodata -9999 -i $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc -o $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m /dev/shm/1rowmask.tif -msknodata 0 -p "=" -nodata -9999   -m $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc   -msknodata -100000 -p "<" -nodata -9999 -i $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.nc -o $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif
 rm -f $RAM/HadISST_sst.$YYYY.tmp${YSTART}.${YEND}.dat_1.0deg.nc
 
 ##################################################################
@@ -87,6 +87,7 @@ pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 
 ' _ 
 
 
+
 #### calculate the weighted median and weighted mean (with real values and absolute values) 
 
 #### run it using one 10-years period
@@ -94,7 +95,7 @@ pkfilter -of GTiff -dx 2 -dy 2  -f mean -d 2  -co COMPRESS=DEFLATE -co ZLEVEL=9 
 
 pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/reg_CRU10/cru_ts3.23.1960.2014.pre.dat_1.0deg.reg1960.1969.tif -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRU.tif
 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9  -m /dev/shm/1rowmask.tif -msknodata 0  -nodata -9999  -m $DIR/reg_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.reg1960.1969.tif   -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9  -m /dev/shm/1rowmask.tif -msknodata 0 -p "="  -nodata -9999  -m $DIR/reg_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.reg1960.1969.tif   -msknodata -9999 -p "="  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISST.tif
 
 seq 1960 2005 | xargs -n 1 -P 8 bash -c $' 
 
@@ -156,8 +157,6 @@ cat  $DIR/reg_CRU10txt/cru_ts3.23.1960.2014.pre.dat_1.0deg.regAREA????.????weigh
 cat $DIR/reg_HadISST10txt/HadISST_sst.1960.2014.tmp.dat_1.0deg.regAREA????.????weighted$stat.txt | sort -g > $DIR/reg_HadISST10txt/HadISST_sst.1960.2014.tmp.dat_1.0deg.regAREA_allyear_weighted$stat.txt
 
 done 
-
-
 
 # long term mean to calculate spatial slope 
 
@@ -252,7 +251,7 @@ gdal_edit.py -a_nodata -9999  $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0
 
 #### mask the AERA raster with cru and HadISST dataset with the islands removed.
 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  -msknodata -9999 -p "=" -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -m /dev/shm/1rowmask.tif -msknodata 0 -p "=" -nodata -9999  -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_HadISSTslope.tif
 
 pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/slope_CRU10/cru_ts3.23.$YYYY.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999  -nodata -9999 -i /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEO_AREA/area_tif/1.00deg-Area_prj6965.tif -o /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA/1.00deg-Area_prj6965_CRUslopetmp.tif
 
@@ -283,7 +282,7 @@ echo velocity temporal regression divided spatial slope HadISST data   $DIR/reg_
 
 gdal_calc.py --type=Float32  --NoDataValue=-9999 --outfile=$RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif  -A $DIR/reg_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.reg${YSTART}.${YEND}.tif  -B  $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  --calc="( A.astype(float) / ( B.astype(float) ))" --overwrite  --co=COMPRESS=DEFLATE --co=ZLEVEL=9
 
-pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m /dev/shm/1rowmask.tif -msknodata 0  -nodata -9999   -m $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  -msknodata -9999  -nodata -9999 -i $RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif   -o $DIR/velocity_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif 
+pksetmask -ot Float32 -co COMPRESS=DEFLATE -co ZLEVEL=9 -m /dev/shm/1rowmask.tif -msknodata 0 -p "="  -nodata -9999   -m $DIR/slope_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.slope10msk.tif  -msknodata -9999 -p "="  -nodata -9999 -i $RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif   -o $DIR/velocity_HadISST10/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif 
 rm   $RAM/HadISST_sst.$YYYY.tmp.dat_1.0deg.velocity${YSTART}.${YEND}.tif
 
 ######################
