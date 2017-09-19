@@ -23,8 +23,10 @@ done
 done 
 
 # slurm 
-for RADIUS in 11 21 31 41 51 61 71 81 91 101 111 121 131 141 151  ; do 
-for UNIT in 3753 ; do 
+# for RADIUS in 11 21 31 41 51 61 71 81 91 101 111 121 131 141 151  ; do 
+
+for RADIUS in 161 171 ; do 
+for UNIT in 3753 4000 ; do 
 for file in $( ls /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/occurance_200_DIM.txt ) ; do 
      echo lunch the start scritp 
      PREV_JOB=$(sbatch  /gpfs/home/fas/sbsc/ga254/scripts/general/start_bsub.sh | awk '{ print $4  }'  )  
@@ -34,7 +36,7 @@ for file in $( ls /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK
          DIM=$( echo $LINE | tr "_" " "  | awk '{  print $2  }' ) ; 
          RAM=$(grep $UNIT  /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/UNIT_RAM.txt | awk -F "_" '{print $2}' )
          echo lunch the start scritp N $N DIM $DIM  UNIT  $UNIT   RAM $RAM  PREV_JOB  $PREV_JOB 
-	 NEXT_JOB=$(  sbatch    -d afterany:$PREV_JOB    --export=N=$N,DIM=$DIM,UNIT=$UNIT,GEO=GLOBE,RADIUS=$RADIUS,TRH=8 -J sc06_ReconditioningHydrodemCarving_UNIT${UNIT}_N${N}_DIM${DIM}_STDEV${RADIUS}_TRH${TRH}.sh   --mem-per-cpu=$RAM  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc06_ReconditioningHydrodemCarving_UNIT.sh | awk '{ print $4  }'  )  
+	 NEXT_JOB=$(  sbatch    -d afterany:$PREV_JOB    --export=N=$N,DIM=$DIM,UNIT=$UNIT,GEO=GLOBE,RADIUS=$RADIUS,TRH=8 -J sc06_ReconditioningHydrodemCarving_UNIT${UNIT}_N${N}_DIM${DIM}_STDEV${RADIUS}_TRH${TRH}.sh   --mem-per-cpu=$RAM  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc08_ReconditioningHydrodemCarving_UNIT.sh | awk '{ print $4  }'  )  
  	 PREV_JOB=$NEXT_JOB 
      done 
 done
