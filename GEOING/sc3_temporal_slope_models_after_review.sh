@@ -207,10 +207,10 @@ file = Sys.getenv(c(\'file\'))
 value=na.omit(as.vector (raster( file  )), mode = "numeric")
 weight=na.omit(as.vector(raster(paste0("/dev/shm/",filename,"_maskAREA.tif"))), mode = "numeric")
 
-median=bigvis::weighted.median(value,weight)
+median=bigvis::weighted.median(abs(value),weight)
 write.table(median, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_reg_",var,"_weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=stats::weighted.mean(value,weight)
+mean=stats::weighted.mean(abs(value),weight)
 write.table(mean, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_reg_",var,"_weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 EOF
@@ -305,7 +305,7 @@ weight=na.omit(as.vector(raster(paste0("/dev/shm/",filename,"_maskAREA.tif"))), 
 median=bigvis::weighted.median(abs(value),weight)
 write.table(median, paste0(DIR,"/velocity_models10txt/",dirmod,"/",par,"/",filename,"_weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=stats::weighted.mean(value,weight)
+mean=stats::weighted.mean(abs(value),weight)
 write.table(mean, paste0(DIR,"/velocity_models10txt/",dirmod,"/",par,"/",filename,"_weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 EOF

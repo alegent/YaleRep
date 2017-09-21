@@ -127,7 +127,7 @@ weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproce
 median=bigvis::weighted.median(abs(value),weight)
 write.table(median, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=stats::weighted.mean(value,weight)
+mean=stats::weighted.mean(abs(value),weight)
 write.table(mean, paste0(DIR,"/reg_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.regAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 
@@ -309,7 +309,7 @@ weight=na.omit(as.vector(raster(paste0("/lustre/scratch/client/fas/sbsc/ga254/da
 median=bigvis::weighted.median(abs(value),weight)
 write.table(median, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=stats::weighted.mean(value,weight)
+mean=stats::weighted.mean(abs(value),weight)
 write.table(mean, paste0(DIR,"/velocity_CRU10txt/cru_ts3.23.",YYYY,".",var,".dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 }
 
@@ -321,7 +321,7 @@ weight=na.omit(as.vector(raster("/lustre/scratch/client/fas/sbsc/ga254/dataproce
 median=bigvis::weighted.median(abs(value),weight )
 write.table(median, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmedian.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=stats::weighted.mean(value,weight )
+mean=stats::weighted.mean(abs(value),weight )
 write.table(mean, paste0(DIR,"/velocity_HadISST10txt/HadISST_sst.",YYYY,".tmp.dat_1.0deg.velocityAREA",YSTART,".",YEND,"weightedmean.txt" ), sep = " " , col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 EOF
