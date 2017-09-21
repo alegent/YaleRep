@@ -2,8 +2,8 @@
 # qsub    /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models_after_review.sh
 
 #PBS -S /bin/bash 
-#PBS -q fas_normal
-#PBS -l walltime=10:00:00
+#PBS -q fas_devel
+#PBS -l walltime=4:00:00
 #PBS -l nodes=1:ppn=8
 #PBS -V
 #PBS -o /scratch/fas/sbsc/ga254/stdout
@@ -27,7 +27,7 @@ cd $DIR
 
 # echo remove  files 
 
-find $DIR/mean_models10/ $DIR/reg_models10/  $DIR/velocity_models10/ $DIR/reg_models10txt/ $DIR/velocity_models10txt/ -name "*.*" | xargs -n 1 -P 8 rm
+# find $DIR/mean_models10/ $DIR/reg_models10/  $DIR/velocity_models10/ $DIR/reg_models10txt/ $DIR/velocity_models10txt/ -name "*.*" | xargs -n 1 -P 8 rm
 
 echo "########################################################################################"
 echo "#################MODEL START ###########################################################"
@@ -35,90 +35,91 @@ echo "##########################################################################
 
 # calculate velocity for the 10-year-period and long term (see if condition)
 
-grep -e  rcp45 -e G4  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt | grep oned  | awk '{  print $1  }'   | xargs -n 1 -P 8  bash -c $'
-file=$1
-filename=$(basename $file .nc) 
-dirinput=$(dirname $file)
-dir=$(echo ${dirinput:6:20})
-dirmod=$(basename $(dirname $(dirname $file)))
-par=$(basename $(dirname $file))
-RAM=/dev/shm
+# grep -e  rcp45 -e G4  /lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/time/nc10YearWindow4modelTASandTOSJan4th.txt | grep oned  | awk '{  print $1  }'   | xargs -n 1 -P 8  bash -c $'
+# file=$1
+# filename=$(basename $file .nc) 
+# dirinput=$(dirname $file)
+# dir=$(echo ${dirinput:6:20})
+# dirmod=$(basename $(dirname $(dirname $file)))
+# par=$(basename $(dirname $file))
+# RAM=/dev/shm
 
 
-for YSTART in $(echo $(seq 2020 2070) 202000 203000 ) ; do  
-# for YSTART in $(echo 2020 2070 202000 203000 ) ; do  
+# for YSTART in $(echo $(seq 2020 2070) 202000 203000 ) ; do  
+# # for YSTART in $(echo 2020 2070 202000 203000 ) ; do  
 
-# 10-year period
-if [ $YSTART  -lt 3000  ] ; then YEND=$(expr $YSTART + 9)   ; YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 9 )  
-if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 9 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 9) ;  fi
-fi 
+# # 10-year period
+# if [ $YSTART  -lt 3000  ] ; then YEND=$(expr $YSTART + 9)   ; YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 9 )  
+# if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 9 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 9) ;  fi
+# fi 
 
-# long term 2020-2079 # (CSIRO model 2021-2080)
-if [ $YSTART -eq 202000  ]; then YSTART=2020 ;  YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 59)  ;  YEND=$(expr $YSTART + 59) 
-if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 59 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 59) ;  YEND=$(expr $YSTART + 59)  ; fi 
-fi 
+# # long term 2020-2079 # (CSIRO model 2021-2080)
+# if [ $YSTART -eq 202000  ]; then YSTART=2020 ;  YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 59)  ;  YEND=$(expr $YSTART + 59) 
+# if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 59 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 59) ;  YEND=$(expr $YSTART + 59)  ; fi 
+# fi 
 
-# long term G4 2030-2069 #  (CSIRO model 2031-2070)
-if [ $YSTART -eq 203000 ] ; then YSTART=2030 ;  YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 39)  ;  YEND=$(expr $YSTART + 39)  
-if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 39 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 39) ; YEND=$(expr $YSTART + 39)   ; fi 
-fi 
+# # long term G4 2030-2069 #  (CSIRO model 2031-2070)
+# if [ $YSTART -eq 203000 ] ; then YSTART=2030 ;  YSTARTIN=$YSTART ;  YENDIN=$(expr $YSTART + 39)  ;  YEND=$(expr $YSTART + 39)  
+# if [ $dirmod = "CSIRO-Mk3L-1-2"  ] ; then  YSTARTIN=$(expr $YSTART + 1) ;  YENDIN=$(expr $YSTART + 39 + 1)  ; else   YSTARTIN=$YSTART  ;  YENDIN=$(expr $YSTART + 39) ; YEND=$(expr $YSTART + 39)   ; fi 
+# fi 
 
-# y = a * X +  addc,-273.15 
-# change the temperature to  celsius and calculate the year mean 
-if [ ${filename:0:3} = "tas"   ]  || [ ${filename:0:3} = "tos"   ]    ; then 
-cdo   -setmissval,-9999  -addc,-273.15    -selyear$(for year in $(seq $YSTARTIN $YENDIN) ; do echo -n ,$year ; done)     $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
-cdo    -yearmean    $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc   $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
-# gdal_translate  $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc    $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
-rm -r $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
-fi 
+# # y = a * X +  addc,-273.15 
+# # change the temperature to  celsius and calculate the year mean 
+# if [ ${filename:0:3} = "tas"   ]  || [ ${filename:0:3} = "tos"   ]    ; then 
+# cdo   -setmissval,-9999  -addc,-273.15    -selyear$(for year in $(seq $YSTARTIN $YENDIN) ; do echo -n ,$year ; done)     $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
+# cdo    -yearmean    $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc   $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
+# # gdal_translate  $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc    $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
+# rm -r $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
+# fi 
 
-# change precipitation to mm/year and calculate the sum year 
-if [ ${filename:0:3} = "pr_"   ] ; then 
-cdo -setmissval,-9999   -mulc,2592000  -selyear$(for year in $(seq $YSTARTIN $YENDIN) ; do echo -n ,$year ; done)   $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
-cdo yearsum $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
-# gdal_translate  $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc    $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
-rm $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc   
-fi 
+# # change precipitation to mm/year and calculate the sum year 
+# if [ ${filename:0:3} = "pr_"   ] ; then 
+# cdo -setmissval,-9999   -mulc,2592000  -selyear$(for year in $(seq $YSTARTIN $YENDIN) ; do echo -n ,$year ; done)   $DIR/$file   $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc  
+# cdo yearsum $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
+# # gdal_translate  $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc    $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
+# rm $RAM/${filename}_meanTMP_${YSTART}.${YEND}.nc   
+# fi 
 
-echo tmporal regression 
-cdo regres -setmissval,-9999  -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done) $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
+# echo tmporal regression 
+# cdo regres -setmissval,-9999  -selyear$(for year in $(seq $YSTART $YEND) ; do echo -n ,$year ; done) $DIR/mean_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  
 
-# invert left to right 
+# # invert left to right 
 
-gdal_translate -srcwin 0 0 180 180  -a_ullr 0 +90 180 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif 
-gdal_translate -srcwin 180 0 180 180  -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
+# gdal_translate -srcwin 0 0 180 180  -a_ullr 0 +90 180 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc  $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif 
+# gdal_translate -srcwin 180 0 180 180  -a_ullr -180 +90 0 -90 -co COMPRESS=DEFLATE -co ZLEVEL=9 $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.nc $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
 
-gdalbuildvrt -overwrite -a_srs EPSG:4326 -te -180 -90 180 +90 -tr 1 1 $RAM/${filename}_reg_${YSTART}.${YEND}.vrt $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
-gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co COMPRESS=DEFLATE  -co ZLEVEL=9  $RAM/${filename}_reg_${YSTART}.${YEND}.vrt   $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
-rm -f $RAM/${filename}_reg_${YSTART}.${YEND}.vrt  $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif  $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
-res=1.0
+# gdalbuildvrt -overwrite -a_srs EPSG:4326 -te -180 -90 180 +90 -tr 1 1 $RAM/${filename}_reg_${YSTART}.${YEND}.vrt $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
+# gdalwarp -overwrite  -dstnodata -9999  -s_srs  EPSG:4326  -t_srs EPSG:4326 -co COMPRESS=DEFLATE  -co ZLEVEL=9  $RAM/${filename}_reg_${YSTART}.${YEND}.vrt   $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif 
+# rm -f $RAM/${filename}_reg_${YSTART}.${YEND}.vrt  $RAM/${filename}_mean_${YSTART}.${YEND}_right.tif  $RAM/${filename}_mean_${YSTART}.${YEND}_left.tif
+# res=1.0
 
-if [ $par = "pr"   ]  || [ $par = "tas"   ]  ; then 
+# if [ $par = "pr"   ]  || [ $par = "tas"   ]  ; then 
 
-if [ $par = "tas"   ] ; then parCRU=tmp ; fi
-if [ $par = "pr"   ]  ; then parCRU=pre ; fi
+# if [ $par = "tas"   ] ; then parCRU=tmp ; fi
+# if [ $par = "pr"   ]  ; then parCRU=pre ; fi
 
-echo land  
-gdal_calc.py --NoDataValue=-9999 --outfile=$RAM/${filename}_velocity${YSTART}.${YEND}land.tif -A $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif -B $DIR/slope_CRU10/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)"  --overwrite --type=Float32
-pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/slope_CRU10/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif  -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity${YSTART}.${YEND}land.tif  -o $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}land.tif
-gdal_edit.py  -a_nodata -9999 $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}land.tif
-rm  $RAM/${filename}_velocity${YSTART}.${YEND}land.tif 
+# echo land  
+# gdal_calc.py --NoDataValue=-9999 --outfile=$RAM/${filename}_velocity${YSTART}.${YEND}land.tif -A $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif -B $DIR/slope_CRU10/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)"  --overwrite --type=Float32
+# pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/slope_CRU10/cru_ts3.23.1960.2014.${parCRU}.dat_${res}deg.slope10msk.tif  -msknodata -9999   -p "="   -nodata -9999   -i $RAM/${filename}_velocity${YSTART}.${YEND}land.tif  -o $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}land.tif
+# gdal_edit.py  -a_nodata -9999 $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}land.tif
+# rm  $RAM/${filename}_velocity${YSTART}.${YEND}land.tif 
 
-fi 
+# fi 
 
-if [ $par = "tos"   ] || [ $par = "tas"   ]  ; then 
+# if [ $par = "tos"   ] || [ $par = "tas"   ]  ; then 
 
-echo ocean
-gdal_calc.py --NoDataValue=-9999 --outfile=$RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif -A $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif -B $DIR/slope_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)" --overwrite --type=Float32
-pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/slope_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999 -p "=" -nodata -9999   -i $RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif  -o $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}ocea.tif
-gdal_edit.py  -a_nodata -9999 $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}ocea.tif
-rm  $RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif 
+# echo ocean
+# gdal_calc.py --NoDataValue=-9999 --outfile=$RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif -A $DIR/reg_models10/$dir/${filename}_mean_${YSTART}.${YEND}.tif -B $DIR/slope_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.slope10msk.tif  --calc="(A/B)*logical_and(A>-9998,B>-9998)" --overwrite --type=Float32
+# pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/slope_HadISST10/HadISST_sst.1960.2014.tmp.dat_1.0deg.slope10msk.tif -msknodata -9999 -p "=" -nodata -9999   -i $RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif  -o $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}ocea.tif
+# gdal_edit.py  -a_nodata -9999 $DIR/velocity_models10/$dirmod/$par/${filename}_velocity${YSTART}.${YEND}ocea.tif
+# rm  $RAM/${filename}_velocity${YSTART}.${YEND}ocea.tif 
 
-fi 
+# fi 
 
-done
+# done
 
-' _ 
+# ' _ 
+
 
 
 echo mean and median for regression
@@ -169,10 +170,10 @@ weightraster = "/lustre/scratch/client/fas/sbsc/ga254/dataproces/GEOING/GEO_AREA
 value=na.omit(as.vector (raster(value       )), mode = "numeric") 
 weight=na.omit(as.vector(raster(weightraster)), mode = "numeric")
 
-median=bigvis::weighted.median(value,weight)
+median=bigvis::weighted.median(abs(value),weight)
 write.table(median, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_reg_",var,"_weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
-mean=stats::weighted.mean(value,weight)
+mean=stats::weighted.mean(abs(value),weight)
 write.table(mean, paste0(DIR,"/reg_models10txt/",dirmod,"/",par,"/",filename,"_reg_",var,"_weightedmean.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 EOF
@@ -301,7 +302,7 @@ file = Sys.getenv(c(\'file\'))
 value=na.omit(as.vector (raster( file  )), mode = "numeric")
 weight=na.omit(as.vector(raster(paste0("/dev/shm/",filename,"_maskAREA.tif"))), mode = "numeric")
 
-median=bigvis::weighted.median(value,weight)
+median=bigvis::weighted.median(abs(value),weight)
 write.table(median, paste0(DIR,"/velocity_models10txt/",dirmod,"/",par,"/",filename,"_weightedmedian.txt"), col.names = FALSE , quote = FALSE , row.names=FALSE  )
 
 mean=stats::weighted.mean(value,weight)
