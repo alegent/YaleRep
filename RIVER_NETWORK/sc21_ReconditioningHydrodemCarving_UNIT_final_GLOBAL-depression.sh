@@ -14,7 +14,9 @@
 
 # 1 2 3 4 5 6 7 8 9 10 11 12 13 14 154 573 810 1145 2597 3005 3317 3629 3753 4000 4001 
 
-# for UNIT in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 154 573 810 1145 2597 3005 3317 3629 3753 4000 4001 ; do RADIUS=141 ; N=200 ; DIM=100 ; RAM=$(awk -F "_" -v UNIT=$UNIT  '{ if ($1==UNIT) print $2  }'  /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/UNIT_RAM.txt ) ;   sbatch  --export=N=$N,DIM=$DIM,UNIT=$UNIT,GEO=GLOBE,RADIUS=$RADIUS,TRH=8 -J sc21_ReconditioningHydrodemCarving_UNIT${UNIT}_N${N}_DIM${DIM}_STDEV${RADIUS}_TRH${TRH}_final.sh -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc21_ReconditioningHydrodemCarving_${UNIT}_final.%J.out -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc21_ReconditioningHydrodemCarving_${UNIT}_final.%J.err   --mem-per-cpu=$RAM  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc21_ReconditioningHydrodemCarving_UNIT_final.sh ; done
+# best combination 200 log ; 120 depth ;  151 diamiter stdev ;  30798730 
+
+# for UNIT in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 154 573 810 1145 2597 3005 3317 3629 3753 4000 4001 ; do RADIUS=151 ; N=200 ; DIM=120 ; RAM=$(awk -F "_" -v UNIT=$UNIT  '{ if ($1==UNIT) print $2  }'  /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/UNIT_RAM.txt ) ;   sbatch  --export=N=$N,DIM=$DIM,UNIT=$UNIT,GEO=GLOBE,RADIUS=$RADIUS,TRH=8 -J sc2x1_ReconditioningHydrodemCarving_UNIT${UNIT}_N${N}_DIM${DIM}_STDEV${RADIUS}_TRH${TRH}_final_GLOBAL.sh -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc21_ReconditioningHydrodemCarving_${UNIT}_final_GLOBAL.%J.out -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc21_ReconditioningHydrodemCarving_${UNIT}_final_GLOBAL.%J.err   --mem-per-cpu=$RAM  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc21_ReconditioningHydrodemCarving_UNIT_final_GLOBAL.sh ; done
 
 # 1145 154 2597 3005 3317 3629 3753 4000 4001 573 810 497_338_3562_333 
 # new one 
@@ -39,9 +41,9 @@ echo UNIT ${UNIT} TYPE ${N} DIMENSION ${DIM}  STDEV ${RADIUS}
 cd /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb 
 export DIR=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK
 
-rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/loc_river_fill_GLOBE/PERMANENT/.gislock
-source  /gpfs/home/fas/sbsc/ga254/scripts/general/enter_grass7.0.2-grace2.sh  /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/loc_river_fill_GLOBE/PERMANENT 
-rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/loc_river_fill_GLOBE/PERMANENT/.gislock
+rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/loc_river_fill_${GEO}/PERMANENT/.gislock
+source  /gpfs/home/fas/sbsc/ga254/scripts/general/enter_grass7.0.2-grace2.sh  /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/loc_river_fill_${GEO}/PERMANENT 
+rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK/grassdb/loc_river_fill_${GEO}/PERMANENT/.gislock
 
 export N
 export DIM
@@ -55,25 +57,38 @@ export STDEV=be75_grd_LandEnlarge_std${RADIUS}_norm_${GEO}
 export RPROJ=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK
 export RSCRA=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK
 
-cp  $HOME/.grass7/grass$$     $HOME/.grass7/rc${UNIT}_${N}_${DIM}_STDEV${RADIUS}
-export GISRC=$HOME/.grass7/rc${UNIT}_${N}_${DIM}_STDEV${RADIUS}
+cp  $HOME/.grass7/grass$$     $HOME/.grass7/rc${UNIT}_${N}_${DIM}_STDEV${RADIUS}_depres
+export GISRC=$HOME/.grass7/rc${UNIT}_${N}_${DIM}_STDEV${RADIUS}_depres
 
-rm -fr  $RSCRA/grassdb/loc_river_fill_GLOBE/${UNIT}_${N}_${DIM}_STDEV${RADIUS}
-g.mapset  -c  mapset=${UNIT}_${N}_${DIM}_STDEV${RADIUS}  location=loc_river_fill_GLOBE  dbase=$RSCRA/grassdb   --quiet --overwrite 
+rm -fr  $RSCRA/grassdb/loc_river_fill_${GEO}/${UNIT}_${N}_${DIM}_STDEV${RADIUS}_depres
+g.mapset  -c  mapset=${UNIT}_${N}_${DIM}_STDEV${RADIUS}_depres  location=loc_river_fill_${GEO}  dbase=$RSCRA/grassdb   --quiet --overwrite 
 
-echo create mapset   ${UNIT}_${N}_${DIM}_STDEV${RADIUS}
-cp $RSCRA/grassdb/loc_river_fill_GLOBE/PERMANENT/WIND $RSCRA/grassdb/loc_river_fill_GLOBE/${UNIT}_${N}_${DIM}_STDEV${RADIUS}/WIND
+echo create mapset   ${UNIT}_${N}_${DIM}_STDEV${RADIUS}_depres
+cp $RSCRA/grassdb/loc_river_fill_${GEO}/PERMANENT/WIND $RSCRA/grassdb/loc_river_fill_${GEO}/${UNIT}_${N}_${DIM}_STDEV${RADIUS}_depres/WIND
 
 g.mapsets   mapset=${OCCURENCE}_log${N}_DIM${DIM}_STDEV${RADIUS}   operation=add
 
-rm -f  $RSCRA/grassdb/loc_river_fill_GLOBE/${UNIT}_${N}_${DIM}_STDEV${RADIUS}/.gislock
+rm -f  $RSCRA/grassdb/loc_river_fill_${GEO}/${UNIT}_${N}_${DIM}_STDEV${RADIUS}_depres/.gislock
 
 g.gisenv 
 
 g.region   raster=UNIT${UNIT}   --o 
-# g.region   n=41  s=35  w=-90  e=-77  --o   #    for stady area in USA
+# g.region   n=27  s=51  w=-129  e=-93  --o   #    for stady area in USA
 r.mask -r  --quiet
 r.mask     raster=UNIT${UNIT}   --o
+
+# calculate depression 
+
+/gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.hydrodem       input=${DEM}    output=${DEM}_corect  memory=65000  --overwrite 
+/gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.hydrodem  -a   input=${DEM}    output=${DEM}_fill  memory=65000  --overwrite 
+
+r.mapcalc "${DEM}_depres   = ${DEM}_fill  -  ${DEM}_corect"  --overwrite
+
+r.out.gdal --overwrite -f -c createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff nodata=-9999 type=Int16  input=${DEM}_depres  output=$RPROJ/dem_unit_cond/${DEM}_depression.tif  
+
+exit 
+
+
 
 echo  carving 
 r.mapcalc "${DEM}_carv  = ${DEM}@PERMANENT  -  fin_${OCCURENCE}_log${N}_DIM${DIM}_STDEV${RADIUS}@fin_${OCCURENCE}_log${N}_DIM${DIM}_STDEV${RADIUS} "  --overwrite
@@ -93,10 +108,6 @@ r.colors -r  ${DEM}_cond
 r.out.gdal --overwrite -f -c createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff nodata=-9999 type=Int16  input=${DEM}_cond  output=$RPROJ/dem_unit_cond/${DEM}_cond${UNIT}_log${N}_DIM${DIM}_w$NEIG.tif
 r.colors -r  ${OCCURENCE} 
 r.out.gdal --overwrite -f -c createopt="COMPRESS=DEFLATE,ZLEVEL=9" format=GTiff nodata=-9999 type=Int16  input=${OCCURENCE} output=$RPROJ/GSW_unit/${OCCURENCE}_$UNIT.tif 
-
-
-
-if  [  ${GEO} = "GLOBE"   ] ; then 
                                                                                                                                # memory=65000 
 r.watershed -a  -b  elevation=${DEM}_cond   basin=basin  stream=stream   drainage=drainage   accumulation=accumulation   memory=65000  threshold=$TRH  --overwrite
 
@@ -128,13 +139,9 @@ r.out.gdal --overwrite -c createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 form
 r.out.gdal --overwrite -c createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0   input=lbasin  output=$RPROJ/output/lbasin_unit/lbasin${UNIT}_log${N}_DIM${DIM}_STDEV${RADIUS}_w${NEIG}_TRH${TRH}.tif
 rm -f $RPROJ/output/lbasin_unit/lbasin${UNIT}_log${N}_DIM${DIM}_STDEV${RADIUS}_w${NEIG}_TRH${TRH}.tif.aux.xml
 
-fi 
 
 sstat  -j   $SLURM_JOB_ID.batch   --format=JobID,MaxVMSize 
 exit 
-
-
-
 
 
 
@@ -166,5 +173,5 @@ r.mask  raster=UNIT${UNIT}   --o
 r.out.gdal --overwrite -c createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=${OCCURENCE}_STRbin  output=$RSCRA/output/stream_unit/streamBIN${UNIT}_${ZONE}_log${N}_DIM${DIM}.tif 
 
 done 
-rm -fr  $RSCRA/grassdb/loc_river_fill_GLOBE/${UNIT}_${N}_${DIM} 
+rm -fr  $RSCRA/grassdb/loc_river_fill_${GEO}/${UNIT}_${N}_${DIM} 
 fi 

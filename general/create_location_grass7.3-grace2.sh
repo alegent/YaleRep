@@ -15,9 +15,9 @@ rm -rf  $GISDBASE/$LOCATION $GISDBASE/${LOCATION}_tmp$$
 mkdir -p  $GISDBASE/${LOCATION}_tmp$$/tmp
 
 echo "LOCATION_NAME: ${LOCATION}_tmp$$"             > $HOME/.grass7/rc_$filename
-echo "GISDBASE: $1"                        >> $HOME/.grass7/rc_$filename
-echo "MAPSET: tmp"                         >> $HOME/.grass7/rc_$filename
-echo "GRASS_GUI: text"                     >> $HOME/.grass7/rc_$filename
+echo "GISDBASE: $1"                                >> $HOME/.grass7/rc_$filename
+echo "MAPSET: tmp"                                 >> $HOME/.grass7/rc_$filename
+echo "GRASS_GUI: text"                             >> $HOME/.grass7/rc_$filename
 
 # path to GRASS settings file
 export GISRC=$HOME/.grass7/rc_$filename
@@ -26,8 +26,8 @@ export GRASS_MESSAGE_FORMAT=plain
 export GRASS_PAGER=cat
 export GRASS_WISH=wish
 export GRASS_ADDON_BASE=$HOME/.grass7/addons
-export GRASS_VERSION=7.0.2
-export GISBASE=/gpfs/apps/hpc.rhel7/Apps/GRASS/7.0.2/grass-7.0.2
+export GRASS_VERSION=7.3.svn
+export GISBASE=/gpfs/apps/hpc.rhel7/Apps/GRASS/7.3-beta/grass-7.3.svn 
 export GRASS_PROJSHARE=/gpfs/apps/hpc.rhel7/Libs/PROJ/4.9.3/share/proj
 export PROJ_DIR=/gpfs/apps/hpc.rhel7/Libs/PROJ/4.9.3
 

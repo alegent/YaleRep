@@ -26,8 +26,8 @@ export GRASS_MESSAGE_FORMAT=plain
 export GRASS_PAGER=cat
 export GRASS_WISH=wish
 export GRASS_ADDON_BASE=$HOME/.grass7/addons
-export GRASS_VERSION=7.0.2
-export GISBASE=/gpfs/apps/hpc.rhel7/Apps/GRASS/7.0.2/grass-7.0.2
+export GRASS_VERSION=7.2.3svn
+export GISBASE=/gpfs/apps/hpc.rhel7/Apps/GRASS/7.2.3-beta/grass-7.2.3svn
 export GRASS_PROJSHARE=/gpfs/apps/hpc.rhel7/Libs/PROJ/4.9.3/share/proj
 export PROJ_DIR=/gpfs/apps/hpc.rhel7/Libs/PROJ/4.9.3
 

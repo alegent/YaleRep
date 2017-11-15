@@ -2,12 +2,13 @@
 #SBATCH -p day
 #SBATCH -n 1 -c 1 -N 1  
 #SBATCH -t 6:00:00
-#SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc20_crete_carving_layer_inmapset.sh.%J.out
-#SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc20_crete_carving_layer_inmapset.sh.%J.err
+#SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc20_crete_carving_layer_inmapset_GLOBE.sh.%J.out
+#SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc20_crete_carving_layer_inmapset_GLOBE.sh.%J.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 
-# sbatch   --export=N=200,DIM=100,GLOBE="GLOBE",RADIUS=141  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc20_crete_carving_layer_inmapset.sh 
+# best combination 200 log ; 120 depth ;  151 diamiter stdev ;  30798730 
+# sbatch   --export=N=200,DIM=120,GLOBE="GLOBE",RADIUS=151  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK/sc20_crete_carving_layer_inmapset_GLOBE.sh 
 
 # create the txt file 
 
