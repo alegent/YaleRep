@@ -46,9 +46,13 @@ filename=$(basename $file  _elv.tif  )
 pkgetmask  -min -9990 -max 100000 -ot Byte -co COMPRESS=DEFLATE -co ZLEVEL=9 -i $file -o /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/${filename}_msk.tif
 gdal_edit.py -a_nodata 0 /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/${filename}_msk.tif 
 
-gdalbuildvrt -overwrite  -srcnodata 0 -vrtnodata 0  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/all_tif.vrt   /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/*.tif 
+exit 
+
+# lanciati a mano 
+
+gdalbuildvrt -overwrite  -srcnodata 0 -vrtnodata 0  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/all_tif.vrt   /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/*_msk.tif
 rm  -f /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/all_tif_shp.* 
-gdaltindex  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/all_tif_shp.shp   /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/*.tif 
+gdaltindex  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/all_tif_shp.shp   /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk/*_msk.tif
 
 
 

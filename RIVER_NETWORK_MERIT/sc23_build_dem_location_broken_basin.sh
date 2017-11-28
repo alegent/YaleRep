@@ -20,7 +20,6 @@ RAM=/dev/shm
 find  /tmp      -user $USER  -mtime +1  2>/dev/null  | xargs -n 1 -P 1 rm -ifr  
 find  /dev/shm  -user $USER  -mtime +1  2>/dev/null  | xargs -n 1 -P 1 rm -ifr  
 
-
 UNIT=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print $1 }' /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb_msk1km/brokb_msk1km_clump_hist1_s.txt ) 
 
 geo_string=$( oft-bb  /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb_msk1km/brokb_msk1km_clump.tif  $UNIT  | grep BB | awk '{ print $6, $7 , $8 , $9   }'  ) 

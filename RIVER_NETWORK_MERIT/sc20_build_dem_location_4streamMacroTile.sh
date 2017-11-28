@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p day
+#SBATCH -p scavenge
 #SBATCH -n 1 -c 1 -N 1
 #SBATCH -t 24:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc20_build_dem_location_4streamMacroTile.sh.%A_%a.out
@@ -7,33 +7,43 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc20_build_dem_location_4streamTile.sh
-#SBATCH --array=1-36
-#SBATCH --mem-per-cpu=40000
+#SBATCH --array=9-9
+#SBATCH --mem-per-cpu=100000
 
-# 1150 number of files 
+# 24 row for the 45 degree 
 # sbatch   /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc20_build_dem_location_4streamMacroTile.sh
+
+# chek for errors 
+# for file in    /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc20_build_dem_location_4streamMacroTile.sh.*.err  ; do echo $file ;  grep CANCELLED $file  ;    done
+
+module load Apps/GRASS/7.3-beta
+
+echo SLURM_JOB_ID $SLURM_JOB_ID
+echo SLURM_ARRAY_JOB_ID $SLURM_ARRAY_JOB_ID
+echo SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID
+echo SLURM_ARRAY_TASK_COUNT $SLURM_ARRAY_TASK_COUNT
+echo SLURM_ARRAY_TASK_MAX $SLURM_ARRAY_TASK_MAX
+echo SLURM_ARRAY_TASK_MIN  $SLURM_ARRAY_TASK_MIN
 
 MERIT=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT
 GRASS=/tmp
 RAM=/dev/shm
 
-find  /tmp/  -user $USER  -mtime +2  2>/dev/null  | xargs -n 1 -P 8 rm -ifr  
-
-
+find  /tmp/  -user $USER  -mtime +1  2>/dev/null  | xargs -n 1 -P 8 rm -ifr  
 
 # Upper Left  (-180.0000000,  85.0000000) (180d 0' 0.00"W, 85d 0' 0.00"N)
 # Lower Left  (-180.0000000, -60.0000000) (180d 0' 0.00"W, 60d 0' 0.00"S)
 # Upper Right ( 180.0000000,  85.0000000) (180d 0' 0.00"E, 85d 0' 0.00"N)
 # Lower Right ( 180.0000000, -60.0000000) (180d 0' 0.00"E, 60d 0' 0.00"S)
 
-# SLURM_ARRAY_TASK_ID=126 
-export tile=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print $1      }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_40d_MERIT_noheader.txt )
-export  ulx=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($2) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_40d_MERIT_noheader.txt )
-export  uly=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($3) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_40d_MERIT_noheader.txt )
-export  lrx=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($4) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_40d_MERIT_noheader.txt )
-export  lry=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($5) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_40d_MERIT_noheader.txt )
+# SLURM_ARRAY_TASK_ID=126                                                                       # dimension for the 45  56400  61200 = 3,451,680,000
+export tile=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print $1      }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_45d_MERIT_noheader.txt )
+export  ulx=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($2) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_45d_MERIT_noheader.txt )
+export  uly=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($3) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_45d_MERIT_noheader.txt )
+export  lrx=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($4) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_45d_MERIT_noheader.txt )
+export  lry=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print int($5) }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_45d_MERIT_noheader.txt )
 
-if [ -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb/lbasin_$tile.tif ] ; then echo lbasin_$tile.tif exist ;  exit ; fi 
+# if [ -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb/lbasin_$tile.tif ] ; then echo lbasin_$tile.tif exist ;  exit ; fi 
 
 echo $ulx $uly $lrx $lry
 
@@ -45,9 +55,9 @@ export lrxL=$(  awk -v lrx=$lrx  'BEGIN{ printf ("%.16f" ,  lrx  + (1200 * 0.000
 export lryL=$(  awk -v lry=$lry  'BEGIN{ printf ("%.16f" ,  lry  - (1200 * 0.000833333333333 )) }')
 
 if [ $(echo " $ulxL < -180 "  | bc ) -eq 1 ] ; then ulxL=-180 ; fi  ; if [ $ulx -lt  -180 ] ; then ulx=-180 ; fi  
-if [ $(echo " $ulyL >  85 "   | bc ) -eq 1 ] ; then ulyL=85   ; fi  ; if [ $uly -gt   85  ] ; then uly=85   ; fi 
-if [ $(echo " $lrxL >  180"   | bc ) -eq 1 ] ; then lrxL=180  ; fi  ; if [ $lrx -gt   180 ] ; then lrx=180  ; fi  
-if [ $(echo " $lryL <  -60"   | bc ) -eq 1 ] ; then lryL=-60  ; fi  ; if [ $lry -lt  -60  ] ; then lry=-60  ; fi  
+if [ $(echo " $ulyL >   85 "  | bc ) -eq 1 ] ; then ulyL=85   ; fi  ; if [ $uly -gt   85  ] ; then uly=85   ; fi 
+if [ $(echo " $lrxL >  180 "  | bc ) -eq 1 ] ; then lrxL=180  ; fi  ; if [ $lrx -gt   180 ] ; then lrx=180  ; fi  
+if [ $(echo " $lryL <  -60 "  | bc ) -eq 1 ] ; then lryL=-60  ; fi  ; if [ $lry -lt  -60  ] ; then lry=-60  ; fi  
 
 echo $ulxL $ulyL $lrxL $lryL 
 
@@ -67,44 +77,56 @@ done
 rm -f  $RAM/${tile}_${var}.vrt 
 
 rm -fr $GRASS/loc_$tile
-source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.0.2-grace2.sh $GRASS loc_$tile $RAM/${tile}_elv.tif
+source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.3-grace2.sh $GRASS loc_$tile $RAM/${tile}_msk.tif  r.in.gdal
 
-rm -f $RAM/${tile}_elv.tif
-g.rename  raster=${tile}_elv,elv 
-
-r.in.gdal in=$RAM/${tile}_msk.tif  out=msk    memory=2000 --o ; rm -f $RAM/${tile}_msk.tif
-r.in.gdal in=$RAM/${tile}_dep.tif  out=dep    memory=2000 --o ; rm -f $RAM/${tile}_dep.tif
-r.in.gdal in=$RAM/${tile}_upa.tif  out=upa    memory=2000 --o ; rm -f $RAM/${tile}_upa.tif 
+g.remove -f  type=raster name=${tile}_msk
+r.external  input=$RAM/${tile}_elv.tif     output=elv        --overwrite 
+r.external  input=$RAM/${tile}_msk.tif     output=msk        --overwrite
+r.external  input=$RAM/${tile}_dep.tif     output=dep        --overwrite
+r.external  input=$RAM/${tile}_upa.tif     output=upa        --overwrite
 
 r.mask raster=msk --o
 
-r.stream.extract elevation=elv  accumulation=upa threshold=0.5    depression=dep     direction=dir  stream_raster=stream memory=30000 --o --verbose  ;  r.colors -r stream
-g.remove -f  type=raster name=upa,elv
-/gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.stream.basins -l  stream_rast=stream  direction=dir  basins=lbasin        memory=30000 --o --verbose  ;  r.colors -r lbasin
+r.stream.extract elevation=elv  accumulation=upa threshold=0.5    depression=dep     direction=dir  stream_raster=stream memory=60000 --o --verbose  ;  r.colors -r stream
 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_large/lbasin_$tile.tif 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_large/stream_$tile.tif 
+echo "################### r.stream.extract #######################"
+sstat  -j   ${SLURM_ARRAY_JOB_ID}.batch   --format=JobID,MaxVMSize
+echo "############################################################"
+sacct  -j   ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}  --format=jobid,MaxVMSize,start,end,CPUTImeRaw,NodeList,ReqCPUS,ReqMem,Elapsed,Timelimit 
+echo "############################################################"
+
+g.remove -f  type=raster name=upa,elv
+/gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.stream.basins -l -m  stream_rast=stream  direction=dir  basins=lbasin        memory=60000 --o --verbose  ;  r.colors -r lbasin
+
+echo "##################  r.stream.basins ########################"
+sstat  -j   ${SLURM_ARRAY_JOB_ID}.batch   --format=JobID,MaxVMSize
+echo "############################################################"
+sacct  -j   ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}  --format=jobid,MaxVMSize,start,end,CPUTImeRaw,NodeList,ReqCPUS,ReqMem,Elapsed,Timelimit 
+echo "############################################################"
+
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_large/lbasin_$tile.tif 
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_large/stream_$tile.tif 
 rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_large/lbasin_$tile.tif.aux.xml 
 
 g.region w=$ulx  n=$uly  s=$lry  e=$lrx  res=0:00:03   save=crop --o  
 
 echo g.region w=$ulx  n=$uly  s=$lry  e=$lrx  res=0:00:03   save=crop --o 
 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_full/lbasin_$tile.tif 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_full/stream_$tile.tif 
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_full/lbasin_$tile.tif 
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_full/stream_$tile.tif 
 rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_full/lbasin_$tile.tif.aux.xml 
 
 echo left stripe 
-eS=$(g.region -m  | grep e= | awk -F "=" '{ print $2   }' )
-wS=$(g.region -m  | grep e= | awk -F "=" '{ printf ("%.14f\n" , $2 - ( 1 *  0.000833333333333 )) }' )
+eS=$(g.region -m  | grep ^e= | awk -F "=" '{ print $2   }' )
+wS=$(g.region -m  | grep ^e= | awk -F "=" '{ printf ("%.14f\n" , $2 - ( 1 *  0.000833333333333 )) }' )
 
 g.region n=$uly s=$lry     e=$eS w=$wS  res=0:00:03
 r.mapcalc " lbasin_wstripe    = lbasin " --o
 
 g.region region=crop
 echo right stripe 
-wS=$(g.region -m  | grep w= | awk -F "=" '{ print $2   }' )
-eS=$(g.region -m  | grep w= | awk -F "=" '{ printf ("%.14f\n" , $2 + ( 1 *  0.000833333333333 )) }' )
+wS=$(g.region -m  | grep ^w= | awk -F "=" '{ print $2   }' )
+eS=$(g.region -m  | grep ^w= | awk -F "=" '{ printf ("%.14f\n" , $2 + ( 1 *  0.000833333333333 )) }' )
 
 g.region n=$uly s=$lry  e=$eS w=$wS  res=0:00:03
 r.mapcalc " lbasin_estripe    = lbasin " --o
@@ -113,8 +135,8 @@ r.mapcalc " lbasin_estripe    = lbasin " --o
 
 g.region region=crop
 echo top stripe 
-nS=$(g.region -m  | grep n= | awk -F "=" '{ print $2   }' )
-sS=$(g.region -m  | grep n= | awk -F "=" '{ printf ("%.14f\n" , $2 - ( 1 *  0.000833333333333 )) }' )
+nS=$(g.region -m  | grep ^n= | awk -F "=" '{ print $2   }' )
+sS=$(g.region -m  | grep ^n= | awk -F "=" '{ printf ("%.14f\n" , $2 - ( 1 *  0.000833333333333 )) }' )
 
 g.region e=$lrx w=$ulx  n=$nS s=$sS   res=0:00:03
 r.mapcalc " lbasin_nstripe    = lbasin " --o
@@ -143,8 +165,8 @@ g.remove -f  type=raster name=lbasin_rec,lbasin_estripe,lbasin_wstripe,lbasin_ns
 
 r.mask raster=lbasin_clean --o
 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_intb/stream_$tile.tif 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_intb/lbasin_$tile.tif  
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_intb/stream_$tile.tif 
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_intb/lbasin_$tile.tif  
 rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_intb/lbasin_$tile.tif.aux.xml 
 
 r.mask raster=msk --o 
@@ -152,18 +174,16 @@ r.mask raster=msk --o
 r.mapcalc  " lbasin_broke = if ( isnull(lbasin_clean ) , lbasin , null()  )  "        --o 
 r.mapcalc  " stream_broke = if ( isnull(lbasin_clean ) , stream  , null()  )  "  --o 
 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream_broke  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_brokb/stream_$tile.tif 
-r.out.gdal --overwrite -c  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin_broke  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb/lbasin_$tile.tif  
+r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream_broke  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_brokb/stream_$tile.tif 
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin_broke  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb/lbasin_$tile.tif  
 rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb/lbasin_$tile.tif.aux.xml 
 
 rm -r /tmp/loc_$tile
 
 echo "############################################################"
-sstat  -j   $SLURM_JOB_ID.batch   --format=JobID,MaxVMSize
+sstat  -j   ${SLURM_ARRAY_JOB_ID}.batch   --format=JobID,MaxVMSize
 echo "############################################################"
-sacct  -j   $SLURM_JOB_ID  --format=jobid,MaxVMSize,start,end,CPUTImeRaw,NodeList,ReqCPUS,ReqMem,Elapsed,Timelimit 
+sacct  -j   ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}  --format=jobid,MaxVMSize,start,end,CPUTImeRaw,NodeList,ReqCPUS,ReqMem,Elapsed,Timelimit 
 echo "############################################################"
-
-
 
 exit 
