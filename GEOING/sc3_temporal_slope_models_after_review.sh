@@ -1,6 +1,3 @@
-# bash    /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models_after_review.sh
-# qsub    /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models_after_review.sh
-
 #PBS -S /bin/bash 
 #PBS -q fas_devel
 #PBS -l walltime=4:00:00
@@ -8,6 +5,22 @@
 #PBS -V
 #PBS -o /scratch/fas/sbsc/ga254/stdout
 #PBS -e /scratch/fas/sbsc/ga254/stderr
+
+#######################################################################################################################
+#
+# AUTHOR:    Giuseppe Amatulli ( https://research.computing.yale.edu/about/staff/giuseppe-amatulli ; www.spatial-ecology.net )
+#            
+#            Potentially dangerous consequences for biodiversity of solar geoengineering implementation and termination     
+#            Christopher H. Trisos, Giuseppe Amatulli, Jessica Gurevitch, Alan Robock, Lili Xia, Brian Zambri
+#            Nature Ecology & Evolution 
+#
+# PURPOSE:   Calculate future climate velocity using model scenario CCCMA.CanESM2  CSIRO-Mk3L-1-2  HadGEM2-ES  NASA.GISS-E2-R 
+# SOFTWARE:  Combination of several Open Source Software R, CDO, PKTOOLS, GDAL integrate under BASH language 
+#
+#######################################################################################################################
+
+# bash    /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models_after_review.sh
+# qsub    /home/fas/sbsc/ga254/scripts/GEOING/sc3_temporal_slope_models_after_review.sh
 
 module unload Tools/CDO/1.6.4
 module load Tools/CDO/1.7.2   

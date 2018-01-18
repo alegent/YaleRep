@@ -6,6 +6,19 @@
 #PBS -o /scratch/fas/sbsc/ga254/stdout
 #PBS -e /scratch/fas/sbsc/ga254/stderr
 
+#######################################################################################################################
+#
+# AUTHOR:    Giuseppe Amatulli ( https://research.computing.yale.edu/about/staff/giuseppe-amatulli ; www.spatial-ecology.net )
+#            
+#            Potentially dangerous consequences for biodiversity of solar geoengineering implementation and termination     
+#            Christopher H. Trisos, Giuseppe Amatulli, Jessica Gurevitch, Alan Robock, Lili Xia, Brian Zambri
+#            Nature Ecology & Evolution 
+#
+# PURPOSE:   Calculate currente climate velocity using CRU and HadISST
+# SOFTWARE:  Combination of several Open Source Software R, CDO, PKTOOLS, GDAL integrate under BASH language 
+#
+#######################################################################################################################
+
 module load Tools/CDO/1.6.4  
 module unload Rpkgs/RGDAL/0.8-11
 module load Rpkgs/RGDAL/0.9-3
