@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p day
+#SBATCH -p scavenge
 #SBATCH -n 1 -c 1  -N 1  
 #SBATCH --array=1-1150
 #SBATCH -t 1:00:00

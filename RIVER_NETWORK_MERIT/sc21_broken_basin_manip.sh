@@ -7,16 +7,17 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc21_broken_basin_manip.sh
-#SBATCH --array=1-35
+#SBATCH --array=1-25
 
 # 35  number of files 
-# sbatch  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc21_broken_basin_manip.sh
+# sbatch /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc21_broken_basin_manip.sh
+# sbatch -d afterany:$(qmys | grep  sc20_build_dem_location_4streamTile.sh | awk '{ print $1}' | uniq)  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc21_broken_basin_manip.sh
 
 MERIT=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT
 GRASS=/tmp
 RAM=/dev/shm
 
-file=$(ls /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb/lbasin_h??v??.tif   | tail -n  $SLURM_ARRAY_TASK_ID | head -1 )
+file=$(ls /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_brokb/lbasin_h??v??.tif   | head -n  $SLURM_ARRAY_TASK_ID | tail  -1 )
 
 filename=$( basename $file ) 
 
@@ -26,7 +27,7 @@ if [ $MAX -eq 0 ] ; then
 echo remove  $file  
 exit 
 else
-pkgetmask  -min 0.1  -max 100000000000 -ot Byte -co COMPRESS=DEFLATE -co ZLEVEL=9 -i $file  -o $MERIT/lbasin_tiles_brokb_msk/$filename  
+pkgetmask  -min 0.1  -max 10000000000000 -ot Byte -co COMPRESS=DEFLATE -co ZLEVEL=9 -i $file  -o $MERIT/lbasin_tiles_brokb_msk/$filename  
 gdal_edit.py -a_nodata  0 $MERIT/lbasin_tiles_brokb_msk/$filename  
 pkfilter -nodata 0  -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Byte  -of GTiff  -dx 10  -dy 10 -d 10  -f max   -i $MERIT/lbasin_tiles_brokb_msk/$filename  -o  $MERIT/lbasin_tiles_brokb_msk1km/$filename  
 gdal_edit.py -a_nodata 0   $MERIT/lbasin_tiles_brokb_msk1km/$filename  

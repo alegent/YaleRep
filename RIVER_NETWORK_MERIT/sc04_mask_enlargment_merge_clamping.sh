@@ -1,26 +1,26 @@
 #!/bin/bash
-#SBATCH -p day
+#SBATCH -p scavenge 
 #SBATCH -n 1 -c 1  -N 1  
-#SBATCH -t 1:00:00
+#SBATCH -t 4:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
-#SBATCH -e  /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc04_mask_enlargment_merge_clamping.sh%A_%a.err
-#SBATCH -o  /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc04_mask_enlargment_merge_clamping.sh%A_%a.out
+#SBATCH -e  /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc04_mask_enlargment_merge_clamping.sh%J.err
+#SBATCH -o  /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc04_mask_enlargment_merge_clamping.sh%J.out
 #SBATCH --job-name=sc03_mask_enlargment.sh
 
 # sbatch   /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc04_mask_enlargment_merge_clamping.sh 
 
-
+module load Apps/GRASS/7.3-beta
 
 DIRP=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT
 DIRS=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT
 RAM=/dev/shm
 
-# gdalbuildvrt -overwrite -srcnodata 0 -vrtnodata 0 $DIRP/msk_enlarge/msk_enl1km/all_tif.vrt  $DIRS/msk_enlarge/tiles_km1/*_msk.tif
-# gdal_translate  -co COMPRESS=DEFLATE -co ZLEVEL=9   $DIRP/msk_enlarge/msk_enl1km/all_tif.vrt   $DIRP/msk_enlarge/msk_enl1km/msk_1km.tif 
-# gdal_edit.py  -a_nodata 0   $DIRP/msk_enlarge/msk_enl1km/msk_1km.tif 
+gdalbuildvrt -overwrite -srcnodata 0 -vrtnodata 0 $DIRP/msk_enlarge/msk_enl1km/all_tif.vrt  $DIRS/msk_enlarge/tiles_km1/*_msk.tif
+gdal_translate  -co COMPRESS=DEFLATE -co ZLEVEL=9   $DIRP/msk_enlarge/msk_enl1km/all_tif.vrt   $DIRP/msk_enlarge/msk_enl1km/msk_1km.tif 
+gdal_edit.py  -a_nodata 0   $DIRP/msk_enlarge/msk_enl1km/msk_1km.tif 
 
-source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.0.2-grace2.sh /tmp/  loc_$tile  $DIRP/msk_enlarge/msk_enl1km/msk_1km.tif
+source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.3-grace2.sh /tmp/  loc_$tile  $DIRP/msk_enlarge/msk_enl1km/msk_1km.tif
 
 r.clump -d  --overwrite    input=msk_1km    output=msk_1km_clump 
 r.colors -r map=msk_1km_clump 
