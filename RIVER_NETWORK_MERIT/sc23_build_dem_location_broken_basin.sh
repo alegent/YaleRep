@@ -8,9 +8,9 @@
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc23_build_dem_location_broken_basin.sh
 #SBATCH --mem-per-cpu=110000
-#SBATCH --array=1
+#SBATCH --array=1-157
 
-# 130 UNIT 
+# 157  UNIT 
 # sbatch   /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc23_build_dem_location_broken_basin.sh
 # sbatch  -d afterany:$(qmys | grep sc22_broken_basin_clumping.sh  | awk '{ print $1}' | uniq)  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc23_build_dem_location_broken_basin.sh
 
@@ -23,15 +23,15 @@ echo SLURM_ARRAY_TASK_MIN   $SLURM_ARRAY_TASK_MIN
 
 module load Apps/GRASS/7.3-beta
 
-MERIT=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT
-SC=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT
-GRASS=/tmp
-RAM=/dev/shm 
+export MERIT=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT
+export SC=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT
+export GRASS=/tmp
+export RAM=/dev/shm 
 
 find  /tmp      -user $USER  -mtime +1  2>/dev/null  | xargs -n 1 -P 1 rm -ifr  
 find  /dev/shm  -user $USER  -mtime +1  2>/dev/null  | xargs -n 1 -P 1 rm -ifr  
 
-UNIT=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print $1 }' $SC/lbasin_tiles_brokb_msk/brokb_msk_clump_hist1_s.txt ) 
+export UNIT=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print $1 }' $SC/lbasin_tiles_brokb_msk/brokb_msk_clump_hist1_s.txt ) 
 echo start the oft-bb UNIT $UNIT
 geo_string=$(oft-bb  $SC/lbasin_tiles_brokb_msk/brokb_msk_clump.tif $UNIT | grep BB  |  awk '{ print $6 - 100, $7 - 100, $8-$6 + 200, $9-$7 + 200 }' ) 
 
@@ -42,16 +42,14 @@ pkgetmask -ot UInt16 -co COMPRESS=DEFLATE -co ZLEVEL=9 -min $(echo $UNIT - 0.5 |
 gdal_edit.py  -a_nodata 0 $SC/lbasin_tiles_brokb_msk/brokb_msk_clump${UNIT}.tif ; rm  $RAM/brokb_msk_clump${UNIT}_tmp.tif 
 cp   $SC/lbasin_tiles_brokb_msk/brokb_msk_clump${UNIT}.tif   $RAM/brokb_msk_clump${UNIT}.tif 
 
-for var in msk elv dep upa ; do 
-gdal_translate -co BIGTIFF=YES -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -projwin $(getCorners4Gtranslate $SC/lbasin_tiles_brokb_msk/brokb_msk_clump${UNIT}.tif) $MERIT/${var}/all_tif.vrt $RAM/UNIT${UNIT}_${var}.tif 
-
-if [ $var = "elv" ] || [ $var = "upa" ] ; then  
-    gdal_edit.py  -a_nodata -9999  $RAM/UNIT${UNIT}_${var}.tif
-else
-    gdal_edit.py  -a_nodata 0      $RAM/UNIT${UNIT}_${var}.tif
-fi
+echo msk elv dep upa | xargs -n 1 -P 4 bash -c $' 
+var=$1
+gdal_translate -co BIGTIFF=YES -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -projwin $(getCorners4Gtranslate $SC/lbasin_tiles_brokb_msk/brokb_msk_clump${UNIT}.tif) $MERIT/${var}/all_tif.vrt $RAM/UNIT${UNIT}_${var}.tif
 rm -f  $RAM/UNIT${UNIT}_${var}.vrt 
-done 
+' _
+
+gdal_edit.py  -a_nodata -9999  $RAM/UNIT${UNIT}_elv.tif ;     gdal_edit.py  -a_nodata -9999  $RAM/UNIT${UNIT}_upa.tif ; 
+gdal_edit.py  -a_nodata 0      $RAM/UNIT${UNIT}_msk.tif ;     gdal_edit.py  -a_nodata 0      $RAM/UNIT${UNIT}_dep.tif ;
 
 rm -fr $GRASS/loc_$UNIT 
 source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.3-grace2.sh $GRASS loc_$UNIT $RAM/UNIT${UNIT}_msk.tif r.in.gdal
@@ -72,10 +70,9 @@ g.remove -f  type=raster name=upa,elv,dep ; rm $RAM/UNIT${UNIT}_upa.tif $RAM/UNI
 g.region zoom=msk_brokb   --o  
 r.mask raster=msk_brokb   --o
 
-r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin   output=$SC/lbasin_unit_large/lbasin_brokb$UNIT.tif 
-r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream   output=$SC/stream_unit_large/stream_brokb$UNIT.tif 
+r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin   output=$SC/lbasin_unit_large/lbasin_brokb$UNIT.tif & 
+r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream   output=$SC/stream_unit_large/stream_brokb$UNIT.tif &
 r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=Int16  format=GTiff nodata=-10  input=dir    output=$SC/dir_unit_large/dir_brokb$UNIT.tif 
-
 
 echo "############################################################"
 sstat  -j   $SLURM_JOB_ID.batch   --format=JobID,MaxVMSize

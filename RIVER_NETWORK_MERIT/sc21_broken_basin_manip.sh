@@ -7,7 +7,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc21_broken_basin_manip.sh
-#SBATCH --array=1-25
+#SBATCH --array=1-24
 
 # 35  number of files 
 # sbatch /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc21_broken_basin_manip.sh

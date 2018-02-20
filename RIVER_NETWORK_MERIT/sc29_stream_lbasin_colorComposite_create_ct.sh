@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -p scavenge
+#SBATCH -p day
 #SBATCH -n 1 -c 2 -N 1
-#SBATCH -t 1:00:00
+#SBATCH -t 6:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc29_stream_lbasin_colorComposite_creat_ct.sh.%J.out 
 #SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc29_stream_lbasin_colorComposite_create_ct.sh.%J.err
 #SBATCH --mail-type=ALL

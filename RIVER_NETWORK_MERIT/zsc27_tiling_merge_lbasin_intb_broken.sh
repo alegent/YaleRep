@@ -1,17 +1,20 @@
 #!/bin/bash
 #SBATCH -p day
-#SBATCH -n 1 -c 3 -N 1
+#SBATCH -n 1 -c 9 -N 1
 #SBATCH -t 24:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc27_tiling_merge_lbasin_intb_broken.sh.%A_%a.out
 #SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc27_tiling_merge_lbasin_intb_broken.sh.%A_%a.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc27_tiling_merge_lbasin_intb_broken.sh
-#SBATCH --array=1-25
-#SBATCH --mem-per-cpu=20000
+#SBATCH --array=12,18,22
+#SBATCH --mem-per-cpu=6000
 
-# 1-25
+# 1-24 
 ####    sbatch  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc27_tiling_merge_lbasin_intb_broken.sh
+
+# check for errors 
+# grep "Bus error"  /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc27_tiling_merge_lbasin_intb_broken.sh.*
 
 export MERIT=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT
 export GRASS=/tmp
@@ -50,21 +53,30 @@ echo create tile   $MERIT/${VAR}_unit_tile/${VAR}_${tile}.tif
 
 # crop only unit in the tie. 
 
-if [ $VAR = "lbasin" ] ; then  UNITDIR=${VAR}_unit_large_reclass ; TILEDIR=${VAR}_tiles_intb_reclass ;  TYPE=UInt32  ; NODATA=-10 ;  fi 
-if [ $VAR = "stream" ] ; then  UNITDIR=${VAR}_unit_large_reclass ; TILEDIR=${VAR}_tiles_intb_reclass ;  TYPE=UInt32  ; NODATA=0   ;  fi 
-if [ $VAR = "dir" ]    ; then  UNITDIR=${VAR}_unit_large         ; TILEDIR=${VAR}_tiles_intb         ;  TYPE=Int16   ; NODATA=-10 ;  fi 
+if [ $VAR = "lbasin" ] ; then  UNITDIR=${VAR}_unit_large_reclass ; TILEDIR=${VAR}_tiles_intb_reclass ;  export TYPE=UInt32  ; export NODATA=0 ;  fi 
+if [ $VAR = "stream" ] ; then  UNITDIR=${VAR}_unit_large_reclass ; TILEDIR=${VAR}_tiles_intb_reclass ;  export TYPE=UInt32  ; export NODATA=0   ;  fi 
+if [ $VAR = "dir" ]    ; then  UNITDIR=${VAR}_unit_large         ; TILEDIR=${VAR}_tiles_intb         ;  export TYPE=Int16   ; export NODATA=-10 ;  fi 
 
-for file in $MERIT/$UNITDIR/${VAR}_brokb*.tif ; do 
+ls  $MERIT/$UNITDIR/${VAR}_brokb*.tif | xargs -n 1 -P 3 bash -c $\'
+file=$1 
 filename=$(basename $file .tif )
-gdal_translate -a_nodata 0 -ot $TYPE -eco -co COMPRESS=DEFLATE -co ZLEVEL=9 -projwin $ulx $uly $lrx $lry  $file   $RAMT/${filename}_${tile}.tif 
-done 
+gdal_translate -a_nodata $NODATA  -ot $TYPE -eco -co COMPRESS=DEFLATE -co ZLEVEL=9 -projwin $ulx $uly $lrx $lry  $file   $RAMT/${filename}_${tile}.tif 
+if [  -e   $RAMT/${filename}_${tile}.tif  ] ; then 
+MAX=$(pkstat -max -i  $RAMT/${filename}_${tile}.tif  | cut -d " " -f 2 )
+if [ $MAX -eq $NODATA  ] ; then  
+    rm  $RAMT/${filename}_${tile}.tif 
+    echo  "the  $RAMT/${filename}_${tile}.tif has been removed"  
+fi   # remove files that can have only no data value 
+fi 
+
+\' _
 
 tilefile=$(ls  $RAMT/${VAR}_brokb?_${tile}.tif $RAMT/${VAR}_brokb??_${tile}.tif  $RAMT/${VAR}_brokb???_${tile}.tif 2>/dev/null | wc -l   )
 echo tiledfile n $tilefile
 if [ $tilefile -eq 0  ] ; then echo cp the file ; cp $MERIT/$TILEDIR/${VAR}_${tile}.tif $MERIT/${VAR}_tiles_final ; 
 else  
 
-gdalbuildvrt -srcnodata  $NODATA  -vrtnodata $NODATA  -separate -overwrite $RAMT/${VAR}_brokb_${tile}.vrt $( ls  $RAMT/${VAR}_brokb?_${tile}.tif $RAMT/${VAR}_brokb??_${tile}.tif  $RAMT/${VAR}_brokb???_${tile}.tif 2>/dev/null )   
+gdalbuildvrt   -separate -overwrite $RAMT/${VAR}_brokb_${tile}.vrt $( ls  $RAMT/${VAR}_brokb?_${tile}.tif $RAMT/${VAR}_brokb??_${tile}.tif  $RAMT/${VAR}_brokb???_${tile}.tif 2>/dev/null )   
 BANDN=$( gdalinfo  $RAMT/${VAR}_brokb_${tile}.vrt  | grep Band  | tail -1 | awk \'{ print $2 }\' )
 
 echo first oft-calc on $RAMT/${VAR}_brokb_${tile}.vrt that has $BANDN band

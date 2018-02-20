@@ -7,7 +7,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc20_build_dem_location_4streamTile.sh
-#SBATCH --array=1-24
+#SBATCH --array=17
 #SBATCH --mem-per-cpu=100000
 
 # 24  row for the 45 degree 
@@ -25,9 +25,9 @@ echo SLURM_ARRAY_TASK_COUNT $SLURM_ARRAY_TASK_COUNT
 echo SLURM_ARRAY_TASK_MAX $SLURM_ARRAY_TASK_MAX
 echo SLURM_ARRAY_TASK_MIN  $SLURM_ARRAY_TASK_MIN
 
-MERIT=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT
-GRASS=/tmp
-RAM=/dev/shm
+export MERIT=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT
+export GRASS=/tmp
+export RAM=/dev/shm
 
 # find  /tmp/       -user $USER  -mtime +1  2>/dev/null  | xargs -n 1 -P 8 rm -ifr  
 # find  /dev/shm/   -user $USER  -mtime +1  2>/dev/null  | xargs -n 1 -P 8 rm -ifr  
@@ -39,6 +39,13 @@ find  /dev/shm/   -user $USER    2>/dev/null  | xargs -n 1 -P 8 rm -ifr
 # Lower Left  (-180.0000000, -60.0000000) (180d 0' 0.00"W, 60d 0' 0.00"S)
 # Upper Right ( 180.0000000,  85.0000000) (180d 0' 0.00"E, 85d 0' 0.00"N)
 # Lower Right ( 180.0000000, -60.0000000) (180d 0' 0.00"E, 60d 0' 0.00"S)
+
+## to check size of the tiles 
+## cd /tmp
+## cp  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/msk_enlarge/msk_enl1km/msk_1km.tif /tmp
+## cat  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_45d_MERIT_noheader.txt | xargs -n 5 -P 4 bash -c $'  gdal_translate -projwin $2 $3 $4 $5 msk_1km.tif test$1.tif ' _ 
+## gdaltindex  all_tif.shp testh0*.tif
+## for file in  testh0* ; do pkinfo -nl -ns -f  -i $file ; done  | awk '{  print $2 , $4 * $6  }'  | sort -g -k 2,2 
 
 # SLURM_ARRAY_TASK_ID=126                                                                       # dimension for the 45  56400  61200 = 3,451,680,000
 export tile=$( awk -v AR=$SLURM_ARRAY_TASK_ID '{ if(NR==AR)  print $1      }' /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GEO_AREA/tile_files/tile_lat_long_45d_MERIT_noheader.txt )
@@ -65,23 +72,31 @@ if [ $(echo " $lryL <  -60 "  | bc ) -eq 1 ] ; then lryL=-60  ; fi  ; if [ $lry 
 
 echo $ulxL $ulyL $lrxL $lryL 
 
-for var in msk elv dep upa ; do 
+echo msk elv dep upa | xargs -n 1 -P 4 bash -c $'
+var=$1
+
 gdalbuildvrt -overwrite -te $ulxL $lryL $lrxL $ulyL $RAM/${tile}_${var}.vrt  $MERIT/${var}/all_tif.vrt   
 gdal_translate -co BIGTIFF=YES   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -a_ullr $ulxL $ulyL $lrxL $lryL  $RAM/${tile}_${var}.vrt $RAM/${tile}_${var}.tif
 
-if [ $var = "msk" ] ; then MAX=$(pkstat -max  -i     $RAM/${tile}_${var}.tif    | awk '{ print $2  }' )  ; fi 
-if [ $MAX -eq 0   ] ; then rm -f $RAM/${tile}_${var}.tif  $RAM/${tile}_${var}.vrt ; exit ; fi 
+##  if [ $var = "msk" ] ; then MAX=$(pkstat -max  -i     $RAM/${tile}_${var}.tif    | awk \'{ print $2  }\' )  ; fi 
+##  if [ $MAX -eq 0   ] ; then rm -f $RAM/${tile}_${var}.tif  $RAM/${tile}_${var}.vrt ; exit ; fi 
 
 if [ $var = "elv" ] || [ $var = "upa" ] ; then  
     gdal_edit.py  -a_nodata -9999  $RAM/${tile}_${var}.tif
 else
     gdal_edit.py  -a_nodata 0      $RAM/${tile}_${var}.tif
 fi
-done 
+
+' _ 
+
 rm -f  $RAM/${tile}_${var}.vrt 
 
 rm -fr $GRASS/loc_$tile
 source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.3-grace2.sh $GRASS loc_$tile $RAM/${tile}_msk.tif  r.in.gdal
+
+export OMP_NUM_THREADS=4
+export USE_PTHREAD=4
+export WORKERS=4
 
 g.remove -f  type=raster name=${tile}_msk
 r.external  input=$RAM/${tile}_elv.tif     output=elv        --overwrite 
@@ -157,9 +172,9 @@ g.remove -f  type=raster name=lbasin_rec,lbasin_estripe,lbasin_wstripe,lbasin_ns
 
 r.mask raster=lbasin_clean --o
 
-r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0    input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_intb/stream_$tile.tif 
-r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0    input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_intb/lbasin_$tile.tif  
-r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=Int16  format=GTiff nodata=-10  input=dir     output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/dir_tiles_intb/dir_$tile.tif  
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0    input=stream  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/stream_tiles_intb/stream_$tile.tif &
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0    input=lbasin  output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_intb/lbasin_$tile.tif & 
+r.out.gdal --overwrite -c -m  createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=Int16  format=GTiff nodata=-10  input=dir     output=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/dir_tiles_intb/dir_$tile.tif       
 
 rm -f /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/lbasin_tiles_intb/lbasin_$tile.tif.aux.xml /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT/dir_tiles_intb/dir_$tile.tif.aux.xml 
 
