@@ -44,11 +44,11 @@ gdal_calc.py -A $DIR/AWCtS_M_sl1_250m_$5.vrt   -B $DIR/AWCtS_M_sl2_250m_$5.vrt  
              -E $DIR/AWCtS_M_sl5_250m_$5.vrt   -F $DIR/AWCtS_M_sl6_250m_$5.vrt  -G $DIR/AWCtS_M_sl7_250m_$5.vrt --format=GTiff   --outfile=$DIR/../AWC_sum/AWCtS_M_slsum_250m_$5.tif \
              --co=COMPRESS=DEFLATE --co=ZLEVEL=9  --overwrite --NoDataValue=-1 --type=Float32   \
              --calc="( ((1/400) * ( (5      *  (A.astype(float) +   B.astype(float))) + \
-                        (10     *  (B.astype(float) +   C.astype(float))) + \
-                        (15     *  (C.astype(float) +   D.astype(float))) + \
-                        (30     *  (D.astype(float) +   E.astype(float))) + \
-                        (40     *  (E.astype(float) +   F.astype(float))) + \
-                        (100    *  (F.astype(float) +   G.astype(float))) ))/ 200 * 0.5 )"
+                                    (10     *  (B.astype(float) +   C.astype(float))) + \
+                                    (15     *  (C.astype(float) +   D.astype(float))) + \
+                                    (30     *  (D.astype(float) +   E.astype(float))) + \
+                                    (40     *  (E.astype(float) +   F.astype(float))) + \
+                                    (100    *  (F.astype(float) +   G.astype(float))) ))/ 200 * 0.5 )"
 rm $DIR/AWCtS_M_sl*_250m_$5.vrt
 ' _ 
 
