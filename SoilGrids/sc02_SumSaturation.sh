@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p day
-#SBATCH -n 1 -c 1 -N 1
+#SBATCH -n 1 -c 8 -N 1
 #SBATCH -t 24:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc02_SumSaturation.sh.%J.out
 #SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc02_SumSaturation.sh.%J.err
@@ -21,7 +21,7 @@ export DIR=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/Soi
 
 #    xmin ymin xmax ymax 
 
-echo -100 20  -90 30 a >  $DIR/tile.txt
+echo -180 10  -90 84 a >  $DIR/tile.txt
 echo  -90 10    0 84 b >> $DIR/tile.txt
 echo    0 10   90 84 c >> $DIR/tile.txt
 echo   90 10  180 84 d >> $DIR/tile.txt
@@ -31,9 +31,12 @@ echo  -90 -56    0 10 f >> $DIR/tile.txt
 echo    0 -56   90 10 g >> $DIR/tile.txt
 echo   90 -56  180 10 h >> $DIR/tile.txt
 
-# depth   0 5 15 30 60 100 200
+# AWCts = Saturated water content
+# sl1 to sl7 are different depths in 0,5,15,30,60,100,200cm and need to be summed to obtain one grid with the total saturated water content from 0 to 2m. Information how to sum up is given here on p.3:
+# http://gsif.isric.org/lib/exe/fetch.php?media=wiki:soilgrids250m_global_gridded_preprint.pdf
 
-head -1   $DIR/tile.txt | xargs -n 5  -P 1 bash -c $' 
+
+cat   $DIR/tile.txt | xargs -n 5  -P 8 bash -c $' 
 
 for file in $DIR/*.tif ; do 
 filename=$(basename $file .tif   )
@@ -42,16 +45,18 @@ done
 
 gdal_calc.py -A $DIR/AWCtS_M_sl1_250m_$5.vrt   -B $DIR/AWCtS_M_sl2_250m_$5.vrt  -C $DIR/AWCtS_M_sl3_250m_$5.vrt   -D $DIR/AWCtS_M_sl4_250m_$5.vrt \
              -E $DIR/AWCtS_M_sl5_250m_$5.vrt   -F $DIR/AWCtS_M_sl6_250m_$5.vrt  -G $DIR/AWCtS_M_sl7_250m_$5.vrt --format=GTiff   --outfile=$DIR/../AWC_sum/AWCtS_M_slsum_250m_$5.tif \
-             --co=COMPRESS=DEFLATE --co=ZLEVEL=9  --overwrite --NoDataValue=-1 --type=Float32   \
-             --calc="( ((1/400) * ( (5      *  (A.astype(float) +   B.astype(float))) + \
-                                    (10     *  (B.astype(float) +   C.astype(float))) + \
-                                    (15     *  (C.astype(float) +   D.astype(float))) + \
-                                    (30     *  (D.astype(float) +   E.astype(float))) + \
-                                    (40     *  (E.astype(float) +   F.astype(float))) + \
-                                    (100    *  (F.astype(float) +   G.astype(float))) ))/ 200 * 0.5 )"
+             --co=COMPRESS=DEFLATE --co=ZLEVEL=9  --overwrite --NoDataValue=65535   --type=UInt16   \
+             --calc="( (1.0/2.0) * ( 5     *  (A +   B )) + \
+                                   (10     *  (B +   C )) + \
+                                   (15     *  (C +   D )) + \
+                                   (30     *  (D +   E )) + \
+                                   (40     *  (E +   F )) + \
+                                   (100    *  (F +   G )))"
 rm $DIR/AWCtS_M_sl*_250m_$5.vrt
 ' _ 
 
-gdalbuildvrt  -overwrite    $DIR/../AWC_sum/AWCtS_M_slsum_250m.vrt   $DIR/../AWC_sum/AWCtS_M_slsum_250m_*.tif 
+gdalbuildvrt  -overwrite    $DIR/../AWC_sum/AWCtS_M_slsum_250m.vrt   $DIR/../AWC_sum/AWCtS_M_slsum_250m_{a,b,c,d,e,f,g,h}.tif 
 
+gdal_translate -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/../AWC_sum/AWCtS_M_slsum_250m.vrt  $DIR/../AWC_sum/AWCtS_M_slsum_250m.tif
 
+# rm  $DIR/../AWC_sum/AWCtS_M_slsum_250m.vrt  $DIR/${filename}_?.vrt  $DIR/../AWC_sum/AWCtS_M_slsum_250m_{a,b,c,d,e,f,g,h}.tif 
