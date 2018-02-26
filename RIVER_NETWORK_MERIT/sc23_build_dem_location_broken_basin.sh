@@ -63,7 +63,7 @@ r.external  input=$RAM/UNIT${UNIT}_upa.tif     output=upa        --overwrite
 
 r.mask raster=msk  --o 
 
-r.stream.extract elevation=elv  accumulation=upa threshold=0.5    depression=dep     direction=dir  stream_raster=stream memory=90000 --o --verbose  ;  r.colors -r stream
+r.stream.extract elevation=elv  accumulation=upa threshold=0.2    depression=dep     direction=dir  stream_raster=stream memory=90000 --o --verbose  ;  r.colors -r stream
 g.remove -f  type=raster name=upa,elv,dep ; rm $RAM/UNIT${UNIT}_upa.tif $RAM/UNIT${UNIT}_elv.tif  $RAM/UNIT${UNIT}_dep.tif 
 /gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.stream.basins -l -m stream_rast=stream  direction=dir  basins=lbasin  memory=98000 --o --verbose  ;  r.colors -r lbasin
 
