@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p scavenge
+#SBATCH -p day
 #SBATCH -n 1 -c 2 -N 1
 #SBATCH -t 4:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc30_stream_lbasin_colorComposite_apply_ct.sh.%A_%a.out  

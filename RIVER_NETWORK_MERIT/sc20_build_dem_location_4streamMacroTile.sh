@@ -7,7 +7,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc20_build_dem_location_4streamTile.sh
-#SBATCH --array=17
+#SBATCH --array=1-24
 #SBATCH --mem-per-cpu=100000
 
 # 24  row for the 45 degree 

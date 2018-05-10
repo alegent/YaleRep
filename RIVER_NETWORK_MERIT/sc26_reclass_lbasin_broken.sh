@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p scavenge
+#SBATCH -p day
 #SBATCH -n 1 -c 2 -N 1
 #SBATCH -t 24:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc26_reclass_lbasin_broken.sh.%J.out
@@ -52,4 +52,4 @@ gdalbuildvrt  -overwrite  -te -180 -60 180 85 $MERIT/stream_unit_large_reclass/a
 gdalbuildvrt  -overwrite  -te -180 -60 180 85 $MERIT/lbasin_unit_large_reclass/all_tif.vrt    $MERIT/lbasin_unit_large_reclass/*.tif
 
 
-sbatch  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc27_tiling_merge_lbasin_intb_broken.sh
+sbatch  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc27_tiling_merge_lbasin_intb_broken_no-oft.sh

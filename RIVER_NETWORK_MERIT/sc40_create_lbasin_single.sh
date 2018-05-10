@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p scavenge 
+#SBATCH -p scavenge
 #SBATCH -n 1 -c 1 -N 1
 #SBATCH -t 4:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc40_create_lbasin_single.sh%A_%a.err
@@ -7,21 +7,24 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc40_create_lbasin_single.sh
-#SBATCH --array=2-4994
+#SBATCH --array=1-10000
 
-# start from 2 and end to wc -l   $MERIT/lbasin_tiles_final20d/lbasin_all_hist.txt   499496 
-# sbatch   /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc40_create_lbasin_single.sh
+# maximum job array 10 000 . 
+# cat  $MERIT/lbasin_tiles_final20d/lbasin_h??v??_hist.txt | sort -g  | uniq | awk '{ if($1!=0) {print } }' >   $MERIT/lbasin_tiles_final20d/lbasin_all_hist.txt 
 
-# cat  $MERIT/lbasin_tiles_final20d/lbasin_h??v??_hist.txt | sort -g  | uniq >   $MERIT/lbasin_tiles_final20d/lbasin_all_hist.txt 
-# SLURM_ARRAY_TASK_ID=2
+# start from 1 and end to wc -l   $MERIT/lbasin_tiles_final20d/lbasin_all_hist.txt   830606
+# for SEQ in  $( seq 0 10000  830606 )  ; do   sbatch  --export=SEQ=$SEQ  /gpfs/home/fas/sbsc/ga254/scripts/RIVER_NETWORK_MERIT/sc40_create_lbasin_single.sh  ; done 
+
+
+
 
 MERIT=/gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/RIVER_NETWORK_MERIT
 RAM=/dev/shm
 
-ID=$( head -n  $SLURM_ARRAY_TASK_ID $MERIT/lbasin_tiles_final20d/lbasin_all_hist.txt  | tail  -1 )
+export ID=$( expr $SLURM_ARRAY_TASK_ID + $SEQ )
+# export ID=$( head -n  $SLURM_ARRAY_TASK_ID $MERIT/lbasin_tiles_final20d/lbasin_all_hist.txt  | tail  -1 )
 
 cd $MERIT/lbasin_tiles_final20d/
-
 
 gdalbuildvrt -overwrite   -srcnodata 0 -vrtnodata 0 $MERIT/lbasin_tiles_final20d/ID$ID.vrt  $(  grep ^$ID$ lbasin_h??v??_hist.txt | awk '{ gsub("_hist.txt", " ") ; printf ("%s.tif ",$1 ) }' )
 

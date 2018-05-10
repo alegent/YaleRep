@@ -11,17 +11,27 @@
 
 # sbatch /gpfs/home/fas/sbsc/ga254/scripts/SoilGrids/sc01_wget.sh
 
-cd /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/SoilGrids/AWC
+# cd /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/SoilGrids/AWC
 
-for seq in $( seq 1 7) ; do 
-    wget ftp://ftp.soilgrids.org/data/recent/AWCtS_M_sl${seq}_250m.tif 
-    gdal_edit.py -a_ullr -180 84 180 -56 AWCtS_M_sl${seq}_250m.tif 
-done 
+# for seq in $( seq 1 7) ; do 
+#     wget ftp://ftp.soilgrids.org/data/recent/AWCtS_M_sl${seq}_250m.tif 
+#     gdal_edit.py -a_ullr -180 84 180 -56 AWCtS_M_sl${seq}_250m.tif 
+# done 
 
 # depth   0 15 30 60 100 200 
 
-cd /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/SoilGrids/TEXMHT
-wget ftp://ftp.soilgrids.org/data/recent/TEXMHT_M_sl1_250m.tif
-gdal_edit.py -a_ullr -180 84 180 -56 TEXMHT_M_sl1_250m.tif
+# cd /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/SoilGrids/TEXMHT
+# wget ftp://ftp.soilgrids.org/data/recent/TEXMHT_M_sl1_250m.tif
+# gdal_edit.py -a_ullr -180 84 180 -56 TEXMHT_M_sl1_250m.tif
 
+
+
+for PAR in SLTPPT CLYPPT SNDPPT ; do 
+    cd /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/SoilGrids/$PAR
+    echo wget $PAR 
+    for seq in $( seq 1 7) ; do 
+	wget ftp://ftp.soilgrids.org/data/recent/${PAR}_M_sl${seq}_250m.tif 
+	gdal_edit.py -a_ullr -180 84 180 -56 ${PAR}_M_sl${seq}_250m.tif 
+    done
+done 
 

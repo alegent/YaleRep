@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Load the script with the command source and specify the grass database location_name and file to import. 
-# source create_location.sh /dev/shm location $HOME/ost4sem/exercise/basic_adv_gdalogr/input_proj.tif  r.in.gdal or r.external 
+# source create_location.sh grassdb_path  location_name path_input.tif  
+# source create_location.sh /dev/shm location $HOME/ost4sem/exercise/basic_adv_gdalogr/input_proj.tif 
 
 export GISDBASE=$1
 export LOCATION=$2
 export file=$3
-export imp=$4
 
 export filename=$(basename  $file .tif)
 
@@ -42,8 +42,9 @@ export GRASS_OVERWRITE=1
 rm -rf  $GISDBASE/$LOCATION
 
 echo start importing 
-if [ $imp = "r.in.gdal"  ] ; then r.in.gdal   in=$file      out=$filename    location=$LOCATION   memory=2000 ; fi 
-if [ $imp = "r.external" ] ; then r.external  input=$file   out=$filename  ; fi 
+
+r.in.gdal   in=$file      out=$filename    location=$LOCATION   memory=2000
+# if [ $imp = "r.external" ] ; then r.external  input=$file   out=$filename  ; fi 
 
 g.mapset   mapset=PERMANENT  location=$LOCATION
 

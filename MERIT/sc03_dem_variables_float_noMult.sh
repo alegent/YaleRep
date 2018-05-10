@@ -137,7 +137,7 @@ r.in.gdal in=$RAM/$filename.tif   out=$filename --overwrite  memory=2000 # used 
 r.slope.aspect elevation=${filename}_0   precision=FCELL  pcurvature=pcurv_$filename tcurvature=tcurv_$filename dx=dx_$filename dxx=dxx_$filename  dy=dy_$filename dyy=dyy_$filename  dxy=dxy_$filename
 
 ############## https://grass.osgeo.org/grass72/manuals/addons/r.convergence.html 
-/gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.convergence  input=${filename}_0  output=con_${filename} --overwrite
+/gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.convergence  input=${filename}_0  output=conv_${filename} --overwrite
 
 # setting up the g.region to the initial tile size before to exprot 
 ulxG=$(echo $ulx  | awk '{  printf ("%.16f" ,  $1  + (8 * 0.000833333333333 )) }')

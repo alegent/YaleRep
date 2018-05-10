@@ -63,16 +63,16 @@ r.external  input=$RAM/UNIT${UNIT}_upa.tif     output=upa        --overwrite
 
 r.mask raster=msk  --o 
 
-r.stream.extract elevation=elv  accumulation=upa threshold=0.2    depression=dep     direction=dir  stream_raster=stream memory=90000 --o --verbose  ;  r.colors -r stream
+r.stream.extract elevation=elv accumulation=upa threshold=0.2 depression=dep  direction=dir  stream_raster=stream memory=90000 --o --verbose  ;  r.colors -r stream
 g.remove -f  type=raster name=upa,elv,dep ; rm $RAM/UNIT${UNIT}_upa.tif $RAM/UNIT${UNIT}_elv.tif  $RAM/UNIT${UNIT}_dep.tif 
 /gpfs/home/fas/sbsc/ga254/.grass7/addons/bin/r.stream.basins -l -m stream_rast=stream  direction=dir  basins=lbasin  memory=98000 --o --verbose  ;  r.colors -r lbasin
 
 g.region zoom=msk_brokb   --o  
 r.mask raster=msk_brokb   --o
 
-r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin   output=$SC/lbasin_unit_large/lbasin_brokb$UNIT.tif & 
-r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream   output=$SC/stream_unit_large/stream_brokb$UNIT.tif &
-r.out.gdal --overwrite -c -m   createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=Int16  format=GTiff nodata=-10  input=dir    output=$SC/dir_unit_large/dir_brokb$UNIT.tif 
+r.out.gdal --overwrite -c -m createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=lbasin  output=$SC/lbasin_unit_large/lbasin_brokb$UNIT.tif 
+r.out.gdal --overwrite -c -m createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff nodata=0  input=stream  output=$SC/stream_unit_large/stream_brokb$UNIT.tif
+r.out.gdal --overwrite -c -m createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=Int16  format=GTiff nodata=-10 input=dir   output=$SC/dir_unit_large/dir_brokb$UNIT.tif 
 
 echo "############################################################"
 sstat  -j   $SLURM_JOB_ID.batch   --format=JobID,MaxVMSize
