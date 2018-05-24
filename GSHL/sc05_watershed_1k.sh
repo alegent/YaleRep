@@ -12,63 +12,63 @@
 # following the example at http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/32_Watersheds_Segmentation.html
 
 export DIR=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad
-# export PATH=/home/fas/sbsc/ga254/anaconda3/bin:$PATH
+export PATH=/home/fas/sbsc/ga254/anaconda3/bin:$PATH
 
-# rm -f  $DIR/watershed_line_nogeo.tif  $DIR/watershed_poly_nogeo.tif  
+rm -f  $DIR/watershed_line_nogeo.tif  $DIR/watershed_poly_nogeo.tif  
 
-# python <<EOF
-# import os
+python <<EOF
+import os
 
-# import SimpleITK as sitk
-# print("importing image")
-# img  = sitk.ReadImage("/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_cost.tif" , sitk.sitkFloat32  )  
+import SimpleITK as sitk
+print("importing image")
+img  = sitk.ReadImage("/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_cost.tif" , sitk.sitkFloat32  )  
 
-# # # to check img.GetPixelIDTypeAsString 32-bit unsigned integer  
-# core = sitk.ReadImage("/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_bin/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core.tif")
+# # to check img.GetPixelIDTypeAsString 32-bit unsigned integer  
+core = sitk.ReadImage("/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_bin/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core.tif")
 
-# marker_img  = sitk.ConnectedComponent(core, fullyConnected=True)
+marker_img  = sitk.ConnectedComponent(core, fullyConnected=True)
 
-# print("start watershed")
-# ws_line  = sitk.MorphologicalWatershedFromMarkers( img, marker_img, markWatershedLine=True,  fullyConnected=True)
-# sitk.WriteImage( sitk.Cast( ws_line  ,  sitk.sitkFloat32  ),        "/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/watershed_line_nogeo.tif" )
-# del(ws_line)
+print("start watershed")
+ws_line  = sitk.MorphologicalWatershedFromMarkers( img, marker_img, markWatershedLine=True,  fullyConnected=True)
+sitk.WriteImage( sitk.Cast( ws_line  ,  sitk.sitkFloat32  ),        "/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/watershed_line_nogeo.tif" )
+del(ws_line)
 
-# ws_poly  = sitk.MorphologicalWatershedFromMarkers( img, marker_img, markWatershedLine=False, fullyConnected=True)
-# sitk.WriteImage( sitk.Cast( ws_poly  ,  sitk.sitkFloat32  ),        "/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/watershed_poly_nogeo.tif" )
-# del(ws_poly)
-# EOF
+ws_poly  = sitk.MorphologicalWatershedFromMarkers( img, marker_img, markWatershedLine=False, fullyConnected=True)
+sitk.WriteImage( sitk.Cast( ws_poly  ,  sitk.sitkFloat32  ),        "/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/watershed_poly_nogeo.tif" )
+del(ws_poly)
+EOF
 
-# export PATH=/gpfs/apps/hpc/Apps/GRASS/7.0.2/bin:/gpfs/apps/hpc.rhel7/Tools/PKTOOLS/2.6.7/bin:/gpfs/apps/hpc/Libs/GSL/2.2/bin:/gpfs/apps/hpc/Libs/OSGEO/1.11.2/bin:/gpfs/apps/hpc/Langs/Python/2.7.10/bin:/gpfs/apps/hpc/Libs/WXPYTHON/3.0.0/bin:/gpfs/apps/hpc/Langs/GCC/5.2.0/bin:/gpfs/apps/hpc/Libs/NUMPY/1.9.2/bin:/gpfs/apps/hpc.rhel7/Libs/GDAL/1.11.2/bin:/gpfs/apps/hpc/Libs/GEOS/3.4.0/bin:/gpfs/apps/hpc.rhel7/Libs/GEOTIFF/1.4.0/bin:/gpfs/apps/hpc.rhel7/Libs/TIFF/4.0.7/bin:/gpfs/apps/hpc/Libs/NetCDF/4.2.1.1-hdf4/bin:/gpfs/apps/hpc/Libs/HDF4/4.2.9-nonetcdf-gcc/bin:/gpfs/apps/hpc/Libs/HDF5/1.8.13-gcc/bin:/gpfs/apps/hpc/Langs/TCLTK/8.5.14/bin:/usr/lib64/qt-3.3/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/ibutils/bin:/home/fas/sbsc/ga254/bin:/home/fas/sbsc/ga254/bin:/home/fas/sbsc/ga254/bin
+export PATH=/gpfs/apps/hpc/Apps/GRASS/7.0.2/bin:/gpfs/apps/hpc.rhel7/Tools/PKTOOLS/2.6.7/bin:/gpfs/apps/hpc/Libs/GSL/2.2/bin:/gpfs/apps/hpc/Libs/OSGEO/1.11.2/bin:/gpfs/apps/hpc/Langs/Python/2.7.10/bin:/gpfs/apps/hpc/Libs/WXPYTHON/3.0.0/bin:/gpfs/apps/hpc/Langs/GCC/5.2.0/bin:/gpfs/apps/hpc/Libs/NUMPY/1.9.2/bin:/gpfs/apps/hpc.rhel7/Libs/GDAL/1.11.2/bin:/gpfs/apps/hpc/Libs/GEOS/3.4.0/bin:/gpfs/apps/hpc.rhel7/Libs/GEOTIFF/1.4.0/bin:/gpfs/apps/hpc.rhel7/Libs/TIFF/4.0.7/bin:/gpfs/apps/hpc/Libs/NetCDF/4.2.1.1-hdf4/bin:/gpfs/apps/hpc/Libs/HDF4/4.2.9-nonetcdf-gcc/bin:/gpfs/apps/hpc/Libs/HDF5/1.8.13-gcc/bin:/gpfs/apps/hpc/Langs/TCLTK/8.5.14/bin:/usr/lib64/qt-3.3/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/ibutils/bin:/home/fas/sbsc/ga254/bin:/home/fas/sbsc/ga254/bin:/home/fas/sbsc/ga254/bin
 
-# gdal_edit.py -a_srs EPSG:4326  -a_ullr $(getCorners4Gtranslate $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_cost.tif  ) $DIR/watershed_line_nogeo.tif 
+gdal_edit.py -a_srs EPSG:4326  -a_ullr $(getCorners4Gtranslate $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_cost.tif  ) $DIR/watershed_line_nogeo.tif 
 
-# pkgetmask -ot Byte -co COMPRESS=DEFLATE -co ZLEVEL=9  -min -1 -max 0.5  -i  $DIR/watershed_line_nogeo.tif -o  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_line.tif
-# rm -f $DIR/watershed_line_nogeo.tif 
+pkgetmask -ot Byte -co COMPRESS=DEFLATE -co ZLEVEL=9  -min -1 -max 0.5  -i  $DIR/watershed_line_nogeo.tif -o  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_line.tif
+rm -f $DIR/watershed_line_nogeo.tif 
 
-# gdal_edit.py  -a_srs EPSG:4326 -a_ullr $(getCorners4Gtranslate $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_cost.tif  ) $DIR/watershed_poly_nogeo.tif  
+gdal_edit.py  -a_srs EPSG:4326 -a_ullr $(getCorners4Gtranslate $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_cost.tif  ) $DIR/watershed_poly_nogeo.tif  
 
 
-# pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9   -m $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws.tif   -msknodata 0  -nodata 0 -i    $DIR/watershed_poly_nogeo.tif  -o   $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.tif
-# rm -f $DIR/watershed_poly_nogeo.tif  
+pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9   -m $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws.tif   -msknodata 0  -nodata 0 -i    $DIR/watershed_poly_nogeo.tif  -o   $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.tif
+rm -f $DIR/watershed_poly_nogeo.tif  
 
-# # fatti correre solo  una  volta 
-# # pkfilter  -co COMPRESS=DEFLATE -co ZLEVEL=9  -dx 4 -dy 4 -d 4 -f mode   -i /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHHG/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  -o    $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  
-# # cp   /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHHG/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_250_v1_0_watershad 
+# fatti correre solo  una  volta 
+# pkfilter  -co COMPRESS=DEFLATE -co ZLEVEL=9  -dx 4 -dy 4 -d 4 -f mode   -i /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHHG/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  -o    $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  
+# cp   /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHHG/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/GSHL/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_250_v1_0_watershad 
 
-# pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  -msknodata 3767 -nodata 0 -i $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.tif  -o $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk.tif 
+pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -m $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif  -msknodata 3767 -nodata 0 -i $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.tif  -o $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk.tif 
 
-# # clumping operation to create unique poligons in areas where the mask split the plygons 
+# clumping operation to create unique poligons in areas where the mask split the plygons 
 
-# pkgetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -min 3766.5   -max 3767.5 -data 0 -nodata 1 -ot Byte  -i $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif -o $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws_tmp.tif 
-# gdal_translate  -a_nodata 0   -co COMPRESS=DEFLATE -co ZLEVEL=9  -projwin  -180 80 180 -60    $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws_tmp.tif  $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws.tif 
-# rm  $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws_tmp.tif  
+pkgetmask -co COMPRESS=DEFLATE -co ZLEVEL=9  -min 3766.5   -max 3767.5 -data 0 -nodata 1 -ot Byte  -i $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT.tif -o $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws_tmp.tif 
+gdal_translate  -a_nodata 0   -co COMPRESS=DEFLATE -co ZLEVEL=9  -projwin  -180 80 180 -60    $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws_tmp.tif  $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws.tif 
+rm  $DIR/GSHHS_land_mask250m_enlarge_clumpMSKclump_UNIT4ws_tmp.tif  
 
-# source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.3-grace2.sh /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/GSHL/grassdb/ cost1k_clump  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk.tif    r.in.gdal 
+source /gpfs/home/fas/sbsc/ga254/scripts/general/create_location_grass7.3-grace2.sh /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/GSHL/grassdb/ cost1k_clump  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk.tif    r.in.gdal 
 
-# r.clump -d  --overwrite    input=GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk      output=GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump
-# r.out.gdal --overwrite nodata=0 -c -f createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff input=GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump  output=$DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump.tif 
+r.clump -d  --overwrite    input=GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk      output=GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump
+r.out.gdal --overwrite nodata=0 -c -f createopt="COMPRESS=DEFLATE,ZLEVEL=9" type=UInt32 format=GTiff input=GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump  output=$DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump.tif 
 
-# rm -fr /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/GSHL/grassdb/cost1k_clump  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump.tif.aux.xml 
+rm -fr /gpfs/scratch60/fas/sbsc/ga254/grace0/dataproces/GSHL/grassdb/cost1k_clump  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump.tif.aux.xml 
 
 
 bash /gpfs/home/fas/sbsc/ga254/scripts/general/createct_random.sh  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.tif  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.txt 
@@ -76,6 +76,13 @@ awk '{ if(NR==1 ) {print  0, 0, 0, 0, 255 } else {print $0} }' $DIR/GHS_BUILT_LD
 gdaldem color-relief -co COMPRESS=DEFLATE -co ZLEVEL=9  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.tif $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump0.txt $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_ct.tif
 
 rm -f   $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump0.txt  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump.txt
+
+
+# set the core  mask to the watershed 
+pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9 -m $DIR/../GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_bin/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_ct.tif  -msknodata 0 -nodata 0 \
+          -i  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump.tif     -o  $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump_core.tif  
+
+
 exit 
 
 # remove the below part 

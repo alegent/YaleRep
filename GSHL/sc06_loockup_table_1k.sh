@@ -25,9 +25,6 @@ echo   90 -60  180 15 h >> $DIR/tile.txt
 
 # table peak bin 
 
-   $DIR/    $OUTDIR/
-
-exit 
 
 # table ws-clump bin-level-clump
 
@@ -47,7 +44,7 @@ cat $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clum
 
 rm -f $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump_?.txt
 
-# create a table with core clump and watershed clump 
+# create a table with core clump (coming from the bin-clump) and watershed clump and bin level. 
 
 cat $DIR/tile.txt   | xargs -n 5  -P 8 bash -c $' 
 

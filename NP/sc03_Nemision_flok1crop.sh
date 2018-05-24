@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -p scavenge
-#SBATCH -J sc02_Nemision_tmean.sh
+#SBATCH -p day
+#SBATCH -J sc03_Nemision_flok1crop.sh
 #SBATCH -n 1 -c 3 -N 1  
 #SBATCH -t 24:00:00  
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc03_Nemision_flok1crop.sh.%J.out
@@ -26,7 +26,7 @@ filename=$(basename $file .tif)
 
 gdal_translate --config GDAL_CACHEMAX 5000    -co COMPRESS=DEFLATE -co ZLEVEL=9 -a_srs EPSG:4326 -projwin $(getCorners4Gtranslate $OUTDIR/global_wsheds/global_grid_ID.tif ) $INDIR/$file  $RAM/crop_$file 
 pkgetmask  -ot Byte  -min -2 -max -0.5  -co COMPRESS=DEFLATE -co ZLEVEL=9    -data 0 -nodata 1  -i   $RAM/crop_$file   -o   $RAM/msk_$file  
-pkfillnodata  -m   $RAM/msk_$file  -d 50   -i $RAM/crop_$file -o $OUTDIR/FLOK1/${filename}_fill.tif 
+pkfillnodata  -m   $RAM/msk_$file  -d 100 -it 10   -i $RAM/crop_$file -o $OUTDIR/FLOK1/${filename}_fill.tif 
 
 rm -f $RAM/crop_$file $RAM/msk_$file   
 
