@@ -20,7 +20,7 @@ echo 2 3 4 5 6 7 8 9 | xargs -n 1 -P 8 bash -c $'
     bin2=$(bc <<< "$bin1-1")
     echo $bin1
         rm -f $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_${RES}_v1_0_WGS84_bin${bin1}+${bin2}.tif 
-        # sum the bin-level, if the result is 1 is a peak for that level if is 2 means no peak 
+        # sum the bin-levels, if the result is 1 is a peak, if 2 means no peak.  
         gdal_calc.py --calc="A+B" --co="COMPRESS=LZW" --overwrite --NoDataValue=-1 \
             -A $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_${RES}_v1_0_WGS84_bin${bin1}.tif \
             -B $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_${RES}_v1_0_WGS84_bin${bin2}.tif \
