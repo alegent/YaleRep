@@ -7,7 +7,9 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc03_dem_variables_float_noMult.sh
-#SBATCH --array=1-1150
+#SBATCH --array=1-8
+
+####SBATCH --array=1-1150%10
 
 # # for file in /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/n30w090_dem.tif  ; do   sbatch --export=file=$file   /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc03_dem_variables_float_noMult.sh  ; done 
 # # bash /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc03_dem_variables_float_noMult.sh /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/n30w090_dem.tif 
@@ -22,11 +24,12 @@ module load Apps/GRASS/7.3-beta
 # for tif in  $( cat /tmp/file_missing.txt )  ; do sbatch  --export=tif=$tif   /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc03_dem_variables_float_noMult.sh   ; done
 # file=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/$tif 
 
-file=$(ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/*_dem.tif  | head  -n  $SLURM_ARRAY_TASK_ID | tail  -1 )
+file=$(ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/tmp/*_dem.tif  | head  -n  $SLURM_ARRAY_TASK_ID | tail  -1 )
 # use this if one file is missing 
 
 MERIT=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT
-RAM=/dev/shm
+RAM=$MERIT/tmp
+# RAM=/dev/shm
 filename=$(basename $file .tif )
 echo filename  $filename 
 echo file $filename.tif  SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID 
@@ -76,10 +79,6 @@ rm -f $MERIT/convergence/tiles/${filename}.tif.aux.xml
 
 
 ##############################
-
-
-
-
 
 
 rm -rf $RAM/loc_$filename   $RAM/${filename}.tif.aux.xml   $RAM/${filename}.tif   $RAM/$filename.vrt   $RAM/${filename}_0.tif 

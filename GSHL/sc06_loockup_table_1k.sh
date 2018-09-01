@@ -23,40 +23,37 @@ echo  -90 -60    0 15 f >> $DIR/tile.txt
 echo    0 -60   90 15 g >> $DIR/tile.txt
 echo   90 -60  180 15 h >> $DIR/tile.txt
 
-# table peak bin 
-
-
-# table ws-clump bin-level-clump
-
-cat $DIR/tile.txt   | xargs -n 5  -P 8 bash -c $' 
-
-gdal_translate -of XYZ -projwin  $1 $4 $3 $2 $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_bin_clump_reclass/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump.tif  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump_$5.txt
-
-gdal_translate -of XYZ -projwin  $1 $4 $3 $2 $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump.tif  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_$5.txt
-
-paste <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_$5.txt) <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump_$5.txt) | uniq | sort | uniq >  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump_$5.txt 
-
-rm $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump_$5.txt
-
-' _
-
-cat $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump_?.txt | awk '{if ($2!=0) {if($1!=0) print }}'  | sort -g -k 1,1  -k 2,2 | uniq > $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump.txt
-
-rm -f $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump_?.txt
 
 # create a table with core clump (coming from the bin-clump) and watershed clump and bin level. 
 
 cat $DIR/tile.txt   | xargs -n 5  -P 8 bash -c $' 
 
+# washed masked solo per il peak
+gdal_translate -of XYZ -projwin  $1 $4 $3 $2 $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump_core.tif $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump_core_$5.txt
+
+# core clumped con il valore del bin-clump 
 gdal_translate -of XYZ -projwin  $1 $4 $3 $2 $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_bin/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_clump.tif    $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_clump_$5.txt
 
-paste <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_$5.txt) <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_clump_$5.txt) | uniq | sort | uniq >  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_core_clump_$5.txt 
+# core con il valore del bin 
+gdal_translate -of XYZ -projwin  $1 $4 $3 $2 $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_bin/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_bin_ct.tif  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_bin_ct_$5.txt
 
-rm $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_clump_$5.txt
+paste <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump_core_$5.txt )  \
+      <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_clump_$5.txt  )  \
+      <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_bin_ct_$5.txt )  \
+               | uniq | sort | uniq >  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_core_clump_bin_$5.txt 
+
+rm $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump_core_$5.txt  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_clump_$5.txt $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_bin_ct_$5.txt  
+
+rm $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump_core_$5.tif   $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_clump_$5.tif  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_core_bin_ct_$5.tif  
 
 ' _
 
-cat $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_core_clump_?.txt | awk '{if ($2!=0) {if($1!=0) print }}' | sort -g -k 1,1  -k 2,2 | uniq > $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_peak_clump.txt
+cat $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_core_clump_bin_?.txt  | sort -g  | uniq | awk '{ if ($1 != 0 ) { print } }'   > $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_core_clump_bin.txt
+rm $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_core_clump_bin_?.txt 
+
+
+exit
+
 
 rm -f $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_core_clump_?.txt
 
@@ -87,3 +84,23 @@ rm -f $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_$5.txt
 cat $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_binALL_clump_?.txt | awk '{ if ($1!=0) {  if ($2!=0)  print }  }'  | sort -g | uniq > $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin1-9_clump.txt
 
 rm -f $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_binALL_clump_?.txt 
+
+
+# table peak bin 
+# table ws-clump bin-level-clump
+
+# cat $DIR/tile.txt   | xargs -n 5  -P 8 bash -c $' 
+
+# gdal_translate -of XYZ -projwin  $1 $4 $3 $2 $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_bin_clump_reclass/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump.tif  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump_$5.txt
+
+# gdal_translate -of XYZ -projwin  $1 $4 $3 $2 $DIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_watershad/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_msk_clump.tif  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_$5.txt
+
+# paste <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_$5.txt) <(cut -d " " -f 3 $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump_$5.txt) | uniq | sort | uniq >  $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump_$5.txt 
+
+# rm $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_bin_clump_$5.txt
+
+# ' _
+
+# cat $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump_?.txt | awk '{if ($2!=0) {if($1!=0) print }}'  | sort -g -k 1,1  -k 2,2 | uniq > $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump.txt
+
+# rm -f $OUTDIR/GHS_BUILT_LDS2014_GLOBE_R2016A_54009_1k_v1_0_WGS84_ws_clump_bin_clump_?.txt

@@ -18,7 +18,7 @@
 
 module load Apps/GRASS/7.3-beta
 
-# for dir in dx dxx dxy dy dyy pcurv roughness slope tcurv tpi tri vrm ; do join -v  1    -1 1 -2 1 <(ls *.tif | sort ) <( ls        /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/$dir/tiles/  | sort ) ; done | sort | uniq  > /tmp/file_missing.txt 
+# for dir in dx dxx dxy dy dyy pcurv roughness slope tcurv tpi tri vrm ; do join -v 1 -1 1 -2 1 <(ls *.tif | sort ) <( ls  /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/$dir/tiles/  | sort ) ; done | sort | uniq  > /tmp/file_missing.txt 
 # for tif in  $( cat /tmp/file_missing.txt )  ; do sbatch  --export=tif=$tif   /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc03_dem_variables_float_noMult.sh   ; done
 # file=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/$tif 
 
@@ -43,6 +43,17 @@ gdalbuildvrt -overwrite -te $ulx $lry  $lrx $uly    $RAM/$filename.vrt  $MERIT/i
 gdal_translate   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -a_ullr $ulx $uly $lrx $lry  $RAM/$filename.vrt   $RAM/$filename.tif 
 pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $RAM/$filename.tif   -msknodata -9999 -nodata 0 -i $RAM/$filename.tif -o $RAM/${filename}_0.tif
 gdal_edit.py  -a_nodata -9999 $RAM/${filename}_0.tif
+
+# standard deviation 3 x 3 
+
+pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff  -dx 3 -dy 3 -f stdev  -i  $RAM/${filename}_0.tif -o $RAM/stdev_${filename}_0.tif
+gdal_translate   -srcwin 8 8 6000 6000  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/stdev_${filename}_0.tif $RAM/stdev_${filename}_crop.tif     
+pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $RAM/$filename.tif  -msknodata -9999 -nodata -9999 -i $RAM/stdev_${filename}_crop.tif  -o $MERIT/altitude/tiles/${filename}_stdev.tif  
+rm -f $RAM/stdev_${filename}_crop.tif $RAM/stdev_${filename}_0.tif 
+rm -f $RAM/${filename}_0.tif   # comment in case of full rerun
+
+exit 
+
 
 # echo slope with $file
 
