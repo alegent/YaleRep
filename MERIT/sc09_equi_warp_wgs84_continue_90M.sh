@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p scavenge
+#SBATCH -p day
 #SBATCH -n 1 -c 20  -N 1  
 #SBATCH -t 24:00:00
 #SBATCH --mail-type=ALL
@@ -26,14 +26,14 @@ export TOPO=$TOPO
 export RES=0.00083333333333333333333333333
 
 
-if [ $TOPO != "aspect"   ] &&  [ $TOPO != "altitude" ] ; then 
+if [ $TOPO != "aspect"   ] ; then 
 
 for CT in  AF AN AS EU NA OC SA ; do 
 export CT 
 gdalbuildvrt  -overwrite    $SCRATCH/$TOPO/tiles/all_${CT}_tif.vrt   $SCRATCH/$TOPO/tiles/${CT}_???_???.tif
 
 # warp each single equi7 tile to wgs84
-ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/*_dem.tif  | xargs -n 1 -P 12 bash -c $'
+ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/*_dem.tif  | xargs -n 1 -P 20 bash -c $'
 file=$1 
 filename=$(basename $file _dem.tif)
 geostring=$(getCorners4Gwarp $file)
@@ -44,81 +44,91 @@ pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $EQUI/$CT/GE
 rm -f $RAM/${TOPO}_${CT}_${filename}.tif
 
 MAX=$(pkstat -max -i $RAM/${TOPO}_${CT}_${filename}_msk.tif  | awk \'{ print $2 }\'  )
-if [ $MAX = "-9999"  ] ; then rm $RAM/${TOPO}_${CT}_${filename}_msk.tif ; else 
+if [ $MAX = "-9999"  ] ; then 
+rm -f $RAM/${TOPO}_${CT}_${filename}_msk.tif 
+else 
 mv $RAM/${TOPO}_${CT}_${filename}_msk.tif  $SCRATCH/$TOPO/tiles/${TOPO}_${CT}_${filename}.tif ; rm -f  $RAM/${TOPO}_${CT}_${filename}_msk.tif
 fi 
+
 ' _ 
+
 done 
 
 # cp to final dir  or get mean of the overlapping tiles 
-ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/*_dem.tif  | xargs -n 1 -P 20 bash -c $'
+ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/*_dem.tif  | xargs -n 1 -P 20  bash -c $'
 file=$1 
 filename=$(basename $file _dem.tif)
 gdalbuildvrt  -overwrite  -separate  $RAM/${TOPO}_CT_${filename}.vrt  $SCRATCH/$TOPO/tiles/${TOPO}_??_${filename}.tif
 BAND=$(pkinfo -nb -i  $RAM/${TOPO}_CT_${filename}.vrt     | awk \'{ print $2 }\' ) 
+
 if [ $BAND -eq 1 ] ; then 
 gdal_translate -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  $RAM/${TOPO}_CT_${filename}.vrt $MERIT/$TOPO/tiles/${filename}_E7.tif ;  rm -f $RAM/${TOPO}_CT_${filename}.vrt 
 else 
 echo start statporfile
-pkstatprofile -nodata -9999 -of GTiff  -f mean -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -i $RAM/${TOPO}_CT_${filename}.vrt -o $MERIT/$TOPO/tiles/${filename}_E7.tif ; rm -f $RAM/${TOPO}_CT_${filename}.vrt
+pkstatprofile -nodata -9999 -of GTiff  -f mean -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -i $RAM/${TOPO}_CT_${filename}.vrt -o $MERIT/$TOPO/tiles/${filename}_E7_tmp.tif
+gdal_translate -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  $MERIT/$TOPO/tiles/${filename}_E7_tmp.tif   $MERIT/$TOPO/tiles/${filename}_E7.tif
+rm -f $RAM/${TOPO}_CT_${filename}.vrt  $MERIT/$TOPO/tiles/${filename}_E7_tmp.tif
 fi 
+
 ' _ 
+
 fi 
-
-
-exit 
-
-########################
-
 
 
 
 if [ $TOPO = "aspect"   ] ; then 
 
 for FUN in sin cos Ew Nw ; do
+
 export FUN
 
-echo  AF AN AS EU NA OC SA | xargs -n 1 -P 6  bash -c $'
-CT=$1
-gdalwarp -overwrite  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -r bilinear -srcnodata -9999 -dstnodata -9999 -tr ${RES:0:22} ${RES:0:22} -te -180.0000000 -60.0000000 180.0000000 85.0000000 -s_srs  $EQUI/${CT}/PROJ/EQUI7_V13_${CT}_PROJ_ZONE.prj    -t_srs $EQUI/${CT}/GEOG/EQUI7_V13_${CT}_GEOG_ZONE.prj $SCRATCH/$TOPO/$MATH/${CT}_tiles_km${KM}_${FUN}.tif $RAM/${TOPO}_${MATH}_${CT}_tiles_km${KM}_${FUN}.tif 
+for CT in  AF AN AS EU NA OC SA ; do 
+export CT   
+gdalbuildvrt  -overwrite    $SCRATCH/$TOPO/tiles/all_${CT}_${FUN}_tif.vrt   $SCRATCH/$TOPO/tiles/${CT}_???_???_$FUN.tif
 
-pksetmask -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $EQUI/$CT/GEOG/EQUI7_V13_${CT}_GEOG_ZONE_KM$KM.tif  -msknodata 0 -nodata -9999 -i $RAM/${TOPO}_${MATH}_${CT}_tiles_km${KM}_${FUN}.tif -o  $SCRATCH/$TOPO/$MATH/${CT}_tiles_km${KM}_${FUN}_wgs84.tif 
+# warp each single equi7 tile to wgs84
+ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/*_dem.tif  | xargs -n 1 -P 20 bash -c $'
+file=$1 
+filename=$(basename $file _dem.tif)
+geostring=$(getCorners4Gwarp $file)
 
-rm $RAM/${TOPO}_${MATH}_${CT}_tiles_km${KM}_${FUN}.tif
+gdalwarp -overwrite --config GDAL_CACHEMAX 1500 -overwrite -wm 1500 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -r bilinear -srcnodata -9999 -dstnodata -9999 -tr ${RES:0:22} ${RES:0:22} -te $geostring  -s_srs  $EQUI/${CT}/PROJ/EQUI7_V13_${CT}_PROJ_ZONE.prj -t_srs $EQUI/${CT}/GEOG/EQUI7_V13_${CT}_GEOG_ZONE.prj $SCRATCH/$TOPO/tiles/all_${CT}_${FUN}_tif.vrt $RAM/${TOPO}_${CT}_${FUN}_${filename}.tif
 
-' _
+pksetmask  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $EQUI/$CT/GEOG/EQUI7_V13_${CT}_GEOG_ZONE_KM0.1.tif  -msknodata 0 -nodata -9999 -i $RAM/${TOPO}_${CT}_${FUN}_${filename}.tif  -o $RAM/${TOPO}_${CT}_${FUN}_${filename}_msk.tif
+rm -f $RAM/${TOPO}_${CT}_${FUN}_${filename}.tif
 
-if [ $FUN = "sin" ]       ; then TOPON=aspectsine   ; fi
-if [ $FUN = "cos" ]       ; then TOPON=aspectcosine ; fi
-if [ $FUN = "Ew"  ]       ; then TOPON=eastness     ; fi  
-if [ $FUN = "Nw"  ]       ; then TOPON=northness    ; fi 
-
-
-echo start pkstatprofile 
-gdalbuildvrt  -overwrite  -separate  $SCRATCH/$TOPO/$MATH/GLOBE_tiles_km${KM}_${FUN}_wgs84.vrt   $SCRATCH/$TOPO/$MATH/??_tiles_km${KM}_${FUN}_wgs84.tif
-pkstatprofile -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -nodata -9999 -f mean  -i  $SCRATCH/$TOPO/$MATH/GLOBE_tiles_km${KM}_${FUN}_wgs84.vrt -o  $MERIT/$TOPO/$MATH/${TOPON}_${KM}KM${MATH}_MERIT_E7.tif 
-rm   $SCRATCH/$TOPO/$MATH/GLOBE_tiles_km${KM}_${FUN}_wgs84.vrt  $SCRATCH/$TOPO/$MATH/??_tiles_km${KM}_${FUN}_wgs84.tif
-done 
+MAX=$(pkstat -max -i $RAM/${TOPO}_${CT}_${FUN}_${filename}_msk.tif  | awk \'{ print $2 }\'  )
+if [ $MAX = "-9999"  ] ; then 
+rm -f $RAM/${TOPO}_${CT}_${FUN}_${filename}_msk.tif 
+else 
+mv $RAM/${TOPO}_${CT}_${FUN}_${filename}_msk.tif  $SCRATCH/$TOPO/tiles/${TOPO}_${CT}_${FUN}_${filename}.tif ; rm -f  $RAM/${TOPO}_${CT}_${FUN}_${filename}_msk.tif
 fi 
+' _ 
+done 
 
+# cp to final dir  or get mean of the overlapping tiles 
+ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT/input_tif/*_dem.tif  | xargs -n 1 -P 20  bash -c $'
+file=$1
+filename=$(basename $file _dem.tif)
+gdalbuildvrt  -overwrite  -separate  $RAM/${TOPO}_CT_${FUN}_${filename}.vrt  $SCRATCH/$TOPO/tiles/${TOPO}_??_${FUN}_${filename}.tif
+BAND=$(pkinfo -nb -i  $RAM/${TOPO}_CT_${FUN}_${filename}.vrt     | awk \'{ print $2 }\' ) 
+if [ $BAND -eq 1 ] ; then
+gdal_translate -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  $RAM/${TOPO}_CT_${FUN}_${filename}.vrt $MERIT/$TOPO/tiles/${filename}_E7_${FUN}.tif ;  rm -f $RAM/${TOPO}_CT_${FUN}_${filename}.vrt 
+else
+echo start statporfile
+pkstatprofile -nodata -9999 -of GTiff  -f mean -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -i $RAM/${TOPO}_CT_${FUN}_${filename}.vrt -o $MERIT/$TOPO/tiles/${filename}_E7_${FUN}_tmp.tif
+gdal_translate  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  $MERIT/$TOPO/tiles/${filename}_E7_${FUN}_tmp.tif   $MERIT/$TOPO/tiles/${filename}_E7_${FUN}.tif
+rm -f $RAM/${TOPO}_CT_${FUN}_${filename}.vrt  $MERIT/$TOPO/tiles/${filename}_E7_${FUN}_tmp.tif
+fi
 
+' _ 
+
+done
+
+fi
 
 echo "############################################################"
 sstat  -j   $SLURM_JOB_ID.batch   --format=JobID,MaxVMSize
 echo "############################################################"
 sacct  -j   $SLURM_JOB_ID  --format=jobid,MaxVMSize,start,end,CPUTImeRaw,NodeList,ReqCPUS,ReqMem,Elapsed,Timelimit 
 echo "############################################################"
-
-
-# -te xmin ymin xmax ymax  # extent get from the zone shape file 
-# if [ $CT == "AF" ] ; then  geostring="-31  -44   80  39" ; fi 
-# if [ $CT == "AN" ] ; then  geostring="-180 -90  180 -35" ; fi 
-# if [ $CT == "AS" ] ; then  geostring="-180   0  180  84" ; fi 
-#if [ $CT == "EU" ] ; then  geostring="-43   30   54  84" ; fi 
-
-# if [ $CT == "EU" ] ; then  geostring="1   44   2  45.1" ; fi 
-#if [ $CT == "EU" ] ; then  geostring="-43   30   54  84" ; fi 
-
-# if [ $CT == "NA" ] ; then  geostring="-180   7  180  90" ; fi 
-# if [ $CT == "OC" ] ; then  geostring="-180 -61  180  21" ; fi 
-# if [ $CT == "SA" ] ; then  geostring="-125 -60  -14  30" ; fi 
