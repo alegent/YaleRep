@@ -1,23 +1,20 @@
 #!/bin/bash
 #SBATCH -p scavenge
-#SBATCH -n 1 -c 14  -N 1  
+#SBATCH -n 1 -c 20  -N 1  
 #SBATCH -t 6:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --mem-per-cpu=2000
-#SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc06_dem_variables_float_noMult_resKM_equi7.sh.%J.out
-#SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc06_dem_variables_float_noMult_resKM_equi7.sh.%J.err
+#SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh.%J.out
+#SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh.%J.err
 
-# for TOPO in altitude  aspect stdev dx dxx dxy dy dyy pcurv roughness slope  tcurv  tpi  tri vrm tci spi convergence intensity exposition range variance elongation azimuth extend width  ; do  for MATH in min max mean median stdev ; do for  KM in 1 5 10 50 100 ; do  sbatch  -o  /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc06_variables_merge_resKM${KM}TOPO${TOPO}MATH${MATH}.sh.%J.out  -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc06_variables_merge_resKM${KM}TOPO${TOPO}MATH${MATH}.sh.%J.err -J sc06_variables_merge_resKM${KM}TOPO${TOPO}MATH${MATH}.sh  --export=TOPO=$TOPO,MATH=$MATH,KM=$KM /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh ; done ; done ; done
+# for TOPO in altitude  aspect stdev dx dxx dxy dy dyy pcurv roughness slope  tcurv  tpi  tri vrm tci spi convergence intensity exposition range variance elongation azimuth extend width  ; do  for MATH in min max mean median stdev ; do for  KM in 1 5 10  ; do  sbatch  --export=TOPO=$TOPO,MATH=$MATH,KM=$KM /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh ; done ; done ; done
 
 # create working dir 
-# for VAR in stdev  dx dxx dxy dy dyy pcurv roughness slope tcurv  tpi  tri vrm spi tci convergence  intensity exposition range variance elongation azimuth extend width   ; do for MATH in min max mean median  stdev ; do for  KM in 1 5 10 50 100  ; do mkdir -p  $VAR/$MATH/tiles_km$KM ; done ; done ; done
-
+# for VAR in altitude stdev  dx dxx dxy dy dyy pcurv roughness slope tcurv  tpi  tri vrm spi tci convergence  intensity exposition range variance elongation azimuth extend width   ; do for MATH in min max mean median  stdev ; do for  KM in 1 5 10 50 100  ; do mkdir -p  $VAR/$MATH/tiles_km$KM ; done ; done ; done
 
 # for testing
 # for TOPO in altitude ; do for MATH in mean ; do for KM in 1; do sbatch --export=TOPO=$TOPO,MATH=$MATH,KM=$KM /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh; done ; done ; done   
-
-
 
 echo "############################################################"
 sstat  -j   $SLURM_JOB_ID.batch   --format=JobID,MaxVMSize
@@ -38,7 +35,7 @@ if [ $TOPO = "altitude"   ] ; then
 
 # math ( median ,  mean ... )  on the pixel value
 
-find   $MERIT/equi7/dem -name "*.tif" | xargs -n 1 -P 14  bash -c $'
+find   $MERIT/equi7/dem -name "*.tif" | xargs -n 1 -P 20  bash -c $'
 file=$1
 filename=$(basename $file .tif )
 pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff -dx $res -dy $res -f $MATH -d $res -i $file -o $SCRATCH/$TOPO/$MATH/tiles_km$KM/$filename.tif
@@ -54,11 +51,9 @@ rm -f  $SCRATCH/$TOPO/$MATH/tiles_km$KM/${CT}_???_???.tif  $SCRATCH/$TOPO/$MATH/
 ' _
 fi 
 
-
-
 if [ $TOPO != "aspect"   ] &&  [ $TOPO != "altitude" ] ; then 
 
-ls -rt  $SCRATCH/$TOPO/tiles/??_???_???.tif     | xargs -n 1 -P 14 bash -c $' 
+ls -rt  $SCRATCH/$TOPO/tiles/??_???_???.tif     | xargs -n 1 -P 20  bash -c $' 
 file=$1
 filename=$(basename $file .tif )  
 pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff  -9999 -dx $res -dy $res -f $MATH -d $res -i $file -o $SCRATCH/$TOPO/$MATH/tiles_km$KM/$filename.tif
@@ -75,20 +70,19 @@ rm -f $SCRATCH/$TOPO/$MATH/tiles_km$KM/${CT}_???_???.tif            $SCRATCH/$TO
 
 fi 
 
-
-
 if [ $TOPO = "aspect"   ] ; then 
 
 for FUN in sin cos Ew Nw ; do
 export FUN
 
-ls -rt  $SCRATCH/$TOPO/tiles/??_???_???_$FUN.tif  | xargs -n 1 -P 14  bash -c $' 
+ls -rt  $SCRATCH/$TOPO/tiles/??_???_???_$FUN.tif  | xargs -n 1 -P 20  bash -c $' 
 file=$1
 filename=$(basename $file .tif )  
-pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MATH -d $res -i $file  -o $SCRATCH/$TOPO/$MATH/tiles_km$KM/$filename.tif
+pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MATH -d $res -i $file  -o $SCRATCH/$TOPO/$MATH/tiles
+_km$KM/$filename.tif
 ' _ 
 
-echo starting the merging  $SCRATCH/$TOPO/$MATH/${TOPON}_${KM}KM${MATH}_MERIT.tif  
+
 
 echo  AF AN AS EU NA OC SA | xargs -n 1 -P 14  bash -c $'
 CT=$1
@@ -97,12 +91,11 @@ if [ $FUN = "sin" ]       ; then TOPON=aspectsine   ; fi
 if [ $FUN = "cos" ]       ; then TOPON=aspectcosine ; fi 
 if [ $FUN = "Ew"  ]       ; then TOPON=eastness     ; fi 
 if [ $FUN = "Nw"  ]       ; then TOPON=northness    ; fi 
-
+echo starting the merging  $SCRATCH/$TOPO/$MATH/${TOPON}_${KM}KM${MATH}_MERIT.tif  
 gdalbuildvrt  -overwrite  $SCRATCH/$TOPO/$MATH/${CT}_tiles_km${KM}_$FUN.vrt  $SCRATCH/$TOPO/$MATH/tiles_km$KM/${CT}_???_???_$FUN.tif
 gdal_translate -a_nodata -9999  -co COMPRESS=DEFLATE -co ZLEVEL=9   $SCRATCH/$TOPO/$MATH/${CT}_tiles_km${KM}_$FUN.vrt     $SCRATCH/$TOPO/$MATH/${CT}_tiles_km${KM}_$FUN.tif  
 rm -f  $SCRATCH/$TOPO/$MATH/tiles_km$KM/${CT}_???_???_$FUN.tif  $SCRATCH/$TOPO/$MATH/${CT}_tiles_km${KM}_$FUN.vrt     
 ' _ 
-
 done 
 
 fi 

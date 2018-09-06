@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p day 
 #SBATCH -n 1 -c 1 -N 1  
-#SBATCH -t 8:00:00
+#SBATCH -t 10:00:00
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc05_dem_variables_float_noMult_equi7.sh.%A_%a.out
 #SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc05_dem_variables_float_noMult_equi7.sh.%A_%a.err
 #SBATCH --mail-type=ALL
@@ -42,7 +42,7 @@ gdal_edit.py  -a_nodata -9999 $RAM/${filename}_0.tif
 
 pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff  -dx 3 -dy 3 -f stdev  -i  $RAM/${filename}_0.tif -o $RAM/stdev_${filename}_0.tif
 gdal_translate   -srcwin 8 8 6000 6000  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/stdev_${filename}_0.tif $RAM/stdev_${filename}_crop.tif     
-pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $RAM/$filename.tif  -msknodata -9999 -nodata -9999 -i $RAM/stdev_${filename}_crop.tif  -o $SCRATCH/altitude/tiles/${filename}_stdev.tif  
+pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $RAM/$filename.tif  -msknodata -9999 -nodata -9999 -i $RAM/stdev_${filename}_crop.tif  -o $SCRATCH/stdev/tiles/${filename}.tif  
 rm -f $RAM/stdev_${filename}_crop.tif $RAM/stdev_${filename}_0.tif 
 
 # echo slope with $file
@@ -107,7 +107,6 @@ rm  $SCRATCH/tci/tiles/${filename}_tmp.tif
 echo  generate spi with file $filename.tif
 gdal_calc.py --overwrite --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND  -B $SCRATCH/slope/tiles/${filename}.tif -A $MERIT/equi7/upa/${filename:0:2}/${filename}.tif --outfile=$SCRATCH/spi/tiles/${filename}_tmp.tif   --calc="(    A.astype(float) *  (tan(  B.astype(float) * 3.141592 / 180) + 0.01 )  )"
 pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m   $SCRATCH/slope/tiles/${filename}.tif   -msknodata -9999 -nodata -9999 -i $SCRATCH/spi/tiles/${filename}_tmp.tif  -o $SCRATCH/spi/tiles/${filename}.tif
-
 rm  $SCRATCH/spi/tiles/${filename}_tmp.tif
 
 # ###############  VRM  ########################################
@@ -157,7 +156,7 @@ rm -f $SCRATCH/vrm/tiles/${filename}.tif.aux.xml
 
 # r.geomorphon forms 
 r.colors -r map=forms_${filename} 
-r.out.gdal -c -f -m createopt="COMPRESS=DEFLATE,ZLEVEL=9,PROFILE=GeoTIFF,INTERLEAVE=BAND" format=GTiff type=Byte nodata=0 input=forms_$filename  output=$RAM/${filename}.tif 
+r.out.gdal -c -f -m createopt="COMPRESS=DEFLATE,ZLEVEL=9,PROFILE=GeoTIFF,INTERLEAVE=BAND" format=GTiff type=Byte nodata=0 input=forms_$filename  output=$RAM/${filename}.tif  --o 
 
 pkcreatect  -min 0 -max 10   > $RAM/color${filename}.txt
 pkcreatect   -co COMPRESS=DEFLATE -co ZLEVEL=9   -ct  $RAM/color${filename}.txt   -i $RAM/${filename}.tif  -o $SCRATCH/forms/tiles/${filename}.tif  
@@ -168,7 +167,7 @@ rm $RAM/${filename}.tif   $RAM/color${filename}.txt
 
 for geo in intensity exposition range variance elongation azimuth extend width ; do               
 r.colors -r map=${geo}_${filename}
-r.out.gdal -c -f -m createopt="COMPRESS=DEFLATE,ZLEVEL=9,PROFILE=GeoTIFF,INTERLEAVE=BAND" format=GTiff type=Float32 nodata=-9999  input=${geo}_$filename  output=$SCRATCH/${geo}/tiles/${filename}.tif
+r.out.gdal -c -f -m createopt="COMPRESS=DEFLATE,ZLEVEL=9,PROFILE=GeoTIFF,INTERLEAVE=BAND" format=GTiff type=Float32 nodata=-9999  input=${geo}_$filename  output=$SCRATCH/${geo}/tiles/${filename}.tif  --o 
 gdal_edit.py  -a_nodata -9999  $SCRATCH/${geo}/tiles/${filename}.tif
 rm -f $SCRATCH/${geo}/tiles/${filename}.tif.aux.xml
 done 
@@ -176,7 +175,7 @@ done
 # r.slope.aspect 
 for var in  dx dxx dy dyy dxy tcurv pcurv ; do  
 r.colors -r map=${var}_${filename} 
-r.out.gdal -c -f  -m     createopt="COMPRESS=DEFLATE,ZLEVEL=9,PROFILE=GeoTIFF,INTERLEAVE=BAND" format=GTiff  type=Float32   nodata=-9999  input=${var}_$filename       output=$SCRATCH/${var}/tiles/${filename}.tif   --o ; 
+r.out.gdal -c -f  -m     createopt="COMPRESS=DEFLATE,ZLEVEL=9,PROFILE=GeoTIFF,INTERLEAVE=BAND" format=GTiff  type=Float32   nodata=-9999  input=${var}_$filename       output=$SCRATCH/${var}/tiles/${filename}.tif   --o
 gdal_edit.py  -a_nodata -9999 $SCRATCH/${var}/tiles/${filename}.tif 
 rm -f $SCRATCH/${var}/tiles/${filename}.tif.aux.xml
 done 
