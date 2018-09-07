@@ -43,7 +43,7 @@ gdal_edit.py  -a_nodata 0  $RAM/${filename}_0.tif
 # ./whitebox_tools   --toolhelp="MaxElevationDeviation" 
 
 singularity exec UbuntuWB.simg  bash <<EOF
-/WBT/whitebox_tools   -r=MultiscaleRoughness    -v --wd="$RAM"  --dem=${filename}_0.tif --out_mag=${filename}_roug_mag.tif  --out_scale=${filename}_roug_sca.tif --min_scale=1 --max_scale=10 --step=3
+/WBT/whitebox_tools   -r=MultiscaleRoughness    -v --wd="$RAM"  --dem=${filename}_0.tif --out_mag=${filename}_roug_mag.tif  --out_scale=${filename}_roug_sca.tif --min_scale=1 --max_scale=1000 --step=3
 EOF
 
 for PAR in mag sca ; do 
@@ -54,7 +54,7 @@ rm -f  $RAM/${filename}_roug_${PAR}_msk.tif
 done 
 
 singularity exec UbuntuWB.simg  bash <<EOF
-/WBT/whitebox_tools -r=MaxElevationDeviation  -v --wd="$RAM"  --dem=${filename}_0.tif --out_mag=${filename}_devi_mag.tif   --out_scale=${filename}_devi_sca.tif  --min_scale=1 --max_scale=10 --step=3
+/WBT/whitebox_tools -r=MaxElevationDeviation  -v --wd="$RAM"  --dem=${filename}_0.tif --out_mag=${filename}_devi_mag.tif   --out_scale=${filename}_devi_sca.tif  --min_scale=1 --max_scale=1000 --step=3
 EOF
 
 for PAR in mag sca ; do 
