@@ -26,16 +26,19 @@ echo   90 -56  180 15 h >> $OUTDIR/tile.txt
 
 cat $OUTDIR/tile.txt | xargs -n 5  -P 8 bash -c $'
 
-gdalbuildvrt -overwrite -srcnodata  -9999   -vrtnodata -9999   -te  $1 $2 $3 $4  $RAM/all_tif_$5.vrt   $INDIR/all_tif.vrt 
-pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Int32 -of GTiff  -dx 30 -dy 30 -f mean  -d 30 -i $RAM/all_tif_$5.vrt -o $RAM/all_tif_$5.tif 
+gdalbuildvrt -separate  -overwrite -srcnodata  -9999   -vrtnodata -9999   -te  $1 $2 $3 $4  $RAM/all_tif_$5.vrt   $INDIR/all_tif.vrt 
+
+pkcomposite -co COMPRESS=DEFLATE -co ZLEVEL=9   -srcnodata -9999 -dstnodata -9999 -cr maxallbands  -i  $RAM/all_tif_$5.vrt -o $OUTDIR/GRWL/all_tif_$5.tif 
+pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Int32 -of GTiff  -dx 30 -dy 30 -f mean  -d 30 -i $OUTDIR/GRWL/all_tif_$5.tif   -o $OUTDIR/GRWL/all_tif1km_$5.tif 
 
 ' _ 
 
 
-gdalbuildvrt -overwrite  -srcnodata  -9999   -vrtnodata -9999   $RAM/all_tif.vrt         $RAM/all_tif_?.tif 
-gdal_rasterize -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9  $RAM/all_tif.vrt  $OUTDIR/GRWL/grwl_mean.tif 
+gdalbuildvrt -overwrite  -srcnodata  -9999   -vrtnodata -9999   $RAM/all_tif.vrt       $OUTDIR/GRWL/all_tif1km_?.tif 
+gdal_translate  -a_nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9  $RAM/all_tif.vrt  $OUTDIR/GRWL/grwl_mean.tif 
 
 rm  $OUTDIR/tile.txt   $RAM/all_tif.vrt   $RAM/all_tif_?.vrt   
+
 
 
 
