@@ -37,13 +37,15 @@ colnames(table)[2] = "W"  # GRWL
 y = log( table$W[table$Q > 1 ])
 x = log( table$Q[table$Q > 1 ])
 
+mod <- nls(y ~ exp(a + b * x), start = list(a = 0, b = 0))
+
 lm = lm(  x ~ y) 
 df <- data.frame(x = x, y = y,
   d = densCols(x, y, colramp = colorRampPalette(rev(rainbow(10, end = 4/6)))))
 p <- ggplot( data = df   , aes(x = x , y = y)) + 
     geom_point(aes(x, y, col = d), size = 0.4) +
     scale_color_identity() +
-    geom_smooth(method = "lm", se = FALSE , color = "black"  )  +
+    geom_smooth(method = "nls", se = FALSE , color = "black" , formula=y ~ exp(a + b * x^2)  )  +
     labs(x = "log(Q-FLO1K) (m3/s)")  + 
     labs(y = "log(W-GRWL) (m)")  + 
     theme_bw()
