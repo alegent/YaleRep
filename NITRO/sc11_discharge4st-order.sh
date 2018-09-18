@@ -20,9 +20,21 @@ export FLO=/gpfs/loomis/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/da
 # w_georg  <- (0.47  * x ) + log(8.5)          =
 
 
-gdal_calc.py --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue=-9999 --type='Float32' -A $FLO/FLO1K.ts.1960.2015.qav_mean_fill_msk.tif --calc="((0.510 * A.astype(float)) + 1.86)"  --outfile=$WIDTH/width_EQpete1.tif  --overwrite 
-gdal_calc.py --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue=-9999 --type='Float32' -A $FLO/FLO1K.ts.1960.2015.qav_mean_fill_msk.tif --calc="((0.423 * A.astype(float)) + 2.56)"  --outfile=$WIDTH/width_EQpete2.tif  --overwrite 
-gdal_calc.py --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue=-9999 --type='Float32' -A $FLO/FLO1K.ts.1960.2015.qav_mean_fill_msk.tif --calc="((0.470 * A.astype(float)) + 2.14)"  --outfile=$WIDTH/width_EQgeor1.tif  --overwrite
+# exp(log (x)^0. + 2.)
+# due that 
+# exp ( 2.4 * log(4) + 2.3 )  =   (4^2.4) *  exp(2.3 ) 
+
+# w_pete1  <- (0.510 * log (q)  ) + 1.86    to obtain w =  exp ((0.510 * log (q)  ) + 1.86)
+
+
+gdal_calc.py --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue=-9999 --type='Float32' -A $FLO/FLO1K.ts.1960.2015.qav_mean_fill_msk.tif \
+--calc="(exp( log((A.astype(float) + 0.00001 ) * 0.510 ) + 1.86))"   --outfile=$WIDTH/width_EQpete1.tif  --overwrite
+
+gdal_calc.py --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue=-9999 --type='Float32' -A $FLO/FLO1K.ts.1960.2015.qav_mean_fill_msk.tif \
+--calc="(exp( log((A.astype(float) + 0.00001 ) * 0.423 ) + 2.56))"  --outfile=$WIDTH/width_EQpete2.tif  --overwrite
+
+gdal_calc.py --co=COMPRESS=LZW --co=ZLEVEL=9 --co=INTERLEAVE=BAND --NoDataValue=-9999 --type='Float32' -A $FLO/FLO1K.ts.1960.2015.qav_mean_fill_msk.tif \
+--calc="(exp( log((A.astype(float) + 0.00001 ) * 0.470 ) + 2.14))"  --outfile=$WIDTH/width_EQgeor1.tif  --overwrite
 
 for EQ in pete1 pete2 geor1 ; do 
 export EQ
