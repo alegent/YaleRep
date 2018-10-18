@@ -8,7 +8,7 @@
 #SBATCH -o /gpfs/scratch60/fas/sbsc/ga254/grace0/stdout/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh.%J.out
 #SBATCH -e /gpfs/scratch60/fas/sbsc/ga254/grace0/stderr/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh.%J.err
 
-# for TOPO in altitude  aspect stdev dx dxx dxy dy dyy pcurv roughness slope  tcurv  tpi  tri vrm tci spi convergence intensity exposition range variance elongation azimuth extend width  ; do  for MATH in min max mean median stdev ; do for  KM in 1 5 10  ; do  sbatch  --export=TOPO=$TOPO,MATH=$MATH,KM=$KM /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh ; done ; done ; done
+# for TOPO in deviation multirough  altitude  aspect stdev dx dxx dxy dy dyy pcurv roughness slope  tcurv  tpi  tri vrm tci spi convergence intensity exposition range variance elongation azimuth extend width  ; do  for MATH in min max mean median stdev ; do for  KM in 1 5 10  ; do  sbatch  --export=TOPO=$TOPO,MATH=$MATH,KM=$KM /gpfs/home/fas/sbsc/ga254/scripts/MERIT/sc06_dem_variables_float_noMult_resKM_continue_equi7.sh ; done ; done ; done
 
 # create working dir 
 # for VAR in altitude stdev  dx dxx dxy dy dyy pcurv roughness slope tcurv  tpi  tri vrm spi tci convergence  intensity exposition range variance elongation azimuth extend width   ; do for MATH in min max mean median  stdev ; do for  KM in 1 5 10 50 100  ; do mkdir -p  $VAR/$MATH/tiles_km$KM ; done ; done ; done
@@ -78,8 +78,7 @@ export FUN
 ls -rt  $SCRATCH/$TOPO/tiles/??_???_???_$FUN.tif  | xargs -n 1 -P 20  bash -c $' 
 file=$1
 filename=$(basename $file .tif )  
-pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MATH -d $res -i $file  -o $SCRATCH/$TOPO/$MATH/tiles
-_km$KM/$filename.tif
+pkfilter -nodata -9999 -co COMPRESS=DEFLATE -co ZLEVEL=9 -ot Float32 -of GTiff -nodata -9999 -dx $res -dy $res -f $MATH -d $res -i $file  -o $SCRATCH/$TOPO/$MATH/tiles_km$KM/$filename.tif
 ' _ 
 
 

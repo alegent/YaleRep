@@ -1,4 +1,5 @@
 
+# source https://cgiarcsi.community/data/global-aridity-and-pet-database/ 
 
 
 cd /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/PET_ARID/ARIDITY/

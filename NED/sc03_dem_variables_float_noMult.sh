@@ -7,11 +7,11 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=email
 #SBATCH --job-name=sc03_dem_variables_float_noMult.sh
-#SBATCH --array=1-193
+#SBATCH --array=1-98
 
 # # bash /gpfs/home/fas/sbsc/ga254/scripts/NED/sc03_dem_variables_float_noMult.sh /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/NED/input_tif/n10w095.tif 
 
-# 197 number of files 
+# 98  number of files 
 # sbatch   /gpfs/home/fas/sbsc/ga254/scripts/NED/sc03_dem_variables_float_noMult.sh  
 
 module load Apps/GRASS/7.3-beta
@@ -19,10 +19,11 @@ module load Apps/GRASS/7.3-beta
 ## create directory 
 ## for VAR in forms aspect dx dxx dxy dy dyy pcurv roughness slope tcurv  tpi  tri vrm spi tci convergence  intensity exposition range variance elongation azimuth extend width   ; do for MATH in min max mean median  stdev tiles ; do for  KM in 1 5 10 50 100  ; do mkdir -p  $VAR/$MATH/tiles_km$KM ; done ; done ; done
 
-file=$(ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/NED/input_tif/*.tif  | head  -n  $SLURM_ARRAY_TASK_ID | tail  -1 )
+file=$(ls /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/NED/input_tif/NA*.tif  | head  -n  $SLURM_ARRAY_TASK_ID | tail  -1 )
 # file=$1
 # use this if one file is missing 
 
+MERIT=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/MERIT 
 NED=/project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/NED
 RAM=/dev/shm
 filename=$(basename $file .tif )
@@ -31,13 +32,13 @@ echo file $filename.tif  SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID
 
 ### take the coridinates from the orginal files and increment on 8  pixels
 
-ulx=$(gdalinfo $file | grep "Upper Left"  | awk '{ gsub ("[(),]","") ; printf ("%.16f" ,  $3  - (8 * 0.000833333333333 )) }')
-uly=$(gdalinfo $file | grep "Upper Left"  | awk '{ gsub ("[(),]","") ; printf ("%.16f" ,  $4  + (8 * 0.000833333333333 )) }')
-lrx=$(gdalinfo $file | grep "Lower Right" | awk '{ gsub ("[(),]","") ; printf ("%.16f" ,  $3  + (8 * 0.000833333333333 )) }')
-lry=$(gdalinfo $file | grep "Lower Right" | awk '{ gsub ("[(),]","") ; printf ("%.16f" ,  $4  - (8 * 0.000833333333333 )) }')
+ulx=$(gdalinfo $file | grep "Upper Left"  | awk '{ gsub ("[(),]"," ") ; printf ("%i" ,  $3  - (8 * 100 )) }')
+uly=$(gdalinfo $file | grep "Upper Left"  | awk '{ gsub ("[(),]"," ") ; printf ("%i" ,  $4  + (8 * 100 )) }')
+lrx=$(gdalinfo $file | grep "Lower Right" | awk '{ gsub ("[(),]"," ") ; printf ("%i" ,  $3  + (8 * 100 )) }')
+lry=$(gdalinfo $file | grep "Lower Right" | awk '{ gsub ("[(),]"," ") ; printf ("%i" ,  $4  - (8 * 100 )) }')
 
 echo $ulx $uly $lrx $lry  # vrt is needed to clip before to create the tif 
-gdalbuildvrt -overwrite -te $ulx $lry  $lrx $uly    $RAM/$filename.vrt  $NED/input_tif/all_tif.vrt   
+gdalbuildvrt -overwrite -te $ulx $lry  $lrx $uly    $RAM/$filename.vrt  $NED/input_tif/all_NA_tif.vrt   
 gdal_translate   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -a_ullr $ulx $uly $lrx $lry  $RAM/$filename.vrt   $RAM/$filename.tif 
 pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $RAM/$filename.tif   -msknodata -9999 -nodata 0 -i $RAM/$filename.tif -o $RAM/${filename}_0.tif
 gdal_edit.py  -a_nodata -9999 $RAM/${filename}_0.tif
@@ -45,14 +46,15 @@ gdal_edit.py  -a_nodata -9999 $RAM/${filename}_0.tif
 # echo slope with $file
 
 # -s to consider xy in degree and z in meters
-gdaldem slope    -s 111120 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/${filename}_0.tif   $RAM/slope_${filename}_0.tif 
+gdaldem slope   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/${filename}_0.tif   $RAM/slope_${filename}_0.tif 
 gdal_translate   -srcwin 8 8 6000 6000  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/slope_${filename}_0.tif $RAM/slope_${filename}_crop.tif     
 pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $RAM/$filename.tif  -msknodata -9999 -nodata -9999 -i $RAM/slope_${filename}_crop.tif  -o $NED/slope/tiles/${filename}.tif  
 rm -f $RAM/slope_${filename}_crop.tif $RAM/slope_${filename}_0.tif
 
 echo  aspect  with file $file 
 
-gdaldem aspect   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND $RAM/${filename}_0.tif   $RAM/aspect_${filename}_0.tif 
+# there are compleatly flat area that become -9999 so insert the zero_for_flat
+gdaldem aspect -zero_for_flat   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND $RAM/${filename}_0.tif   $RAM/aspect_${filename}_0.tif 
 gdal_translate   -srcwin 8 8 6000 6000  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND   $RAM/aspect_${filename}_0.tif $RAM/aspect_${filename}_crop.tif
 pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m $RAM/$filename.tif  -msknodata -9999 -nodata -9999 -i $RAM/aspect_${filename}_crop.tif  -o $NED/aspect/tiles/${filename}.tif
 rm -f $RAM/aspect_${filename}_crop.tif $RAM/aspect_${filename}_0.tif
@@ -97,12 +99,12 @@ rm -f $RAM/roughness_${filename}_crop.tif $RAM/roughness_${filename}_0.tif
 
 ##  echo  generate tci with file $filename.tifx
 
-gdal_calc.py --overwrite --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND  -B $NED/slope/tiles/${filename}.tif -A /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/upa/${filename}_upa.tif  --outfile=$NED/tci/tiles/${filename}_tmp.tif    --calc="( log  (      A.astype(float) / (tan(  B.astype(float) * 3.141592 / 180) + 0.01 ) )  )"
+gdal_calc.py --overwrite --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND  -B $NED/slope/tiles/${filename}.tif -A  $MERIT/equi7/upa/NA/${filename}.tif    --outfile=$NED/tci/tiles/${filename}_tmp.tif    --calc="( log  (      A.astype(float) / (tan(  B.astype(float) * 3.141592 / 180) + 0.01 ) )  )"
  pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m   $NED/slope/tiles/${filename}.tif   -msknodata -9999 -nodata -9999 -i $NED/tci/tiles/${filename}_tmp.tif  -o $NED/tci/tiles/${filename}.tif
  rm  $NED/tci/tiles/${filename}_tmp.tif
 
 echo  generate spi with file $filename.tif
- gdal_calc.py --overwrite --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND  -B $NED/slope/tiles/${filename}.tif -A /project/fas/sbsc/ga254/grace0.grace.hpc.yale.internal/dataproces/RIVER_NETWORK_MERIT/upa/${filename}_upa.tif  --outfile=$NED/spi/tiles/${filename}_tmp.tif   --calc="(    A.astype(float) *  (tan(  B.astype(float) * 3.141592 / 180) + 0.01 )  )"
+ gdal_calc.py --overwrite --NoDataValue=-9999 --co=COMPRESS=DEFLATE --co=ZLEVEL=9 --co=INTERLEAVE=BAND  -B $NED/slope/tiles/${filename}.tif -A $MERIT/equi7/upa/NA/${filename}.tif --outfile=$NED/spi/tiles/${filename}_tmp.tif --calc="(    A.astype(float) *  (tan(  B.astype(float) * 3.141592 / 180) + 0.01 ) )"
  pksetmask   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -m   $NED/slope/tiles/${filename}.tif   -msknodata -9999 -nodata -9999 -i $NED/spi/tiles/${filename}_tmp.tif  -o $NED/spi/tiles/${filename}.tif
 
  rm  $NED/spi/tiles/${filename}_tmp.tif

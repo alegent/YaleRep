@@ -62,4 +62,6 @@ rm /tmp/list_zip_*.txt  $ZIP/*.url  $ZIP/*.pdf  $ZIP/ned_1arcsec_g.*
 
 gdalbuildvrt   -allow_projection_difference  -overwrite  $TIF/all_tif.vrt $TIF/*.tif 
 
-sbatch /gpfs/home/fas/sbsc/ga254/scripts/NED/sc02_gdalwarp.sh 
+exit 
+
+# sbatch /gpfs/home/fas/sbsc/ga254/scripts/NED/sc02_gdalwarp.sh 

@@ -32,13 +32,15 @@ paste <(ogrinfo -al -GEOM=NO  $EQUI7/grids/${CT}/PROJ/EQUI7_V13_${CT}_PROJ_TILE_
 cat $equi7/${CT}/tile_equi7_${CT}_warp.txt  | xargs -n 5 -P 18  bash -c $' 
 
 gdalwarp -te $1 $2 $3 $4 -co COMPRESS=DEFLATE -co ZLEVEL=9 -t_srs "$EQUI7/grids/${CT}/PROJ/EQUI7_V13_${CT}_PROJ_ZONE.prj" -tr 100 100 -r bilinear $INDIR/all_tif.vrt  /dev/shm/${CT}_${5}_upa.tif -overwrite
+gdal_translate   -srcwin 8 8 6000 6000  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND  /dev/shm/${CT}_${5}_upa.tif  /dev/shm/${CT}_${5}_upa_crop.tif
+rm rm -f /dev/shm/${CT}_${5}_upa.tif
 
-MAX=$(pkstat -max -i  /dev/shm/${CT}_${5}_upa.tif | awk \'{ print $2 }\')
+MAX=$(pkstat -max -i  /dev/shm/${CT}_${5}_upa_crop.tif | awk \'{ print $2 }\')
 if [ $MAX ==  "-9999" ] ; then 
-rm -f /dev/shm/${CT}_${5}_upa.tif
+rm -f /dev/shm/${CT}_${5}_upa_crop.tif
 else
-gdal_translate   -srcwin 8 8 6000 6000  -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND /dev/shm/${CT}_${5}_upa.tif  $equi7/${CT}/${CT}_${5}.tif
-rm -f /dev/shm/${CT}_${5}_upa.tif
+cp /dev/shm/${CT}_${5}_upa_crop.tif  $equi7/${CT}/${CT}_${5}.tif
+rm -f /dev/shm/${CT}_${5}_upa_crop.tif
 fi  
 
 ' _

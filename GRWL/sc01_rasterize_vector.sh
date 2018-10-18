@@ -22,7 +22,7 @@ file=$(ls $INDIR/*.shp  | head -n $SLURM_ARRAY_TASK_ID | tail -1 )
 filename=$(basename $file .shp )
 
 
-
-gdal_rasterize -te $( getCornersOgr4Gwarp $file | awk '{ print int($1-1), int($2-1), int($3+1), int($4+1) }' ) -init -9999 -a_nodata -9999  -tr 0.00027777777777 0.00027777777777 -ot Int32 -a "width_m" -l $filename  $file  $OUTDIR/tmp_$filename.tif 
-gdal_translate  -co COMPRESS=DEFLATE -co ZLEVEL=9  $OUTDIR/tmp_$filename.tif   $OUTDIR/$filename.tif 
+rm -f $OUTDIR/tmp_$filename.tif   $OUTDIR/$filename.tif 
+gdal_rasterize   -co COMPRESS=DEFLATE -co ZLEVEL=9 -co BIGTIFF=YES      -te $( getCornersOgr4Gwarp $file | awk '{ print int($1-1), int($2-1), int($3+1), int($4+1) }' ) -init -9999 -a_nodata -9999  -tr 0.00027777777777 0.00027777777777 -ot Int32 -a "width_m" -l $filename  $file  $OUTDIR/tmp_$filename.tif 
+gdal_translate  -a_nodata 0  -co COMPRESS=DEFLATE -co ZLEVEL=9  $OUTDIR/tmp_$filename.tif   $OUTDIR/$filename.tif 
 rm -f $OUTDIR/tmp_$filename.tif 
